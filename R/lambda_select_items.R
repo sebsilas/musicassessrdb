@@ -48,8 +48,8 @@ select_items <- function(user_id,
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
-         review_items_ids = rjson::toJSON(review_items_ids),
-         new_items_ids = rjson::toJSON(new_items_ids),
+         review_items_ids = review_items_ids,
+         new_items_ids = new_items_ids,
          no_items_review = length(review_items_ids),
          no_items_new = length(new_items_ids))
 
@@ -343,7 +343,6 @@ item_sel_rev_min_score <- function(review_items, num_items, user_id = NULL, scor
 }
 
 item_sel_rev_max_score <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
-
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
     dplyr::slice_max(score, n = num_items) %>%
@@ -355,7 +354,6 @@ item_sel_rev_max_score <- function(review_items, num_items, user_id = NULL, scor
 }
 
 item_sel_rev_lowest_difficulty <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
-
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
     dplyr::slice_min(rhythmic_difficulty, n = num_items) %>%
@@ -367,7 +365,6 @@ item_sel_rev_lowest_difficulty <- function(review_items, num_items, user_id = NU
 }
 
 item_sel_rev_highest_difficulty <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
-
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
     dplyr::slice_max(rhythmic_difficulty, n = num_items) %>%
@@ -395,5 +392,5 @@ review_item_approaches <- list("choose_approach_randomly" = item_sel_choose_appr
                                "highest_difficulty" = item_sel_rev_highest_difficulty)
 
 
-# t <- select_items(user_id = 58L, num_items = 6L)
+# t <- select_items(user_id = 58L)
 

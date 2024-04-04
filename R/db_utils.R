@@ -144,9 +144,10 @@ db_append_to_table <- function(db_con, table, data, primary_key_col = NULL){
   if(!is.null(primary_key_col)) {
     primary_key_col <- as.name(primary_key_col)
     primary_key <- dplyr::tbl(db_con, table) %>%
-      dplyr::slice_max(!! primary_key_col) %>%
+      dplyr::slice_max(!! primary_key_col, n = nrow(data) ) %>%
       dplyr::collect() %>%
       dplyr::pull(!! primary_key_col)
+
     return(primary_key)
   } else {
     return(res)
@@ -326,9 +327,10 @@ db_disconnect_shiny <- function(state, ...) {
 
 
 scores_to_long_format <- function(scores) {
-  purrr::keep(scores, function(x) {
-    is.numeric(x) && length(x) == 1 && !is.na(x) && !is.nan(x)
-  }) %>%
+
+  scores[purrr::map_lgl(scores, is.nan)] <- NA
+
+  scores %>%
     tibble::as_tibble() %>%
     tidyr::pivot_longer(dplyr::everything(),
                         names_to = "measure",
