@@ -1,8 +1,8 @@
 
 
-endpoint_wrapper <- function(function_name, , request_body) {
+endpoint_wrapper <- function(function_name, request_body) {
 
-  endpoint = <- paste0(Sys.getenv("ENDPOINT_URL"), function_name)
+  endpoint <- paste0(Sys.getenv("ENDPOINT_URL"), function_name)
 
   headers <- httr::add_headers("content type" = "application/json")
 
