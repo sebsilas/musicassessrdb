@@ -18,11 +18,13 @@ db_append_trials(
   session_id,
   test_id,
   stimulus_abs_melody,
-  stimulus_durations
+  stimulus_durations,
+  review_items_id,
+  new_items_id
 )
 }
 \arguments{
-\item{stimulus_durations}{}
+\item{new_item_id}{}
 }
 \description{
 Append a trial to the trials table

@@ -261,6 +261,8 @@ db_append_scores_trial <- function(db_con,
 #' @param test_id
 #' @param stimulus_abs_melody
 #' @param stimulus_durations
+#' @param review_items_id
+#' @param new_item_id
 #'
 #' @return
 #' @export
@@ -279,7 +281,9 @@ db_append_trials <- function(db_con,
                              session_id,
                              test_id,
                              stimulus_abs_melody,
-                             stimulus_durations) {
+                             stimulus_durations,
+                             review_items_id,
+                             new_items_id) {
 
   stopifnot(
     is.scalar.character(audio_file),
@@ -294,7 +298,9 @@ db_append_trials <- function(db_con,
     is.integer(session_id),
     is.integer(test_id),
     is.null.or(stimulus_abs_melody, is.scalar.character), # RTT doesn't have a melody
-    is.scalar.character(stimulus_durations)
+    is.scalar.character(stimulus_durations),
+    is.null.or(review_items_id, is.integer),
+    is.null.or(new_items_id, is.integer)
   )
 
 
@@ -310,7 +316,9 @@ db_append_trials <- function(db_con,
                              session_id = session_id,
                              test_id = test_id,
                              stimulus_abs_melody = stimulus_abs_melody,
-                             stimulus_durations = stimulus_durations)
+                             stimulus_durations = stimulus_durations,
+                             review_items_id = review_items_id,
+                             new_items_id = new_items_id)
 
   trial_id <- db_append_to_table(db_con, table = "trials", data = trial_df, primary_key_col = "trial_id")
 
