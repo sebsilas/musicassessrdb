@@ -282,8 +282,8 @@ db_append_trials <- function(db_con,
                              test_id,
                              stimulus_abs_melody,
                              stimulus_durations,
-                             review_items_id,
-                             new_items_id) {
+                             review_items_id = NULL,
+                             new_items_id = NULL) {
 
   stopifnot(
     is.scalar.character(audio_file),

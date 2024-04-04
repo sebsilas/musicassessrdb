@@ -2,8 +2,9 @@
 # This is the function that is called when the endpoint
 # is invoked
 select_items <- function(user_id,
-                         num_items = 6L,
-                         approach_name = c("50_50_new_review_randomly_chosen_approaches", names(new_item_approaches), names(review_item_approaches)),
+                         num_items_review = 3L,
+                         num_items_new = 3L,
+                         approach_name = c("new_and_review_randomly_chosen_approaches", names(new_item_approaches), names(review_item_approaches)),
                          fallback_item_bank = c("singpause_phrase", "singpause_item"),
                          only_use_items_from_fallback_item_banks = TRUE) {
 
@@ -12,7 +13,8 @@ select_items <- function(user_id,
 
   logging::loginfo("Inside select_items function")
   logging::loginfo("user_id = %s", user_id)
-  logging::loginfo("num_items = %s", num_items)
+  logging::loginfo("num_items_review = %s", num_items_review)
+  logging::loginfo("num_items_new = %s", num_items_new)
   logging::loginfo("approach_name = %s", approach_name)
   logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
   logging::loginfo("Taking approach: %s", approach_name)
@@ -27,23 +29,29 @@ select_items <- function(user_id,
                                        filter_item_banks = if(only_use_items_from_fallback_item_banks) fallback_item_bank else NULL,
                                        add_trial_scores = TRUE)
 
-    if(approach_name == "50_50_new_review_randomly_chosen_approaches") {
-      no_items_review <- get_items(type = "review", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank, round(num_items/2), user_id) # Don't floor or ceiling these.. keep them balanced
-      no_items_new <- get_items(type = "new", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank,  round(num_items/2), user_id)
+    if(approach_name == "new_and_review_randomly_chosen_approaches") {
+
+      review_items_ids <- get_items(type = "review", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank, num_items_review, user_id)
+      new_items_ids <- get_items(type = "new", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank,  num_items_new, user_id)
+
+
     } else {
       type <- if(approach_name %in% names(new_item_approaches)) "new" else if (approach_name %in% names(review_item_approaches)) "review" else stop("Approach not known")
-      no_items <- get_items(type, approach_name, user_trials, fallback_item_bank, num_items, user_id)
+      item_ids <- get_items(type, approach_name, user_trials, fallback_item_bank, num_items, user_id)
       if(type == "new") {
-        no_items_new <- no_items
+        new_items_ids <- item_ids
       } else {
-        no_items_review <- no_items
+        review_items_ids <- item_ids
       }
     }
 
+
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
-         no_items_new = no_items_new,
-         no_items_review = no_items_review)
+         review_items_ids = review_items_ids,
+         new_items_ids = new_items_ids,
+         no_items_review = length(review_items_ids),
+         no_items_new = length(new_items_ids))
 
 
   }, error = function(err) {
@@ -103,6 +111,8 @@ get_items <- function(type = c("new", "review"),
     stop("Not a valid type")
   }
 
+  primary_key_col <- paste0(tbl_name, "_", "id")
+
 
   num_unique_items <- user_trials %>%
     dplyr::pull(item_id) %>%
@@ -146,7 +156,7 @@ get_items <- function(type = c("new", "review"),
 
 
   # Append to DB
-  db_append_to_table(db_con, tbl_name, df_to_append)
+  db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
 }
 
 
