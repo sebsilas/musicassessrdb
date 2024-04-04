@@ -1,0 +1,64 @@
+
+
+is.scalar.character <- function(x) {
+  is.character(x) && is.scalar(x)
+}
+
+is.scalar.numeric <- function(x) {
+  is.numeric(x) && is.scalar(x)
+}
+
+is.scalar.logical <- function(x) {
+  is.logical(x) && is.scalar(x)
+}
+
+is.scalar <- function(x) {
+  identical(length(x), 1L)
+}
+
+is.integerlike <- function(x) {
+  all(round(x) == x)
+}
+
+is.scalar.integerlike <- function(x) {
+  is.scalar(x) && is.integerlike(x)
+}
+
+
+is.scalar.na <- function(x) {
+  all(is.na(x)) & length(x) == 1
+}
+
+is.scalar.null <- function(x) {
+  all(is.null(x)) & length(x) == 0
+}
+
+is.scalar.na.or.null <- function(x) {
+  is.scalar.na(x) | is.scalar.null(x)
+}
+
+is.scalar.na.or.null.or.length.zero <- function(x) {
+  is.scalar.na(x) | is.scalar.null(x) | length(x) == 0
+}
+
+
+create_session_token <- function(bytes, prefix = "", suffix = "") {
+  paste(prefix,
+        paste(
+          format(as.hexmode(
+            sample(256, bytes, replace = TRUE) - 1), width = 2),
+          collapse = ""),
+        suffix, sep = "")
+}
+
+get_nrows <- function(df) {
+  # Workaround for backends
+  nrows <- df %>%
+    dplyr::summarise(num_rows = dplyr::n()) %>%
+    dplyr::pull(num_rows) %>%
+    as.integer()
+}
+
+true_js_to_TRUE <- function(x) {
+  if(x == "true") TRUE else if(x == "false") FALSE else stop("Input not recognised.")
+}

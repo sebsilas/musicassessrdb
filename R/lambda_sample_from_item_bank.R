@@ -1,0 +1,185 @@
+
+
+#' Sample from item bank via API
+#'
+#' @param item_bank_name
+#' @param num_items
+#' @param melody_length
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, melody_length) {
+
+  psychTestR::code_block(function(state, ...) {
+
+    span <- psychTestR::get_global('span', state)
+
+    span <- 10
+
+    logging::logwarn("Forcing span of 10 for now..")
+
+    logging::loginfo("Sampling %s items from %s item bank via API", num_items, item_bank_name)
+    logging::loginfo("Melody length: %s", melody_length)
+    logging::loginfo("Span: %s", span)
+
+    # Make sure in correct future mode...
+    future::plan(future::multisession)
+
+    item_bank_sample <- future::future({
+
+      #sample_from_item_bank_api(item_bank_name, num_items, span, melody_length)
+
+      store_db_session_api(condition_id = NA,
+                           user_id = 1L,
+                           psychTestR_session_id = "00",
+                           time_started = Sys.time(),
+                           experiment_id = NA)
+
+    }) %...>% (function(result) {
+
+      logging::loginfo("Returning promise message: %s", result$message)
+
+      if(result$status == 200) {
+        sample <- result
+        #sample <- dplyr::bind_rows(result$sample)
+        logging::loginfo("Returning promise result: %s", sample)
+
+        return(sample)
+      } else {
+        return(NA)
+      }
+    })
+
+    psychTestR::set_global('sampled_item_bank_from_api', item_bank_sample, state)
+
+
+  })
+
+}
+
+# t <- sample_from_item_bank_api("Berkowitz_ngram", 10, 10, c(5, 15))
+# t <- sample_from_item_bank_api("WJD_phrase", 10, 10, c(5, 15))
+
+# curl -X POST 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/sample-from-item-bank' \
+# -H 'Content-Type: application/json' \
+# -d '{
+#   "item_bank_name": "WJD_phrase",
+#   "num_items": 20,
+#   "span": 12,
+#   "melody_length" : "5,15"
+# }'
+
+
+#' Sample from an item bank via the API
+#'
+#' @param item_bank_name
+#' @param num_items
+#' @param span
+#' @param melody_length
+#'
+#' @return
+#' @export
+#'
+#' @examples
+sample_from_item_bank_api <- function(item_bank_name,
+                                      num_items,
+                                      span,
+                                      melody_length) {
+
+  if(!is.scalar.character(melody_length)) {
+    melody_length <- paste0(melody_length, collapse = ",")
+  }
+
+  logging::loginfo("sample_from_item_api")
+  logging::loginfo("melody_length: %s", melody_length)
+
+  # Define the request body as a list
+  request_body <- list(
+    item_bank_name = item_bank_name,
+    num_items = num_items,
+    span = span,
+    melody_length = melody_length
+  )
+
+  endpoint_wrapper(function_name = "sample-from-item-bank",
+                   request_body = request_body)
+}
+
+
+
+# This is the function that is called when the endpoint
+# is invoked
+sample_from_item_bank <- function(item_bank_name, num_items, span, melody_length) {
+
+  logging::loginfo("Inside sample_from_item_bank function")
+
+  logging::loginfo("item_bank_name = %s", item_bank_name)
+  logging::loginfo("num_items = %s", num_items)
+  logging::loginfo("span = %s", span)
+  logging::loginfo("melody_length = %s", melody_length)
+
+  stopifnot(
+    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase")
+  )
+
+  melody_length <- itembankr::str_mel_to_vector(melody_length)
+
+  logging::loginfo("Grab item bank")
+
+  item_bank <- dplyr::tbl(db_con, item_bank_name)
+
+  logging::loginfo("Got item bank")
+
+  if(is.null(span) | span < 10) {
+    span <- 10
+  }
+
+  logging::loginfo("Get subset")
+
+  # Sample
+  item_bank_subset <- itembankr::subset_item_bank(item_bank = item_bank, span_max = span, item_length = melody_length)
+
+  logging::loginfo("Got subset")
+  logging::loginfo(get_nrows(item_bank_subset))
+
+  if(get_nrows(item_bank_subset) <= 1) {
+    item_bank_subset <- item_bank
+  }
+
+  logging::loginfo("Sample..")
+
+  sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
+
+  logging::loginfo(get_nrows(sample))
+
+  if(get_nrows(sample) < num_items) {
+    sample <- musicassessr::item_sampler(item_bank_subset, num_items, replace = TRUE, version = "2")
+  } else {
+    sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
+  }
+
+  # Return response
+
+  response <- tryCatch({
+
+      list(status = 200,
+           message = paste0("You have successfully sampled from the ", item_bank_name, " item bank!"),
+           sample = sample)
+
+  }, error = function(err) {
+
+    logging::logerror(err)
+
+    list(
+      status = 400,
+      message = "Something went wrong!",
+      sample = NA
+    )
+
+  })
+
+  return(response)
+
+}

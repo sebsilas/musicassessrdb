@@ -1,0 +1,45 @@
+Package: musicassessrdb
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Who wrote it
+Maintainer: The package maintainer <yourself@somewhere.net>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: What license is it under?
+Encoding: UTF-8
+LazyData: true
+RoxygenNote: 7.3.1
+Imports: 
+    aws.s3,
+    awslambdafuns,
+    DBI,
+    dbplyr,
+    dplyr,
+    DT,
+    ggplot2,
+    htmltools,
+    httr,
+    logging,
+    lubridate,
+    magrittr,
+    promises,
+    psychTestR (>= 2.25.0),
+    psychTestRCATME (>= 1.6.2),
+    psyquest (>= 1.3.13),
+    purrr,
+    RPostgres,
+    shiny,
+    tibble
+Depends:
+    R (>= 2.10),
+    shinyusermanagement (>= 0.1.0)
+URL: https://github.com/sebsilas/musicassessrdb
+BugReports: https://github.com/sebsilas/musicassessrdb/issues
+Remotes: 
+    pmcharrison/psychTestR,
+    pmcharrison/psychTestRCAT,
+    sebsilas/psychTestRCATME,
+    sebsilas/shinyusermanagement,
+    sebsilas/awslambdafuns,
+    klausfrieler/psyquest
