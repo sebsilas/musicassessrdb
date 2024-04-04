@@ -48,8 +48,8 @@ select_items <- function(user_id,
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
-         review_items_ids = review_items_ids,
-         new_items_ids = new_items_ids,
+         review_items_ids = rjson::toJSON(review_items_ids),
+         new_items_ids = rjson::toJSON(new_items_ids),
          no_items_review = length(review_items_ids),
          no_items_new = length(new_items_ids))
 
@@ -396,3 +396,4 @@ review_item_approaches <- list("choose_approach_randomly" = item_sel_choose_appr
 
 
 # t <- select_items(user_id = 58L, num_items = 6L)
+
