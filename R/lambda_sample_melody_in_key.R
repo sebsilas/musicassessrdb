@@ -1,29 +1,4 @@
 
-# t <- sample_melody_in_key_api(item_bank_name = "WJD_phrase",
-#                               inst = "Piano",
-#                               bottom_range = 48,
-#                               top_range = 72,
-#                               key_difficulty = "easy",
-#                               melody_length = 10,
-#                               no_melodies = 1)
-
-
-
-
-# curl -X POST 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/sample-melody-in-key' \
-# -H 'Content-Type: application/json' \
-# -d '{
-#   "item_bank_name": "WJD_phrase",
-#   "inst": "Piano",
-#   "bottom_range": 48,
-#   "top_range": 72,
-#   "key_difficulty": "easy",
-#   "melody_length": 10,
-#   "no_melodies": 10
-# }'
-
-
-
 #' Sample from item bank via API
 #'
 #' @param item_bank_name

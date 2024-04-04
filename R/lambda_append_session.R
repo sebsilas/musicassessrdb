@@ -1,22 +1,5 @@
 
 
-
-# Test
-# t <- store_db_session_api(
-#   condition_id = 1L,
-#   user_id = 1L,
-#   psychTestR_session_id = "Seb boo",
-#   time_started = Sys.time(),
-#   experiment_id = 1L
-#   )
-
-
-# { "condition_id":"1",
-#  "user_id": "1",
-#   "psychTestR_session_id":"Seb boo",
-#   "time_started": "2023-12-07 00:50:51 CET",
-#   "experiment_id": "1"}
-
 store_db_session_api <- function(condition_id = NA,
                                  user_id,
                                  psychTestR_session_id,

@@ -59,18 +59,6 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 
 }
 
-# t <- sample_from_item_bank_api("Berkowitz_ngram", 10, 10, c(5, 15))
-# t <- sample_from_item_bank_api("WJD_phrase", 10, 10, c(5, 15))
-
-# curl -X POST 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/sample-from-item-bank' \
-# -H 'Content-Type: application/json' \
-# -d '{
-#   "item_bank_name": "WJD_phrase",
-#   "num_items": 20,
-#   "span": 12,
-#   "melody_length" : "5,15"
-# }'
-
 
 #' Sample from an item bank via the API
 #'

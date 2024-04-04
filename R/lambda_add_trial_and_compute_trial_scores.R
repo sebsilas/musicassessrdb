@@ -51,7 +51,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     if(midi_vs_audio == "audio") {
 
-      res <- readFromS3(filename = processed_file, bucket = "shinny-app-destination-41630")
+      res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
 
       logging::loginfo("res: %s", res)
 
@@ -334,10 +334,10 @@ readFromS3 <- function(filename, bucket) {
 
 
 
-get_metadata <- function(file, bucket = "shinny-app-destination-41630") {
+get_metadata <- function(file, bucket = Sys.getenv("DESTINATION_BUCKET")) {
 
   metadata <- aws.s3::head_object(object = file,
-                                  bucket = "shinny-app-destination-41630") %>%
+                                  bucket = Sys.getenv("DESTINATION_BUCKET")) %>%
   attributes() %>%
   tibble::as_tibble() %>%
   dplyr::rename_with(~ .x %>% stringr::str_remove("x-amz-meta-") %>% stringr::str_remove("x-amz-") %>% stringr::str_replace_all("-", "_")
@@ -368,7 +368,7 @@ get_rhythm_scores <- function(onset_res, stimuli_durations) {
 
 
 # onset_res <- readFromS3(filename = "qwdqwe23421.rhythm_call_and_response.record_audio_page.9-3-2024--11-49--29.csv",
-#                         bucket = "shinny-app-destination-41630")
+#                         bucket = Sys.getenv("DESTINATION_BUCKET"))
 
 
 # pyin::test_pyin() %>% dplyr::select(onset:note) %>% db_append_melodic_production()

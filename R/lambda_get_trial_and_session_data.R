@@ -1,21 +1,4 @@
 
-# User test
-# t <- get_trial_and_session_data_api(user_id = 2L)
-# t <- get_trial_and_session_data_api(user_id = 47L)
-# t <- get_trial_and_session_data_api(user_id = 55L)
-
-# Group test
-# t <- get_trial_and_session_data_api(group_id = 2L)
-# t <- get_trial_and_session_data_api(group_id = 2L)
-
-# t <- get_trial_and_session_data_api(group_id = 5L) # group 5 is SingPause
-
-
-# curl -X POST 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/get-trial-and-session-data' \
-# -H 'Content-Type: application/json' \
-# -d '{
-#   "group_id": 5
-# }'
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,

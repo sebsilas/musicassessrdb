@@ -1,16 +1,4 @@
 
-
-# curl -X POST 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/get-items-from-ids' \
-# -H 'Content-Type: application/json' \
-# -d '{
-#   "item_bank_name": "item_bank_singpause",
-#   "item_ids": ["singpause_phrase_5", "singpause_phrase_4"]
-# }'
-
-
-# t <- get_items_from_ids_api(item_bank_name = "item_bank_singpause",
-#                             item_ids = c("singpause_phrase_5", "singpause_phrase_4"))
-
 get_items_from_ids_api <- function(item_bank_name,
                                    item_ids) {
 

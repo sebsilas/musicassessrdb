@@ -85,8 +85,4 @@ add_user_to_group_with_login_code <- function(user_id,
 #   login_code = "testfail")
 
 
-# t <- add_user_to_group_with_login_code_api(
-#   user_id = 1L,
-#   login_code = "ilikecheese")
-
 
