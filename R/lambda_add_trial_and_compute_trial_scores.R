@@ -45,6 +45,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       new_items_id = as.integer(metadata$new_items_id)
     )
 
+    logging::loginfo("Got trial_id: %s", trial_id)
+
 
     # Get pYIN (or onset) res
 
