@@ -303,8 +303,8 @@ db_append_trials <- function(db_con,
     is.integer(test_id),
     is.null.or(stimulus_abs_melody, is.scalar.character), # RTT doesn't have a melody
     is.scalar.character(stimulus_durations),
-    is.null.or(review_items_id, is.integer),
-    is.null.or(new_items_id, is.integer)
+    is.integer(review_items_id) || is.na(review_items_id) || is.null(review_items_id),
+    is.integer(new_items_id) || is.na(new_items_id) || is.null(new_items_id)
   )
 
 
