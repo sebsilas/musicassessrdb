@@ -9,6 +9,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
 
+  #processed_file <- "55efcf1a8e7b4c74ae5f017bba3d8ec717bb72a289dce0d98a5840c987decc9b.arrhythmic_melody_1_attempt_1.8-4-2024--14-59--2.csv"
+
   logging::loginfo("processed_file = %s", processed_file)
 
   # Return response
@@ -41,8 +43,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       test_id = test_id,
       stimulus_abs_melody = if(test_id == 3L) NULL else metadata$stimuli, # RTT (test_id == 3), doesn't have a melody
       stimulus_durations = metadata$stimuli_durations,
-      review_items_id = as.integer(metadata$review_items_id),
-      new_items_id = as.integer(metadata$new_items_id)
+      review_items_id = if(length(metadata$review_items_id) == 0) NA else as.integer(metadata$review_items_id),
+      new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$review_items_id)
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)
