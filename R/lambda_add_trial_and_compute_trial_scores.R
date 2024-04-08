@@ -7,9 +7,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
-  #processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
-
-  processed_file <- "5ee75f4793816eeee16b7917dbf64ae52723eafdca12a6138732afb7877ab33f.arrhythmic_melody_1_attempt_1.8-4-2024--18-26--30.csv"
+  processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
 
   logging::loginfo("processed_file = %s", processed_file)
 
