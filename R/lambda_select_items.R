@@ -393,4 +393,3 @@ review_item_approaches <- list("choose_approach_randomly" = item_sel_choose_appr
 
 
 # t <- select_items(user_id = 58L)
-

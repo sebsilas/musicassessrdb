@@ -19,8 +19,8 @@ db_append_trials(
   test_id,
   stimulus_abs_melody,
   stimulus_durations,
-  review_items_id,
-  new_items_id
+  review_items_id = NULL,
+  new_items_id = NULL
 )
 }
 \arguments{

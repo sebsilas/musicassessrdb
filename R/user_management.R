@@ -38,8 +38,8 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
         item_bank_name <- url_params$item_bank_name
         item_bank_name <- paste0("item_bank_", item_bank_name)
         item_ids <- url_params$item_ids
-        get_review_items <- if(is.null(url_params$get_review_items)) FALSE else if(url_params$get_review_items == "true") TRUE else FALSE
-        get_new_items <- if(is.null(url_params$get_new_items)) FALSE else if(url_params$get_new_items == "true") TRUE else FALSE
+        review_items_ids <- url_params$review_items_ids
+        new_items_ids <- url_params$new_items_ids
 
         psychTestR::set_global("user_id", user_id, state)
 
@@ -60,11 +60,11 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
         }
 
 
-        if(get_review_items || get_new_items) {
+        if(length(review_items_ids) > 0L || length(new_items_ids) > 0L) {
 
           if(is.null(psychTestR::get_global('rhythmic_melody', state)))  {
             # Note that psychTestR runs reactive_page functions twice.. so we make sure the second time we don't fire this (otherwise active == 0 for selected items and the function will fail)
-            items <- get_selected_items_from_db(db_con, user_id, get_review_items, get_new_items)
+            items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids)
             psychTestR::set_global('rhythmic_melody', items, state)
           }
 
@@ -130,6 +130,4 @@ authenticate_session_token <- function(db_con, user_id, proposed_token) {
 
   token == proposed_token && Sys.time() < expires
 }
-
-# items <- get_selected_items_from_db(db_con, user_id = 58, get_review_items = TRUE, get_new_items = TRUE)
 

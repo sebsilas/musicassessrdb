@@ -67,7 +67,7 @@ get_items_from_db <- function(db_con, item_bank_name, item_ids) {
     dplyr::collect()
 }
 
-get_selected_items_from_db <- function(db_con, user_id, get_review_items = FALSE, get_new_items = FALSE) {
+get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_items_ids) {
 
   if(get_review_items) {
 
@@ -75,7 +75,8 @@ get_selected_items_from_db <- function(db_con, user_id, get_review_items = FALSE
 
     review_items_filtered <- review_items %>%
       dplyr::filter(user_id == !! user_id,
-                    active == 1L)
+                    active == 1L,
+                    review_items_id %in% review_items_ids)
 
     item_bank_names <- review_items_filtered %>%
       dplyr::pull(item_id) %>%
@@ -95,7 +96,8 @@ get_selected_items_from_db <- function(db_con, user_id, get_review_items = FALSE
 
     new_items_filtered <- new_items %>%
       dplyr::filter(user_id == !! user_id,
-                    active == 1L)
+                    active == 1L,
+                    new_items_id %in% new_items_ids)
 
     item_bank_names <- new_items_filtered %>%
       dplyr::pull(item_id) %>%
@@ -110,7 +112,7 @@ get_selected_items_from_db <- function(db_con, user_id, get_review_items = FALSE
   review_items_filtered <- review_items_filtered %>% dplyr::collect()
   new_items_filtered <- new_items_filtered %>% dplyr::collect()
 
-  # Inactivate grabbed items (note this needs to be done after collecting)
+  # Deactivate grabbed items (note this needs to be done after collecting)
 
   new_update <- new_items %>% dplyr::mutate(active = 0L)
   dplyr::rows_update(new_items, new_update, in_place = TRUE, by = "new_items_id", unmatched = "ignore")
@@ -132,7 +134,3 @@ get_selected_items_from_db <- function(db_con, user_id, get_review_items = FALSE
 
 }
 
-#  items <- get_selected_items_from_db(db_con, user_id = 58, get_review_items = TRUE, get_new_items = TRUE)
-# db_con <- musicassessr_con()
-# t <- get_items_from_ids("item_bank_singpause_phrase", c("singpause_phrase_5", "singpause_phrase_4"))
-# DBI::dbDisconnect(db_con)
