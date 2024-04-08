@@ -7,9 +7,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
-  processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
+  #processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
 
-  #processed_file <- "55efcf1a8e7b4c74ae5f017bba3d8ec717bb72a289dce0d98a5840c987decc9b.arrhythmic_melody_1_attempt_1.8-4-2024--14-59--2.csv"
+  processed_file <- "5ee75f4793816eeee16b7917dbf64ae52723eafdca12a6138732afb7877ab33f.arrhythmic_melody_1_attempt_1.8-4-2024--18-26--30.csv"
 
   logging::loginfo("processed_file = %s", processed_file)
 
@@ -131,7 +131,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("...scored.")
     logging::loginfo("scores: %s", scores)
-
 
     # Grab trial scores, which are actually numeric scores and don't have NA-like values
     trial_scores <- scores %>%

@@ -328,6 +328,8 @@ db_disconnect_shiny <- function(state, ...) {
 
 scores_to_long_format <- function(scores) {
 
+  scores <- scores[purrr::map_lgl(scores, function(x) length(x) == 1)]
+
   scores[purrr::map_lgl(scores, is.nan)] <- NA
 
   scores %>%
