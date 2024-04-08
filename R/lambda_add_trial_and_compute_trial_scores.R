@@ -1,6 +1,8 @@
 
 # t <- add_trial_and_compute_trial_scores("Records")
 
+# debug(itembankr::produce_extra_melodic_features)
+
 # This is the function that is called when the endpoint
 # is invoked
 add_trial_and_compute_trial_scores <- function(Records) {
@@ -8,7 +10,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
   processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
-
   logging::loginfo("processed_file = %s", processed_file)
 
   # Return response
@@ -91,7 +92,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
         logging::loginfo("res$onset %s", res$onset)
         logging::loginfo("stimuli %s", stimuli)
         logging::loginfo("stimuli_durations %s", stimuli_durations)
-
 
         # Store pYIN in DB
         scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
