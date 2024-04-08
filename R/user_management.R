@@ -65,6 +65,14 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
           if(is.null(psychTestR::get_global('rhythmic_melody', state)))  {
             # Note that psychTestR runs reactive_page functions twice.. so we make sure the second time we don't fire this (otherwise active == 0 for selected items and the function will fail)
             items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids)
+
+            # Add the review_item and new_items ids
+
+            items <- items %>%
+              dplyr::mutate(review_item_id = review_items_ids,
+                            new_item_id = new_item_ids)
+
+
             psychTestR::set_global('rhythmic_melody', items, state)
           }
 
