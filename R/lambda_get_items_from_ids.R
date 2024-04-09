@@ -84,6 +84,20 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
 
     review_items_filtered <- left_join_on_items(db_con, item_bank_names, review_items_filtered)
 
+    review_items_filtered <- review_items_filtered %>% dplyr::collect()
+
+    # Deactivate grabbed items (note this needs to be done after collecting)
+
+    review_update <- review_items %>% dplyr::mutate(active = 0L)
+    dplyr::rows_update(review_items, review_update, in_place = TRUE, by = "review_items_id", unmatched = "ignore")
+
+    # Randomise
+
+    review_items_filtered <- review_items_filtered %>%
+      dplyr::slice_sample(n = nrow(.)) %>%
+      dplyr::select(-active)
+
+
 
   } else {
     review_items_filtered <- tibble::tibble()
@@ -105,31 +119,22 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
 
     new_items_filtered <- left_join_on_items(db_con, item_bank_names, new_items_filtered)
 
+    new_items_filtered <- new_items_filtered %>% dplyr::collect()
+
+    # Deactivate grabbed items (note this needs to be done after collecting)
+
+    new_update <- new_items %>% dplyr::mutate(active = 0L)
+    dplyr::rows_update(new_items, new_update, in_place = TRUE, by = "new_items_id", unmatched = "ignore")
+
+    # Randomise
+
+    new_items_filtered <- new_items_filtered %>%
+      dplyr::slice_sample(n = nrow(.)) %>%
+      dplyr::select(-active)
+
   } else {
     new_items_filtered <- tibble::tibble()
   }
-
-  review_items_filtered <- review_items_filtered %>% dplyr::collect()
-  new_items_filtered <- new_items_filtered %>% dplyr::collect()
-
-  # Deactivate grabbed items (note this needs to be done after collecting)
-
-  new_update <- new_items %>% dplyr::mutate(active = 0L)
-  dplyr::rows_update(new_items, new_update, in_place = TRUE, by = "new_items_id", unmatched = "ignore")
-
-  review_update <- review_items %>% dplyr::mutate(active = 0L)
-  dplyr::rows_update(review_items, review_update, in_place = TRUE, by = "review_items_id", unmatched = "ignore")
-
-  # Randomise
-
-  review_items_filtered <- review_items_filtered %>%
-    dplyr::slice_sample(n = nrow(.)) %>%
-    dplyr::select(-active)
-
-  new_items_filtered <- new_items_filtered %>%
-    dplyr::slice_sample(n = nrow(.)) %>%
-    dplyr::select(-active)
-
 
   return(list(review_items = review_items_filtered, new_items = new_items_filtered))
 
