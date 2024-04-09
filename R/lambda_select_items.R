@@ -380,7 +380,7 @@ sort_review_scores <- function(review_items, score_name) {
     dplyr::filter(measure == !! score_name,
                   "{score_name}" < 1) %>% # Reviews should be (at least now) based on non-mastered items
     dplyr::group_by(item_id) %>%
-    dplyr::slice_max(time_started_trial) %>%
+    dplyr::slice_max(trial_time_started) %>%
     dplyr::ungroup()
 }
 

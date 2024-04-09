@@ -29,14 +29,10 @@ compile_item_trials <- function(db_con,
 
   # Grab session info
   sessions <- get_table(db_con, "sessions", collect = FALSE) %>%
-    dplyr::rename(time_started_session = time_started,
-                  time_completed_session = time_completed) %>%
     dplyr::filter(user_id %in% !! user_id)
 
   # Grab trial info
   trials <- get_table(db_con, "trials", collect = FALSE)  %>%
-    dplyr::rename(time_started_trial = time_started,
-                  time_completed_trial = time_completed) %>%
     dplyr::left_join(sessions, by = "session_id")
 
   # Grab trials only for the given user on the given test

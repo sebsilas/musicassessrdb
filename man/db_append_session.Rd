@@ -9,7 +9,7 @@ db_append_session(
   condition_id = NA,
   user_id,
   psychTestR_session_id,
-  time_started = Sys.time(),
+  session_time_started = Sys.time(),
   experiment_id = NA
 )
 }

@@ -7,8 +7,8 @@
 db_append_trials(
   db_con,
   audio_file,
-  time_started,
-  time_completed,
+  trial_time_started,
+  trial_time_completed,
   instrument,
   attempt,
   item_id,

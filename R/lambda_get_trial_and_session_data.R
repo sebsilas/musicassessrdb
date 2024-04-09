@@ -65,7 +65,7 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::left_join(sessions, by = "session_id")
 
     trials <- compile_item_trials(db_con, session_id = sessions$session_id, user_id = user_id, join_item_banks_on = TRUE) %>%
-              dplyr::mutate(Date = lubridate::as_date(time_started_session)) %>%
+              dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
       dplyr::collect()
 
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
@@ -78,12 +78,12 @@ get_trial_and_session_data <- function(user_id = NULL,
 
       scores_trial <- trials %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
-        dplyr::select(Date, user_id, trial_id, time_started_trial, time_completed_trial, instrument,
+        dplyr::select(Date, user_id, trial_id, trial_time_started, trial_time_completed, instrument,
                       attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name)
 
       review_melodies <- scores_trial %>%
-        dplyr::count(phrase_name, time_started_trial) %>%
+        dplyr::count(phrase_name, trial_time_started) %>%
         dplyr::count(phrase_name) %>%
         dplyr::filter(n > 1 & !is.na(phrase_name))
 
@@ -96,7 +96,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     } else {
       scores_trial <- trials %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
-        dplyr::select(Date, user_id, trial_id, time_started_trial, time_completed_trial, instrument,
+        dplyr::select(Date, user_id, trial_id, trial_time_started, trial_time_completed, instrument,
                       attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score)
 
@@ -104,13 +104,13 @@ get_trial_and_session_data <- function(user_id = NULL,
       # Melodies we aggregate at the session level (i.e, can see improvements in the same day)
 
       review_melodies <- scores_trial %>%
-        dplyr::count(user_id, stimulus_abs_melody, time_started_trial) %>%
+        dplyr::count(user_id, stimulus_abs_melody, trial_time_started) %>%
         dplyr::count(user_id, stimulus_abs_melody) %>%
         dplyr::filter(n > 1 & !is.na(stimulus_abs_melody))
 
       review_melodies_over_time <- scores_trial %>%
         dplyr::filter(stimulus_abs_melody %in% !! review_melodies$stimulus_abs_melody) %>%
-        dplyr::group_by(user_id, time_started_trial, stimulus_abs_melody) %>%
+        dplyr::group_by(user_id, trial_time_started, stimulus_abs_melody) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup()
     }
