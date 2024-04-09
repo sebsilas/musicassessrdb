@@ -69,7 +69,7 @@ get_items_from_db <- function(db_con, item_bank_name, item_ids) {
 
 get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_items_ids) {
 
-  if(get_review_items) {
+  if(length(review_items_ids) > 0L) {
 
     review_items <- get_table(db_con, 'review_items', collect = FALSE)
 
@@ -90,7 +90,7 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
   }
 
 
-  if(get_new_items) {
+  if(length(new_items_ids) > 0L) {
 
     new_items <- get_table(db_con, 'new_items', collect = FALSE)
 
@@ -120,17 +120,18 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
   review_update <- review_items %>% dplyr::mutate(active = 0L)
   dplyr::rows_update(review_items, review_update, in_place = TRUE, by = "review_items_id", unmatched = "ignore")
 
+  # Randomise
 
-  joint_names <- intersect(names(review_items_filtered), names(new_items_filtered))
-
-  review_items_filtered <- review_items_filtered %>% dplyr::select(dplyr::all_of(joint_names))
-  new_items_filtered <- new_items_filtered %>% dplyr::select(dplyr::all_of(joint_names))
-
-  joined_items <- rbind(review_items_filtered, new_items_filtered) %>%
+  review_items_filtered <- review_items_filtered %>%
     dplyr::slice_sample(n = nrow(.)) %>%
-    dplyr::select(-active) # Randomise
+    dplyr::select(-active)
 
-  return(joined_items)
+  new_items_filtered <- new_items_filtered %>%
+    dplyr::slice_sample(n = nrow(.)) %>%
+    dplyr::select(-active)
+
+
+  return(list(review_items = review_items_filtered, new_items = new_items_filtered))
 
 }
 

@@ -38,8 +38,9 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
         item_bank_name <- url_params$item_bank_name
         item_bank_name <- paste0("item_bank_", item_bank_name)
         item_ids <- url_params$item_ids
-        review_items_ids <- url_params$review_items_ids
-        new_items_ids <- url_params$new_items_ids
+
+        review_items_ids <- if(is.null(url_params$review_items_ids)) NULL else split_ids(url_params$review_items_ids)
+        new_items_ids <- if(is.null(url_params$new_items_ids)) NULL else split_ids(url_params$new_items_ids)
 
         psychTestR::set_global("user_id", user_id, state)
 
@@ -62,18 +63,14 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
         if(length(review_items_ids) > 0L || length(new_items_ids) > 0L) {
 
-          if(is.null(psychTestR::get_global('rhythmic_melody', state)))  {
+          if(is.null(psychTestR::get_global('rhythmic_melody', state)) && is.null(psychTestR::get_global('rhythmic_melody_review', state)))  {
             # Note that psychTestR runs reactive_page functions twice.. so we make sure the second time we don't fire this (otherwise active == 0 for selected items and the function will fail)
+
             items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids)
 
-            # Add the review_item and new_items ids
+            psychTestR::set_global('rhythmic_melody', items$new_items, state)
+            psychTestR::set_global('rhythmic_melody_review', items$review_items, state)
 
-            items <- items %>%
-              dplyr::mutate(review_item_id = review_items_ids,
-                            new_item_id = new_item_ids)
-
-
-            psychTestR::set_global('rhythmic_melody', items, state)
           }
 
         }
@@ -138,4 +135,6 @@ authenticate_session_token <- function(db_con, user_id, proposed_token) {
 
   token == proposed_token && Sys.time() < expires
 }
+
+split_ids <- function(ids) as.integer(strsplit(ids, ",")[[1]])
 
