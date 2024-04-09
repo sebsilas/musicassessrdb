@@ -207,7 +207,7 @@ compute_session_scores_and_end_session <- function(test_id,
 
     logging::loginfo("Storing complete time as %s", complete_time)
 
-    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, time_completed = complete_time))
+    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time))
 
     dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
 

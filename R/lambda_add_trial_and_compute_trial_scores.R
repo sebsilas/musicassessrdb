@@ -25,16 +25,19 @@ add_trial_and_compute_trial_scores <- function(Records) {
     stimuli_durations <- itembankr::str_mel_to_vector(metadata$stimuli_durations)
     midi_vs_audio <- metadata$midi_vs_audio
     test_id <- as.integer(metadata$test_id)
+    item_id <- metadata$item_id
+    instrument <- metadata$instrument
+    trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
 
     # Append trial info
     trial_id <- db_append_trials(
       db_con,
       audio_file = stringr::str_replace(processed_file, ".csv", ".wav"),
-      time_started = lubridate::as_datetime(metadata$trial_time_started),
-      time_completed = lubridate::as_datetime(metadata$trial_time_completed),
-      instrument = metadata$instrument,
+      trial_time_started = lubridate::as_datetime(metadata$trial_time_started),
+      trial_time_completed = trial_time_completed,
+      instrument = instrument,
       attempt = as.integer(metadata$attempt),
-      item_id = metadata$item_id,
+      item_id = item_id,
       display_modality = stringr::str_replace(metadata$display_modality, "-", "_"),
       phase = metadata$phase,
       rhythmic = as.logical(metadata$rhythmic),
@@ -138,6 +141,30 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("trial_scores: %s", trial_scores)
 
     logging::loginfo("Append to scores_trial")
+
+    # Compute a few "change in score/review" vars
+
+    last_score <- get_latest_score(db_con,
+                                   user_id = user_id,
+                                   test_id = test_id,
+                                   inst = instrument,
+                                   item_id = item_id,
+                                   measure = score_to_use)
+
+    current_score <- trial_scores %>%
+      dplyr::filter(measure == !! score_to_use)
+
+
+    additional_scores <- tibble::tibble(
+    learned_in_current_session = if(last_score$score < 1 && dplyr::near(current_score, 1)) 1L else 0L
+    ) %>% dplyr::mutate(
+      change_in_score_from_last_session, current_score - last_score$score,
+      increase_since_last_session, if(change_in_score_from_last_session > 0) 1L else 0L,
+      time_since_last_item_studied, trial_time_completed - last_score$trial_time_completed
+    )
+
+    trial_scores <- rbind(trial_scores, additional_scores)
+
 
     scores_trial_ids <- db_append_scores_trial(db_con,
                                                trial_id,
@@ -250,8 +277,8 @@ db_append_scores_trial <- function(db_con,
 #'
 #' @param db_con
 #' @param audio_file
-#' @param time_started
-#' @param time_completed
+#' @param trial_time_started
+#' @param trial_time_completed
 #' @param instrument
 #' @param attempt
 #' @param item_id
@@ -271,8 +298,8 @@ db_append_scores_trial <- function(db_con,
 #' @examples
 db_append_trials <- function(db_con,
                              audio_file,
-                             time_started,
-                             time_completed,
+                             trial_time_started,
+                             trial_time_completed,
                              instrument,
                              attempt,
                              item_id,

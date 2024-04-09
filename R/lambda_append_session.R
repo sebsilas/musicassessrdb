@@ -53,7 +53,7 @@ append_session <- function(condition_id = NA,
                                     condition_id = as.integer(condition_id),
                                     user_id = as.integer(user_id),
                                     psychTestR_session_id = psychTestR_session_id,
-                                    time_started = time_started,
+                                    session_time_started = time_started,
                                     experiment_id = as.integer(experiment_id))
 
     # Return response
@@ -87,7 +87,7 @@ append_session <- function(condition_id = NA,
 #' @param condition_id
 #' @param user_id
 #' @param psychTestR_session_id
-#' @param time_started
+#' @param session_time_started
 #' @param experiment_id
 #'
 #' @return
@@ -98,7 +98,7 @@ db_append_session <- function(db_con,
                               condition_id = NA,
                               user_id,
                               psychTestR_session_id,
-                              time_started = Sys.time(),
+                              session_time_started = Sys.time(),
                               experiment_id = NA) {
 
 

@@ -53,8 +53,6 @@ get_trial_and_session_data <- function(user_id = NULL,
     # Get sessions associated with user
     sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
         dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
-        dplyr::rename(session_time_started = time_started,
-                      session_time_completed = time_completed) %>%
         dplyr::collect() %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))
 

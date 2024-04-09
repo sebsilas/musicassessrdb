@@ -513,6 +513,59 @@ left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
 }
 
 
+# For a user, item, test, and measure combo, get the most recent score before the present moment
+get_latest_score <- function(db_con, user_id, test_id = NULL, inst = NULL, item_id = NULL, measure = "opti3") {
+
+  tryCatch({
+
+    trials <- dplyr::tbl(db_con, "trials")
+
+    df <- dplyr::tbl(db_con, "sessions") %>%
+      dplyr::filter(user_id == !! user_id) %>%
+      dplyr::left_join(trials, by = "session_id")
+
+    if(!is.null(test_id)) {
+      df <- df %>% dplyr::filter(test_id == !! test_id)
+    }
+
+    if(!is.null(inst)) {
+      df <- df %>% dplyr::filter(instrument == !! inst)
+    }
+
+    if(!is.null(item_id)) {
+      df <- df %>% dplyr::filter(item_id == !! item_id)
+    }
+
+    df <- df %>%
+      dplyr::slice_max(trial_time_completed) %>%
+      dplyr::collect()
+
+    trial_id <- df$trial_id
+
+    trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
+      dplyr::filter(trial_id == !! trial_id,
+                    measure == !! measure) %>%
+      dplyr::collect()
+
+    df <- df %>%
+      dplyr::left_join(trial_scores, by = "trial_id")
+
+    score <- df %>% dplyr::select(score, trial_time_completed)
+
+    return(score)
+  }, error = function(err) {
+    logging::logerror(err)
+    logging::loginfo("Score not found, assuming not learned before and returning NA.")
+    return(tibble::tibble(score = NA, trial_time_completed = NA))
+  })
+
+}
+
+# db_con <- musicassessr_con()
+# t <- get_latest_score(db_con, 2L, 2L, "Voice", "WJD_phrase_8308")
+# t <- get_latest_score(db_con, 2L, 2L, "Voice", "fail")
+# DBI::dbDisconnect(db_con)
+
 # tests
 # extract_item_bank_id_from_item_id(db_con, "Berkowitz_ngram_76196")
 # extract_item_bank_id_from_item_id(db_con, "Berkowitz_ngram_76196")
