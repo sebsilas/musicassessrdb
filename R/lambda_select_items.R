@@ -1,9 +1,4 @@
 
-
-# db_con <- musicassessr_con()
-# t <- select_items(59)
-# DBI::dbDisconnect(db_con)
-
 # This is the function that is called when the endpoint
 # is invoked
 select_items <- function(user_id,
