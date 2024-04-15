@@ -1,18 +1,18 @@
 
 
-store_db_session_api <- function(condition_id = NA,
+store_db_session_api <- function(experiment_id = NA,
+                                 experiment_condition_id = NA,
                                  user_id,
                                  psychTestR_session_id,
-                                 time_started = Sys.time(),
-                                 experiment_id = NA) {
+                                 time_started = Sys.time()) {
 
   # Define the request body as a list
   request_body <- list(
-    condition_id = condition_id,
+    experiment_id = experiment_id,
+    experiment_condition_id = experiment_condition_id,
     user_id = user_id,
     psychTestR_session_id = psychTestR_session_id,
-    time_started = time_started,
-    experiment_id = experiment_id
+    time_started = time_started
   )
 
   endpoint_wrapper(function_name = "append-session",
