@@ -315,8 +315,8 @@ db_append_trials <- function(db_con,
 
   stopifnot(
     is.scalar.character(audio_file),
-    lubridate::is.POSIXct(time_started),
-    lubridate::is.POSIXct(time_completed),
+    lubridate::is.POSIXct(trial_time_started),
+    lubridate::is.POSIXct(trial_time_completed),
     is.scalar.character(instrument),
     is.integer(attempt),
     is.scalar.character(item_id),

@@ -34,7 +34,7 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
       store_db_session_api(condition_id = NA,
                            user_id = 1L,
                            psychTestR_session_id = "00",
-                           time_started = Sys.time(),
+                           session_time_started = Sys.time(),
                            experiment_id = NA)
 
     }) %...>% (function(result) {

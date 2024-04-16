@@ -12,7 +12,7 @@ store_db_session_api <- function(experiment_id = NA,
     experiment_condition_id = experiment_condition_id,
     user_id = user_id,
     psychTestR_session_id = psychTestR_session_id,
-    session_time_started = time_started
+    session_time_started = session_time_started
   )
 
   endpoint_wrapper(function_name = "append-session",
@@ -38,7 +38,7 @@ append_session <- function(condition_id = NA,
 
   logging::loginfo("psychTestR_session_id = %s", psychTestR_session_id)
 
-  logging::loginfo("session_time_started= %s", time_started)
+  logging::loginfo("session_time_started= %s", session_time_started)
 
   logging::loginfo("experiment_id = %s", experiment_id)
 
