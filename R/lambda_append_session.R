@@ -4,7 +4,7 @@ store_db_session_api <- function(experiment_id = NA,
                                  experiment_condition_id = NA,
                                  user_id,
                                  psychTestR_session_id,
-                                 time_started = Sys.time()) {
+                                 session_time_started = Sys.time()) {
 
   # Define the request body as a list
   request_body <- list(
@@ -12,7 +12,7 @@ store_db_session_api <- function(experiment_id = NA,
     experiment_condition_id = experiment_condition_id,
     user_id = user_id,
     psychTestR_session_id = psychTestR_session_id,
-    time_started = time_started
+    session_time_started = time_started
   )
 
   endpoint_wrapper(function_name = "append-session",
@@ -27,7 +27,7 @@ store_db_session_api <- function(experiment_id = NA,
 append_session <- function(condition_id = NA,
                            user_id,
                            psychTestR_session_id,
-                           time_started = Sys.time(),
+                           session_time_started = Sys.time(),
                            experiment_id = NA) {
 
   logging::loginfo("Inside append_session function")
@@ -38,7 +38,7 @@ append_session <- function(condition_id = NA,
 
   logging::loginfo("psychTestR_session_id = %s", psychTestR_session_id)
 
-  logging::loginfo("time_started= %s", time_started)
+  logging::loginfo("session_time_started= %s", time_started)
 
   logging::loginfo("experiment_id = %s", experiment_id)
 
@@ -53,7 +53,7 @@ append_session <- function(condition_id = NA,
                                     condition_id = as.integer(condition_id),
                                     user_id = as.integer(user_id),
                                     psychTestR_session_id = psychTestR_session_id,
-                                    session_time_started = time_started,
+                                    session_time_started = session_time_started,
                                     experiment_id = as.integer(experiment_id))
 
     # Return response
@@ -108,7 +108,7 @@ db_append_session <- function(db_con,
   session_df <- tibble::tibble(condition_id = condition_id,
                                user_id = user_id,
                                psychTestR_session_id = psychTestR_session_id,
-                               time_started = time_started,
+                               session_time_started = session_time_started,
                                experiment_id = experiment_id)
 
   session_id <- db_append_to_table(db_con, table = "sessions", data = session_df, primary_key_col = "session_id")

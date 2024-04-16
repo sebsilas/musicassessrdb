@@ -333,8 +333,8 @@ db_append_trials <- function(db_con,
 
 
   trial_df <- tibble::tibble(audio_file = audio_file,
-                             time_started = time_started,
-                             time_completed = time_completed,
+                             trial_time_started = trial_time_started,
+                             trial_time_completed = trial_time_completed,
                              instrument = instrument,
                              attempt = attempt,
                              item_id = item_id,
