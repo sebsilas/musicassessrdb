@@ -94,10 +94,7 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
     # Randomise
 
     review_items_filtered <- review_items_filtered %>%
-      dplyr::slice_sample(n = nrow(.)) %>%
-      dplyr::select(-active)
-
-
+      dplyr::slice_sample(n = nrow(.))
 
   } else {
     review_items_filtered <- tibble::tibble()
@@ -129,8 +126,7 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
     # Randomise
 
     new_items_filtered <- new_items_filtered %>%
-      dplyr::slice_sample(n = nrow(.)) %>%
-      dplyr::select(-active)
+      dplyr::slice_sample(n = nrow(.))
 
   } else {
     new_items_filtered <- tibble::tibble()
