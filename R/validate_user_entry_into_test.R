@@ -39,8 +39,8 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
         item_bank_name <- paste0("item_bank_", item_bank_name)
         item_ids <- url_params$item_ids
 
-        review_items_ids <- if(is.null(url_params$review_items_ids)) NULL else split_ids(url_params$review_items_ids)
-        new_items_ids <- if(is.null(url_params$new_items_ids)) NULL else split_ids(url_params$new_items_ids)
+        review_item_ids <- if(is.null(url_params$review_item_ids)) NULL else split_ids(url_params$review_item_ids)
+        new_item_ids <- if(is.null(url_params$new_item_ids)) NULL else split_ids(url_params$new_item_ids)
 
         psychTestR::set_global("user_id", user_id, state)
 
@@ -60,13 +60,18 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
           psychTestR::set_global('rhythmic_melody', items, state)
         }
 
+        logging::loginfo("review_item_ids: %s", review_item_ids)
+        logging::loginfo("new_item_ids: %s", new_item_ids)
 
-        if(length(review_items_ids) > 0L || length(new_items_ids) > 0L) {
+        if(length(review_item_ids) > 0L || length(new_item_ids) > 0L) {
 
           if(is.null(psychTestR::get_global('rhythmic_melody', state)) && is.null(psychTestR::get_global('rhythmic_melody_review', state)))  {
             # Note that psychTestR runs reactive_page functions twice.. so we make sure the second time we don't fire this (otherwise active == 0 for selected items and the function will fail)
 
-            items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids)
+            items <- get_selected_items_from_db(db_con, user_id, review_item_ids, new_item_ids)
+
+            logging::loginfo("Adding to rhythmic_melody: %s", items$new_items)
+            logging::loginfo("Adding to rhythmic_melody_review: %s", items$review_items)
 
             psychTestR::set_global('rhythmic_melody', items$new_items, state)
             psychTestR::set_global('rhythmic_melody_review', items$review_items, state)
@@ -136,7 +141,7 @@ authenticate_session_token <- function(db_con, user_id, proposed_token) {
   token == proposed_token && Sys.time() < expires
 }
 
-split_ids <- function(ids) as.integer(strsplit(ids, ",")[[1]])
+split_ids <- function(ids) as.integer(strsplit(URLdecode(ids), ",")[[1]])
 
 
 format_item_ids_in_url <- function() {
@@ -148,3 +153,4 @@ format_item_ids_in_url <- function() {
 }
 
 # t <- format_item_ids_in_url()
+

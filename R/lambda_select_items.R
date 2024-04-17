@@ -140,6 +140,12 @@ get_items <- function(type = c("new", "review"),
     }
   }
 
+
+  if(nrow(item_ids_df) > num_items) {
+    item_ids_df <- item_ids_df %>%
+      dplyr::slice_min(ranking, n = num_items)
+  }
+
   df_to_append <- item_ids_df %>%
     dplyr::mutate(prediction_method = approach_name,
                   user_id = user_id,
