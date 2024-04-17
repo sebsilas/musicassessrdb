@@ -65,7 +65,7 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
         if(length(review_item_ids) > 0L || length(new_item_ids) > 0L) {
 
-          if(is.null(psychTestR::get_global('rhythmic_melody', state)) && is.null(psychTestR::get_global('rhythmic_melody_review', state)))  {
+          if(is.null(psychTestR::get_global('rhythmic_melody', state)) || is.null(psychTestR::get_global('rhythmic_melody_review', state)))  {
             # Note that psychTestR runs reactive_page functions twice.. so we make sure the second time we don't fire this (otherwise active == 0 for selected items and the function will fail)
 
             items <- get_selected_items_from_db(db_con, user_id, review_item_ids, new_item_ids)
@@ -152,5 +152,5 @@ format_item_ids_in_url <- function() {
          'review_item_ids=', review_item_ids_str)
 }
 
-# t <- format_item_ids_in_url()
+# (t <- format_item_ids_in_url())
 
