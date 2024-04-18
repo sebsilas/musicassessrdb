@@ -69,20 +69,23 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
           if(length(new_items_ids) > 0L) {
 
-            items <- get_selected_items_from_db(db_con, user_id, review_items_ids = NULL, new_items_ids)
-            # Note, we need to get review_item_ids and new_item_ids separately here due to the reactive_page twice issue mentioned above
-
-            logging::loginfo("Adding to rhythmic_melody: %s", items$new_items)
-            psychTestR::set_global('rhythmic_melody', items$new_items, state)
+            if(is.null(psychTestR::get_global('rhythmic_melody', state))) {
+              items <- get_selected_items_from_db(db_con, user_id, review_items_ids = NULL, new_items_ids)
+              logging::loginfo("Adding to rhythmic_melody: %s", items$new_items)
+              psychTestR::set_global('rhythmic_melody', items$new_items, state)
+            }
 
           }
 
           if(length(review_items_ids) > 0L) {
 
-            items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids = NULL)
+            if(is.null(psychTestR::get_global('rhythmic_melody_review', state))) {
 
-            logging::loginfo("Adding to rhythmic_melody_review: %s", items$review_items)
-            psychTestR::set_global('rhythmic_melody_review', items$review_items, state)
+              items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids = NULL)
+
+              logging::loginfo("Adding to rhythmic_melody_review: %s", items$review_items)
+              psychTestR::set_global('rhythmic_melody_review', items$review_items, state)
+            }
 
           }
 
