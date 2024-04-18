@@ -28,61 +28,73 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
       psychTestR::reactive_page(function(state, ...) {
 
-        # Init DB con
-        db_con <- connect_to_db_state(state)
+        if(is.null(psychTestR::get_global("username", state))) { # Prevent the below logic firing twice, a weird quirk of psychTestR
 
-        # Get URL parameters
-        url_params <- psychTestR::get_url_params(state)
-        user_id <- url_params$user_id
-        proposed_token <- url_params$session_token
-        item_bank_name <- url_params$item_bank_name
-        item_bank_name <- paste0("item_bank_", item_bank_name)
-        item_ids <- url_params$item_ids
+          # Init DB con
+          db_con <- connect_to_db_state(state)
 
-        review_item_ids <- if(is.null(url_params$review_item_ids)) NULL else split_ids(url_params$review_item_ids)
-        new_item_ids <- if(is.null(url_params$new_item_ids)) NULL else split_ids(url_params$new_item_ids)
+          # Get URL parameters
+          url_params <- psychTestR::get_url_params(state)
+          user_id <- url_params$user_id
+          proposed_token <- url_params$session_token
+          item_bank_name <- url_params$item_bank_name
+          item_bank_name <- paste0("item_bank_", item_bank_name)
+          item_ids <- url_params$item_ids
 
-        psychTestR::set_global("user_id", user_id, state)
+          review_items_ids <- if(is.null(url_params$review_items_ids)) NULL else split_ids(url_params$review_items_ids)
+          new_items_ids <- if(is.null(url_params$new_items_ids)) NULL else split_ids(url_params$new_items_ids)
 
-        username <- username_from_user_id(db_con, user_id)
+          psychTestR::set_global("user_id", user_id, state)
 
-        logging::loginfo("Proposed token: %s",proposed_token )
+          username <- username_from_user_id(db_con, user_id)
 
-        success <- authenticate_session_token(db_con, user_id, proposed_token)
+          psychTestR::set_global("username", username, state)
 
-        if(!is.null(item_bank_name) && !is.null(item_ids)) {
+          logging::loginfo("Proposed token: %s",proposed_token )
 
-          logging::loginfo("item_bank_name: %s", item_bank_name)
-          logging::loginfo("item_ids: %s", item_ids)
+          success <- authenticate_session_token(db_con, user_id, proposed_token)
 
-          item_ids <- trimws(strsplit(item_ids, ",")[[1]])
-          items <- get_items_from_db(db_con, item_bank_name, item_ids)
-          psychTestR::set_global('rhythmic_melody', items, state)
-        }
+          if(!is.null(item_bank_name) && !is.null(item_ids)) {
 
-        logging::loginfo("review_item_ids: %s", review_item_ids)
-        logging::loginfo("new_item_ids: %s", new_item_ids)
+            logging::loginfo("item_bank_name: %s", item_bank_name)
+            logging::loginfo("item_ids: %s", item_ids)
 
-        if(length(review_item_ids) > 0L || length(new_item_ids) > 0L) {
+            item_ids <- trimws(strsplit(item_ids, ",")[[1]])
+            items <- get_items_from_db(db_con, item_bank_name, item_ids)
+            psychTestR::set_global('rhythmic_melody', items, state)
+          }
 
-          if(is.null(psychTestR::get_global('rhythmic_melody', state)) || is.null(psychTestR::get_global('rhythmic_melody_review', state)))  {
-            # Note that psychTestR runs reactive_page functions twice.. so we make sure the second time we don't fire this (otherwise active == 0 for selected items and the function will fail)
+          logging::loginfo("review_items_ids: %s", review_items_ids)
+          logging::loginfo("new_items_ids: %s", new_items_ids)
 
-            items <- get_selected_items_from_db(db_con, user_id, review_item_ids, new_item_ids)
+          if(length(new_items_ids) > 0L) {
+
+            items <- get_selected_items_from_db(db_con, user_id, review_items_ids = NULL, new_items_ids)
+            # Note, we need to get review_item_ids and new_item_ids separately here due to the reactive_page twice issue mentioned above
 
             logging::loginfo("Adding to rhythmic_melody: %s", items$new_items)
-            logging::loginfo("Adding to rhythmic_melody_review: %s", items$review_items)
-
             psychTestR::set_global('rhythmic_melody', items$new_items, state)
+
+          }
+
+          if(length(review_items_ids) > 0L) {
+
+            items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids = NULL)
+
+            logging::loginfo("Adding to rhythmic_melody_review: %s", items$review_items)
             psychTestR::set_global('rhythmic_melody_review', items$review_items, state)
 
           }
 
-        }
+          logging::loginfo("Disconnecting from the DB")
 
-        logging::loginfo("Disconnecting from the DB")
-        if(DBI::dbIsValid(db_con)) {
-          DBI::dbDisconnect(db_con)
+          if(DBI::dbIsValid(db_con)) {
+            DBI::dbDisconnect(db_con)
+          }
+
+        } else {
+          success <- TRUE
+          username <- psychTestR::get_global("username", state)
         }
 
         if(is.function(page_fun)) page_fun(success, username) else default_validate_page(success, username)
@@ -148,8 +160,8 @@ format_item_ids_in_url <- function() {
   select_items_res <- select_items(2L)
   review_item_ids_str <- paste0(select_items_res$review_items_ids, collapse = ',')
   new_item_ids_str <- paste0(select_items_res$new_items_ids, collapse = ',')
-  paste0('new_item_ids=', new_item_ids_str, "&",
-         'review_item_ids=', review_item_ids_str)
+  paste0('new_items_ids=', new_item_ids_str, "&",
+         'review_items_ids=', review_item_ids_str)
 }
 
 # (t <- format_item_ids_in_url())

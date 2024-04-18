@@ -67,7 +67,7 @@ get_items_from_db <- function(db_con, item_bank_name, item_ids) {
     dplyr::collect()
 }
 
-get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_items_ids) {
+get_selected_items_from_db <- function(db_con, user_id, review_items_ids = NULL, new_items_ids = NULL) {
 
 
   if(length(review_items_ids) > 0L) {

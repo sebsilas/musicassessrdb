@@ -86,7 +86,13 @@ get_items <- function(type = c("new", "review"),
   logging::loginfo("get_items..")
   logging::loginfo("type: %s", type)
 
+  if(type == "new") {
+    browser()
+  }
+
   # Get the fallback item_bank
+
+  # Need to sort this to handle multiple item banks...
   if(length(fallback_item_bank_name) > 1L) {
     fallback_item_bank_name <- fallback_item_bank_name[1]
   }
