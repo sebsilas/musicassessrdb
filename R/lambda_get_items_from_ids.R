@@ -69,7 +69,11 @@ get_items_from_db <- function(db_con, item_bank_name, item_ids) {
 
 get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_items_ids) {
 
+
   if(length(review_items_ids) > 0L) {
+
+    logging::loginfo("Getting %s review items", length(review_items_ids))
+    logging::loginfo(review_items_ids)
 
     review_items <- get_table(db_con, 'review_items', collect = FALSE)
 
@@ -86,6 +90,8 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
 
     review_items_filtered <- review_items_filtered %>% dplyr::collect()
 
+    logging::loginfo("Retrieved %s rows", nrow(review_items_filtered))
+
     # Deactivate grabbed items (note this needs to be done after collecting)
 
     review_update <- review_items %>% dplyr::mutate(active = 0L)
@@ -98,12 +104,16 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
 
   if(length(new_items_ids) > 0L) {
 
+    logging::loginfo("Getting %s new items", length(new_items_ids))
+    logging::loginfo(new_items_ids)
+
     new_items <- get_table(db_con, 'new_items', collect = FALSE)
 
     new_items_filtered <- new_items %>%
       dplyr::filter(user_id == !! user_id,
                     active == 1L,
                     new_items_id %in% new_items_ids)
+
 
     item_bank_names <- new_items_filtered %>%
       dplyr::pull(item_id) %>%
@@ -112,6 +122,8 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids, new_it
     new_items_filtered <- left_join_on_items(db_con, item_bank_names, new_items_filtered)
 
     new_items_filtered <- new_items_filtered %>% dplyr::collect()
+
+    logging::loginfo("Retrieved %s rows", nrow(new_items_filtered))
 
     # Deactivate grabbed items (note this needs to be done after collecting)
 
