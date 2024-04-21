@@ -31,7 +31,7 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 
       #sample_from_item_bank_api(item_bank_name, num_items, span, melody_length)
 
-      store_db_session_api(condition_id = NA,
+      store_db_session_api(experiment_condition_id = NA,
                            user_id = 1L,
                            psychTestR_session_id = "00",
                            session_time_started = Sys.time(),

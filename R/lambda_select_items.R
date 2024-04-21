@@ -22,12 +22,17 @@ select_items <- function(user_id,
   response <- tryCatch({
 
     logging::loginfo("Compiling user trials")
+    tictoc::tic()
 
     user_trials <- compile_item_trials(db_con,
                                        user_id = user_id,
                                        join_item_banks_on = TRUE,
                                        filter_item_banks = if(only_use_items_from_fallback_item_banks) fallback_item_bank else NULL,
                                        add_trial_scores = TRUE)
+
+    logging::loginfo("Got user trials")
+    tictoc::toc()
+
 
     if(approach_name == "new_and_review_randomly_chosen_approaches") {
 

@@ -78,9 +78,12 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids = NULL,
     review_items <- get_table(db_con, 'review_items', collect = FALSE)
 
     review_items_filtered <- review_items %>%
-      dplyr::filter(user_id == !! user_id,
-                    active == 1L,
-                    review_items_id %in% review_items_ids)
+      dplyr::filter(review_items_id %in% !! review_items_ids)
+
+    # %>%
+    #   dplyr::filter(user_id == !! user_id,
+    #                 active == 1L,
+    #                 review_items_id %in% !! review_items_ids)
 
     item_bank_names <- review_items_filtered %>%
       dplyr::pull(item_id) %>%
@@ -110,9 +113,13 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids = NULL,
     new_items <- get_table(db_con, 'new_items', collect = FALSE)
 
     new_items_filtered <- new_items %>%
-      dplyr::filter(user_id == !! user_id,
-                    active == 1L,
-                    new_items_id %in% new_items_ids)
+      dplyr::filter(new_items_id %in% !! new_items_ids)
+
+
+    # %>%
+    #   dplyr::filter(user_id == !! user_id,
+    #                 active == 1L,
+    #                 new_items_id %in% !! new_items_ids)
 
 
     item_bank_names <- new_items_filtered %>%
