@@ -62,3 +62,14 @@ get_nrows <- function(df) {
 true_js_to_TRUE <- function(x) {
   if(x == "true") TRUE else if(x == "false") FALSE else stop("Input not recognised.")
 }
+
+
+mutual_column_names <- function(list_of_dataframes) {
+  # Extract column names of each dataframe
+  column_names <- purrr::map(list_of_dataframes, names)
+
+  # Find the intersection of column names
+  mutual_columns <- purrr::reduce(column_names, intersect)
+
+  return(mutual_columns)
+}

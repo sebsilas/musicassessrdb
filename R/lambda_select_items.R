@@ -31,7 +31,9 @@ select_items <- function(user_id,
                                        add_trial_scores = TRUE)
 
     logging::loginfo("Got user trials")
-    tictoc::toc()
+    # tictoc::toc()
+    #
+    # tictoc::tic()
 
 
     if(approach_name == "new_and_review_randomly_chosen_approaches") {
@@ -50,6 +52,7 @@ select_items <- function(user_id,
       }
     }
 
+    tictoc::toc()
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
@@ -84,7 +87,7 @@ select_items <- function(user_id,
 get_items <- function(type = c("new", "review"),
                       approach_name = NULL,
                       user_trials,
-                      fallback_item_bank_name,
+                      fallback_item_bank_names,
                       num_items,
                       user_id) {
 
@@ -93,23 +96,34 @@ get_items <- function(type = c("new", "review"),
 
   # Get the fallback item_bank
 
-  # Need to sort this to handle multiple item banks...
-  if(length(fallback_item_bank_name) > 1L) {
-    fallback_item_bank_name <- fallback_item_bank_name[1]
-  }
+  item_banks_table <- dplyr::tbl(db_con, "item_banks")
 
-  fallback_item_bank_id <- item_bank_name_to_id(db_con, fallback_item_bank_name)
+  fallback_item_bank_ids <- as.integer(item_bank_name_to_id(item_banks_table, fallback_item_bank_names))
 
-  logging::loginfo("fallback_item_bank_id: %s", fallback_item_bank_id)
+  logging::loginfo("fallback_item_bank_id: %s", fallback_item_bank_ids)
 
-  fallback_item_bank <- dplyr::tbl(db_con, paste0("item_bank_", fallback_item_bank_name)) %>%
-    dplyr::mutate(item_bank_id = !! fallback_item_bank_id)
+  fallback_item_banks <- purrr::map2(fallback_item_bank_names, fallback_item_bank_ids, function(fallback_item_bank_name, fallback_item_bank_id) {
+    dplyr::tbl(db_con, paste0("item_bank_", fallback_item_bank_name)) %>%
+      dplyr::slice_sample(n = 10000) %>%  # We don't want to collect too much information in
+      dplyr::collect() %>%
+      dplyr::mutate(item_bank_id = !! fallback_item_bank_id)
+  })
+
+  shared_cols <- mutual_column_names(fallback_item_banks)
+
+  fallback_item_banks <- fallback_item_banks %>%
+    purrr::map(function(df) {
+      df %>% dplyr::select(dplyr::all_of(shared_cols))
+    })
+
+  # Use reduce to perform inner joins on the list of tables
+  grand_fallback_item_bank <- dplyr::bind_rows(fallback_item_banks)
 
   if(type == "new") {
     tbl_name <- "new_items"
     approach_fun <- new_item_approaches[[approach_name]]
     previously_practiced_items <- user_trials %>% dplyr::pull(item_id) %>% unique()
-    sampling_df <- fallback_item_bank %>% dplyr::filter(!item_id %in% !! previously_practiced_items)
+    sampling_df <- grand_fallback_item_bank %>% dplyr::filter(!item_id %in% !! previously_practiced_items)
   } else if(type == "review") {
     tbl_name <- "review_items"
     approach_fun <- review_item_approaches[[approach_name]]
@@ -130,7 +144,7 @@ get_items <- function(type = c("new", "review"),
 
     logging::loginfo("Not enough trials for user yet, apply random selection")
 
-    item_ids_df <- item_sel_random_item_selection(fallback_item_bank, num_items)
+    item_ids_df <- item_sel_random_item_selection(grand_fallback_item_bank, num_items)
 
     approach_name <- "random_item_selection"
 

@@ -22,7 +22,8 @@ compile_item_trials <- function(db_con,
                                 current_test_id = NULL,
                                 session_id = NULL,
                                 user_id,
-                                join_item_banks_on = FALSE, filter_item_banks = NULL,
+                                join_item_banks_on = FALSE,
+                                filter_item_banks = NULL,
                                 add_trial_scores = FALSE,
                                 score_to_use = "opti3") {
 
@@ -68,6 +69,7 @@ compile_item_trials <- function(db_con,
   }
 
   if(join_item_banks_on) {
+
     # Join items on
     item_banks <- user_trials %>%
       dplyr::pull(item_id) %>%
@@ -79,7 +81,8 @@ compile_item_trials <- function(db_con,
 
 
   if(!is.null(filter_item_banks)) {
-    item_bank_ids <- purrr::map_int(filter_item_banks, ~item_bank_name_to_id(db_con, .x))
+    item_banks_table <- get_table(db_con, "item_banks", collect = TRUE)
+    item_bank_ids <- item_bank_name_to_id(item_banks_table, ib_name = filter_item_banks)
     user_trials <- user_trials %>% dplyr::filter(item_bank_id %in% item_bank_ids)
   }
 
@@ -277,12 +280,14 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 }
 
 
-item_bank_name_to_id <- function(db_con, ib_name) {
-  get_table(db_con, "item_banks") %>%
-    dplyr::filter(item_bank_name == ib_name) %>%
-    dplyr::collect() %>%
-    dplyr::pull(item_bank_id)
-}
+item_bank_name_to_id <- Vectorize(function(item_banks_table, ib_name) {
+    item_banks_table %>%
+      dplyr::filter(item_bank_name == ib_name) %>%
+      dplyr::collect() %>%
+      dplyr::pull(item_bank_id)
+  }, vectorize.args = "ib_name")
+
+# t <- item_bank_name_to_id(item_banks_table = get_table(db_con, "item_banks"), c("singpause_item", "singpause_phrase"))
 
 
 #' Get a user's range based on their user ID
@@ -493,11 +498,12 @@ get_item_bank_names <- function(db_con, item_ids) {
 
 left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
 
-  purrr::map_dfr(item_banks, function(item_bank) {
+  item_banks_table <- get_table(db_con, "item_banks", collect = TRUE)
+  ib_ids <- item_bank_name_to_id(item_banks_table = item_banks_table, ib_name = item_banks)
+
+  purrr::map2_dfr(names(ib_ids), ib_ids, function(item_bank, ib_id) {
 
     ib <- get_table(db_con, paste0("item_bank_", item_bank), collect = FALSE)
-
-    ib_id <- item_bank_name_to_id(db_con, item_bank)
 
     user_trials_sub <- df_with_item_ids %>%
       dplyr::mutate(item_bank_id = ib_id) %>%
