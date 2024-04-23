@@ -22,7 +22,6 @@ select_items <- function(user_id,
   response <- tryCatch({
 
     logging::loginfo("Compiling user trials")
-    tictoc::tic()
 
     user_trials <- compile_item_trials(db_con,
                                        user_id = user_id,
@@ -31,9 +30,6 @@ select_items <- function(user_id,
                                        add_trial_scores = TRUE)
 
     logging::loginfo("Got user trials")
-    # tictoc::toc()
-    #
-    # tictoc::tic()
 
 
     if(approach_name == "new_and_review_randomly_chosen_approaches") {
@@ -51,8 +47,6 @@ select_items <- function(user_id,
         review_items_ids <- item_ids
       }
     }
-
-    tictoc::toc()
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
