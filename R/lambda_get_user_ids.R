@@ -2,12 +2,12 @@
 
 
 
-get_users_api <- function() {
+get_user_ids_api <- function() {
 
   # Define the request body as a list
   request_body <- list()
 
-  endpoint_wrapper(function_name = "get-users",
+  endpoint_wrapper(function_name = "get-user-ids",
                    request_body = request_body)
 
 }
@@ -19,7 +19,7 @@ get_users_api <- function() {
 get_user_ids <- function() {
 
 
-  logging::loginfo("Inside get_users function")
+  logging::loginfo("Inside get_user_ids function")
 
   response <- tryCatch({
 
