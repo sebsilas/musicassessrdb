@@ -8,6 +8,9 @@ select_items <- function(user_id,
                          fallback_item_bank = c("singpause_phrase", "singpause_item"),
                          only_use_items_from_fallback_item_banks = TRUE) {
 
+  tictoc::tic()
+
+
   approach_name <- match.arg(approach_name)
 
 
@@ -68,6 +71,8 @@ select_items <- function(user_id,
     )
 
   })
+
+  tictoc::toc()
 
   return(response)
 
@@ -178,6 +183,7 @@ get_items <- function(type = c("new", "review"),
 
   # Append to DB
   db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
+
 }
 
 
@@ -412,6 +418,10 @@ review_item_approaches <- list("choose_approach_randomly" = item_sel_choose_appr
                                "lowest_difficulty" = item_sel_rev_lowest_difficulty,
                                "highest_difficulty" = item_sel_rev_highest_difficulty)
 
+
+
+# db_con <- musicassessr_con(local = TRUE)
+# db_con <- dbConnect(duckdb::duckdb(), "musicassessr.duckdb")
 
 # t <- select_items(user_id = 58L)
 # t <- select_items(user_id = 2L)

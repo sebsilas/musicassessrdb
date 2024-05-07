@@ -1,19 +1,30 @@
 
 
 
-musicassessr_con <- function() {
+musicassessr_con <- function(local = FALSE) {
 
   logging::loginfo("Connecting to musicassessr database")
 
-  RPostgres::dbConnect(
+  db_con <- if(local) {
+    RPostgres::dbConnect(
     RPostgres::Postgres(),
-    dbname = Sys.getenv("MUSICASSESSR_DB_NAME"),
-    user = Sys.getenv("MUSICASSESSR_DB_USER"),
-    password = Sys.getenv("MUSICASSESSR_DB_PASSWORD"),
-    host = Sys.getenv("MUSICASSESSR_DB_HOST"),
-    port = Sys.getenv("MUSICASSESSR_DB_PORT"),
-    timezone = "UTC"
-  )
+    dbname = Sys.getenv("LOCAL_DB_NAME"),
+    user = Sys.getenv("LOCAL_DB_USER"),
+    password = Sys.getenv("LOCAL_DB_PASSWORD"),
+    host = Sys.getenv("LOCAL_DB_HOST"),
+    port = Sys.getenv("LOCAL_DB_PORT"),
+    timezone = "UTC")
+    } else {
+      RPostgres::dbConnect(
+        RPostgres::Postgres(),
+        dbname = Sys.getenv("MUSICASSESSR_DB_NAME"),
+        user = Sys.getenv("MUSICASSESSR_DB_USER"),
+        password = Sys.getenv("MUSICASSESSR_DB_PASSWORD"),
+        host = Sys.getenv("MUSICASSESSR_DB_HOST"),
+        port = Sys.getenv("MUSICASSESSR_DB_PORT"),
+        timezone = "UTC")
+  }
+
 
 }
 
