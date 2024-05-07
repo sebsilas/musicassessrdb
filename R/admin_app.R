@@ -1,29 +1,27 @@
 
 
-# user_ids <-
-#
-# get_trial_and_session_data_api()
-
-
 run_admin_app <- function() {
 
   # Define UI
-  ui <- fluidPage(
+  ui <- shiny::fluidPage(
 
     # App title
-    titlePanel("musicassessr Admin"),
+    shiny::titlePanel("musicassessr Admin"),
 
     # Sidebar layout with input and output definitions
-    sidebarLayout(
-      sidebarPanel(
+    shiny::sidebarLayout(
+      shiny::sidebarPanel(
         shiny::selectInput("user_ids",
                            "Select by user",
+                           choices = character(0L),
                            multiple = TRUE)
       ),
 
       # Main panel for displaying outputs
-      mainPanel(
-        # Output
+      shiny::mainPanel(
+
+        shiny::plotOutput("no_sessions_plot") %>%
+          shinycssloaders::withSpinner()
       )
     )
   )
@@ -31,18 +29,43 @@ run_admin_app <- function() {
   # Define server logic
   server <- function(input, output, session) {
 
-    observe({
+    # Get user ids
+    shiny::observe({
 
+      user_ids <- get_user_ids_api()$user_id
 
       # Can also set the label and select items
-      updateSelectInput(session,
-                        "user_ids",
-                        choices = x)
+      shiny::updateSelectInput(session,
+                               "user_ids",
+                               choices = user_ids)
     })
+
+
+    output$no_sessions_plot <- shiny::renderPlot({
+
+      shiny::req(input$user_ids)
+
+      user_data <- get_trial_and_session_data_api(user_id = input$user_ids)
+
+      user_stats <- user_data$user_stats %>%
+        dplyr::bind_rows() %>%
+        dplyr::mutate(Date = lubridate::as_date(Date)) %>%
+        dplyr::arrange(Date)
+
+
+      user_stats %>%
+        dplyr::rename(`No. Sessions` = no_practice_sessions) %>%
+        ggplot2::ggplot(ggplot2::aes(x = Date, y = `No. Sessions`)) +
+        ggplot2::geom_point() +
+        ggplot2::geom_line() +
+        ggplot2::theme_minimal()
+
+    }) %>% bindCache(input$user_ids)
 
   }
 
   # Run the application
-  shinyApp(ui = ui, server = server)
+  shiny::shinyApp(ui = ui, server = server)
 
 }
+
