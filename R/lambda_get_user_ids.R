@@ -2,7 +2,7 @@
 
 
 
-get_users <- function() {
+get_users_api <- function() {
 
   # Define the request body as a list
   request_body <- list()
@@ -16,7 +16,7 @@ get_users <- function() {
 
 # This is the function that is called when the endpoint
 # is invoked
-get_users <- function() {
+get_user_ids <- function() {
 
 
   logging::loginfo("Inside get_users function")
