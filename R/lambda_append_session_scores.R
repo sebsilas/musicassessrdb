@@ -28,7 +28,7 @@ compute_session_scores_and_end_session_api <- function(test_id,
 
 # This is the function that is called when the endpoint
 # is invoked
-compute_session_scores_and_end_session <- function(test_id,
+compute_session_scores_and_end_session <- function(test_id = NA,
                                                    session_id,
                                                    user_id) {
 
@@ -47,6 +47,17 @@ compute_session_scores_and_end_session <- function(test_id,
 
 
   response <- tryCatch({
+
+    # Update sessions table with time finished
+
+    session_df <- get_table(db_con, 'sessions', collect = FALSE)
+
+    logging::loginfo("Storing complete time as %s", complete_time)
+
+    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time))
+
+    dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
+
     # Get trials
 
     trial_table <- compile_item_trials(db_con, test_id, session_id, user_id, join_item_banks_on = TRUE) # Here we give a session ID, because we only want to assess trials in this session
@@ -201,18 +212,8 @@ compute_session_scores_and_end_session <- function(test_id,
     # Append scores
     scores_session_id <- db_append_scores_session(db_con, scores)
 
-    # Update sessions table with time finished
-
-    session_df <- get_table(db_con, 'sessions', collect = FALSE)
-
-    logging::loginfo("Storing complete time as %s", complete_time)
-
-    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time))
-
-    dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
-
     # Predict items for next test time
-    predict_new_items(user_id)
+    #predict_new_items(user_id)
 
 
     # Return response

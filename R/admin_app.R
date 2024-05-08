@@ -69,3 +69,14 @@ run_admin_app <- function() {
 
 }
 
+
+# db_con <- musicassessr_con()
+#
+# t2 <- dplyr::tbl(db_con, "sessions") %>%
+#   dplyr::filter(user_id == 60) %>%
+#   dplyr::collect()
+#
+
+# user_data <- get_trial_and_session_data_api(user_id = 60)
+# user_stats <- user_data$user_stats %>% dplyr::bind_rows()
+# DBI::dbDisconnect(db_con)
