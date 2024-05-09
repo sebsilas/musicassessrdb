@@ -7,9 +7,10 @@
 #                                                 user_id = 2L)
 
 
-# compute_session_scores_and_end_session(test_id = 2L, session_id = 584L, user_id = 2L)
+# compute_session_scores_and_end_session_api(session_id = 1172L, user_id = 60L)
+#
 
-compute_session_scores_and_end_session_api <- function(test_id,
+compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_id,
                                                        user_id) {
 
