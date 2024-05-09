@@ -64,7 +64,7 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     trial_table <- compile_item_trials(db_con, test_id, session_id, user_id, join_item_banks_on = TRUE) # Here we give a session ID, because we only want to assess trials in this session
 
-    if(nrow(trial_table) > 0L) {
+    if(get_nrows(trial_table) > 0L) {
 
       scores_trial <- get_table(db_con, "scores_trial") %>%
         dplyr::filter(!is.na(score)) %>%
