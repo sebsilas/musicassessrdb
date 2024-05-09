@@ -59,159 +59,167 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
 
+
     # Get trials
 
     trial_table <- compile_item_trials(db_con, test_id, session_id, user_id, join_item_banks_on = TRUE) # Here we give a session ID, because we only want to assess trials in this session
 
-    scores_trial <- get_table(db_con, "scores_trial") %>%
-      dplyr::filter(!is.na(score)) %>%
-      dplyr::select(-scores_trial_id) %>%
-      # Handle duplicates... but this shouldn't really happen
-      dplyr::group_by(trial_id, measure) %>%
-      dplyr::slice_max(score) %>%
-      dplyr::ungroup() %>%
-      unique() %>%
-      tidyr::pivot_wider(names_from = "measure", values_from = "score")
+    if(nrow(trial_table) > 0L) {
 
-    # Join on scores
-    trial_table <- trial_table %>%
-      dplyr::rename(ngrukkon_between_melody_and_parent_melody = ngrukkon) %>%
-      dplyr::left_join(scores_trial, by = "trial_id")
+      scores_trial <- get_table(db_con, "scores_trial") %>%
+        dplyr::filter(!is.na(score)) %>%
+        dplyr::select(-scores_trial_id) %>%
+        # Handle duplicates... but this shouldn't really happen
+        dplyr::group_by(trial_id, measure) %>%
+        dplyr::slice_max(score) %>%
+        dplyr::ungroup() %>%
+        unique() %>%
+        tidyr::pivot_wider(names_from = "measure", values_from = "score")
 
-    # First attempt
-    first_attempt_trial_table <- trial_table %>%
-      dplyr::group_by(melody) %>%
-      dplyr::slice_min(attempt, with_ties = FALSE) %>%
-      dplyr::ungroup()
+      # Join on scores
+      trial_table <- trial_table %>%
+        dplyr::rename(ngrukkon_between_melody_and_parent_melody = ngrukkon) %>%
+        dplyr::left_join(scores_trial, by = "trial_id")
 
-    # Last attempt
-    last_attempt_trial_table <- trial_table %>%
-      dplyr::group_by(melody) %>%
-      dplyr::slice_max(attempt, with_ties = FALSE) %>% #
-      dplyr::ungroup()
+      # First attempt
+      first_attempt_trial_table <- trial_table %>%
+        dplyr::group_by(melody) %>%
+        dplyr::slice_min(attempt, with_ties = FALSE) %>%
+        dplyr::ungroup()
 
-
-    # Produce session-level scores
-
-    ## Arrhythmic
-
-    logging::loginfo("Getting arrhythmic scores..")
-
-    ### Mean opti3
-    mean_opti3_arrhythmic <- trial_table %>%
-      dplyr::filter(!rhythmic) %>%
-      dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
-      dplyr::pull(mean_opti3)
-
-    logging::loginfo("mean_opti3_arrhythmic %s", mean_opti3_arrhythmic)
-
-    #### First attempt
-    mean_opti3_arrhythmic_first_attempt <- first_attempt_trial_table %>%
-      dplyr::filter(!rhythmic) %>%
-      dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
-      dplyr::pull(mean_opti3)
-
-    logging::loginfo("mean_opti3_arrhythmic_first_attempt %s", mean_opti3_arrhythmic_first_attempt)
-
-    #### Last attempt
-    mean_opti3_arrhythmic_last_attempt <- last_attempt_trial_table %>%
-      dplyr::filter(!rhythmic) %>%
-      dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
-      dplyr::pull(mean_opti3)
-
-    logging::loginfo("mean_opti3_arrhythmic_last_attempt %s", mean_opti3_arrhythmic_last_attempt)
-
-    ### Ability estimate
-    #### First attempt
-    ability_estimate_arrhythmic_first_attempt <-
-      first_attempt_trial_table %>%
-      dplyr::filter(!rhythmic) %>%
-      dplyr::select(N, step.cont.loc.var, log_freq, i.entropy, opti3) %>%
-      dplyr::mutate(tmp_scores = opti3) %>%
-      psychTestRCATME::predict_based_on_mixed_effects_arrhythmic_model(Berkowitz::lm2.2,  new_data = .)
-
-    logging::loginfo("ability_estimate_arrhythmic_first_attempt %s", ability_estimate_arrhythmic_first_attempt)
-
-    #### Last attempt
-    ability_estimate_arrhythmic_last_attempt <-
-      last_attempt_trial_table %>%
-      dplyr::filter(!rhythmic) %>%
-      dplyr::select(N, step.cont.loc.var, tonalness, log_freq, opti3) %>%
-      dplyr::mutate(tmp_scores = opti3) %>%
-      psychTestRCATME::predict_based_on_mixed_effects_arrhythmic_model(Berkowitz::lm2.2,  new_data = . )
-
-    logging::loginfo("ability_estimate_arrhythmic_last_attempt %s", ability_estimate_arrhythmic_last_attempt)
+      # Last attempt
+      last_attempt_trial_table <- trial_table %>%
+        dplyr::group_by(melody) %>%
+        dplyr::slice_max(attempt, with_ties = FALSE) %>% #
+        dplyr::ungroup()
 
 
-    ## Rhythmic
-    logging::loginfo("Getting rhythmic scores..")
-    ### Mean opti3
-    mean_opti3_rhythmic <- trial_table %>%
-      dplyr::filter(rhythmic) %>%
-      dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
-      dplyr::pull(mean_opti3)
+      # Produce session-level scores
 
-    logging::loginfo("mean_opti3_rhythmic %s", mean_opti3_rhythmic)
+      ## Arrhythmic
 
-    #### First attempt
-    mean_opti3_rhythmic_first_attempt <- first_attempt_trial_table %>%
-      dplyr::filter(rhythmic) %>%
-      dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
-      dplyr::pull(mean_opti3)
+      logging::loginfo("Getting arrhythmic scores..")
 
-    logging::loginfo("mean_opti3_rhythmic_first_attempt %s", mean_opti3_rhythmic_first_attempt)
+      ### Mean opti3
+      mean_opti3_arrhythmic <- trial_table %>%
+        dplyr::filter(!rhythmic) %>%
+        dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
+        dplyr::pull(mean_opti3)
 
-    #### Last attempt
-    mean_opti3_rhythmic_last_attempt <- last_attempt_trial_table %>%
-      dplyr::filter(rhythmic) %>%
-      dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
-      dplyr::pull(mean_opti3)
+      logging::loginfo("mean_opti3_arrhythmic %s", mean_opti3_arrhythmic)
 
-    logging::loginfo("mean_opti3_rhythmic_last_attempt %s", mean_opti3_rhythmic_last_attempt)
+      #### First attempt
+      mean_opti3_arrhythmic_first_attempt <- first_attempt_trial_table %>%
+        dplyr::filter(!rhythmic) %>%
+        dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
+        dplyr::pull(mean_opti3)
 
-    ### Ability estimate
-    #### First attempt
-    ability_estimate_rhythmic_first_attempt <-
-      first_attempt_trial_table %>%
-      dplyr::filter(rhythmic) %>%
-      dplyr::select(N, step.cont.loc.var, log_freq, d.entropy, i.entropy, opti3) %>%
-      dplyr::mutate(tmp_scores = opti3) %>%
-      psychTestRCATME::predict_based_on_mixed_effects_rhythmic_model(Berkowitz::lm3.2,  new_data = .)
+      logging::loginfo("mean_opti3_arrhythmic_first_attempt %s", mean_opti3_arrhythmic_first_attempt)
 
-    logging::loginfo("ability_estimate_rhythmic_first_attempt %s", ability_estimate_rhythmic_first_attempt)
+      #### Last attempt
+      mean_opti3_arrhythmic_last_attempt <- last_attempt_trial_table %>%
+        dplyr::filter(!rhythmic) %>%
+        dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
+        dplyr::pull(mean_opti3)
 
-    #### Last attempt
-    ability_estimate_rhythmic_last_attempt <-
-      last_attempt_trial_table %>%
-      dplyr::filter(rhythmic) %>%
-      dplyr::select(N, step.cont.loc.var, log_freq, d.entropy, i.entropy, opti3) %>%
-      dplyr::mutate(tmp_scores = opti3) %>%
-      psychTestRCATME::predict_based_on_mixed_effects_rhythmic_model(Berkowitz::lm3.2,  new_data = . )
+      logging::loginfo("mean_opti3_arrhythmic_last_attempt %s", mean_opti3_arrhythmic_last_attempt)
 
-    logging::loginfo("ability_estimate_rhythmic_last_attempt %s", ability_estimate_rhythmic_last_attempt)
+      ### Ability estimate
+      #### First attempt
+      ability_estimate_arrhythmic_first_attempt <-
+        first_attempt_trial_table %>%
+        dplyr::filter(!rhythmic) %>%
+        dplyr::select(N, step.cont.loc.var, log_freq, i.entropy, opti3) %>%
+        dplyr::mutate(tmp_scores = opti3) %>%
+        psychTestRCATME::predict_based_on_mixed_effects_arrhythmic_model(Berkowitz::lm2.2,  new_data = .)
 
+      logging::loginfo("ability_estimate_arrhythmic_first_attempt %s", ability_estimate_arrhythmic_first_attempt)
 
-  scores <- tibble::tibble(
-    # Arrhythmic
-    mean_opti3_arrhythmic = mean_opti3_arrhythmic,
-    mean_opti3_arrhythmic_first_attempt = mean_opti3_arrhythmic_first_attempt,
-    mean_opti3_arrhythmic_last_attempt = mean_opti3_arrhythmic_last_attempt,
-    ability_estimate_arrhythmic_first_attempt = ability_estimate_arrhythmic_first_attempt,
-    ability_estimate_arrhythmic_last_attempt = ability_estimate_arrhythmic_last_attempt,
-    # Rhythmic
-    mean_opti3_rhythmic = mean_opti3_rhythmic,
-    mean_opti3_rhythmic_first_attempt = mean_opti3_rhythmic_first_attempt,
-    mean_opti3_rhythmic_last_attempt = mean_opti3_rhythmic_last_attempt,
-    ability_estimate_rhythmic_first_attempt = ability_estimate_rhythmic_first_attempt,
-    ability_estimate_rhythmic_last_attempt = ability_estimate_rhythmic_last_attempt)
+      #### Last attempt
+      ability_estimate_arrhythmic_last_attempt <-
+        last_attempt_trial_table %>%
+        dplyr::filter(!rhythmic) %>%
+        dplyr::select(N, step.cont.loc.var, tonalness, log_freq, opti3) %>%
+        dplyr::mutate(tmp_scores = opti3) %>%
+        psychTestRCATME::predict_based_on_mixed_effects_arrhythmic_model(Berkowitz::lm2.2,  new_data = . )
+
+      logging::loginfo("ability_estimate_arrhythmic_last_attempt %s", ability_estimate_arrhythmic_last_attempt)
 
 
-  scores <- scores %>%
-    scores_to_long_format() %>%
-    dplyr::mutate(session_id = !! session_id)
+      ## Rhythmic
+      logging::loginfo("Getting rhythmic scores..")
+      ### Mean opti3
+      mean_opti3_rhythmic <- trial_table %>%
+        dplyr::filter(rhythmic) %>%
+        dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
+        dplyr::pull(mean_opti3)
 
-    # Append scores
-    scores_session_id <- db_append_scores_session(db_con, scores)
+      logging::loginfo("mean_opti3_rhythmic %s", mean_opti3_rhythmic)
+
+      #### First attempt
+      mean_opti3_rhythmic_first_attempt <- first_attempt_trial_table %>%
+        dplyr::filter(rhythmic) %>%
+        dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
+        dplyr::pull(mean_opti3)
+
+      logging::loginfo("mean_opti3_rhythmic_first_attempt %s", mean_opti3_rhythmic_first_attempt)
+
+      #### Last attempt
+      mean_opti3_rhythmic_last_attempt <- last_attempt_trial_table %>%
+        dplyr::filter(rhythmic) %>%
+        dplyr::summarise(mean_opti3 = mean(opti3, na.rm = TRUE)) %>%
+        dplyr::pull(mean_opti3)
+
+      logging::loginfo("mean_opti3_rhythmic_last_attempt %s", mean_opti3_rhythmic_last_attempt)
+
+      ### Ability estimate
+      #### First attempt
+      ability_estimate_rhythmic_first_attempt <-
+        first_attempt_trial_table %>%
+        dplyr::filter(rhythmic) %>%
+        dplyr::select(N, step.cont.loc.var, log_freq, d.entropy, i.entropy, opti3) %>%
+        dplyr::mutate(tmp_scores = opti3) %>%
+        psychTestRCATME::predict_based_on_mixed_effects_rhythmic_model(Berkowitz::lm3.2,  new_data = .)
+
+      logging::loginfo("ability_estimate_rhythmic_first_attempt %s", ability_estimate_rhythmic_first_attempt)
+
+      #### Last attempt
+      ability_estimate_rhythmic_last_attempt <-
+        last_attempt_trial_table %>%
+        dplyr::filter(rhythmic) %>%
+        dplyr::select(N, step.cont.loc.var, log_freq, d.entropy, i.entropy, opti3) %>%
+        dplyr::mutate(tmp_scores = opti3) %>%
+        psychTestRCATME::predict_based_on_mixed_effects_rhythmic_model(Berkowitz::lm3.2,  new_data = . )
+
+      logging::loginfo("ability_estimate_rhythmic_last_attempt %s", ability_estimate_rhythmic_last_attempt)
+
+
+      scores <- tibble::tibble(
+        # Arrhythmic
+        mean_opti3_arrhythmic = mean_opti3_arrhythmic,
+        mean_opti3_arrhythmic_first_attempt = mean_opti3_arrhythmic_first_attempt,
+        mean_opti3_arrhythmic_last_attempt = mean_opti3_arrhythmic_last_attempt,
+        ability_estimate_arrhythmic_first_attempt = ability_estimate_arrhythmic_first_attempt,
+        ability_estimate_arrhythmic_last_attempt = ability_estimate_arrhythmic_last_attempt,
+        # Rhythmic
+        mean_opti3_rhythmic = mean_opti3_rhythmic,
+        mean_opti3_rhythmic_first_attempt = mean_opti3_rhythmic_first_attempt,
+        mean_opti3_rhythmic_last_attempt = mean_opti3_rhythmic_last_attempt,
+        ability_estimate_rhythmic_first_attempt = ability_estimate_rhythmic_first_attempt,
+        ability_estimate_rhythmic_last_attempt = ability_estimate_rhythmic_last_attempt)
+
+
+      scores <- scores %>%
+        scores_to_long_format() %>%
+        dplyr::mutate(session_id = !! session_id)
+
+      # Append scores
+      scores_session_id <- db_append_scores_session(db_con, scores)
+
+
+    } else {
+      scores_session_id <- NA
+    }
 
     # Predict items for next test time
     #predict_new_items(user_id)
