@@ -8,7 +8,7 @@ select_items <- function(user_id,
                          fallback_item_bank = c("singpause_phrase", "singpause_item"),
                          only_use_items_from_fallback_item_banks = TRUE) {
 
-  tictoc::tic()
+  # tictoc::tic() # Remember to not deploy this!
 
 
   approach_name <- match.arg(approach_name)
@@ -72,7 +72,7 @@ select_items <- function(user_id,
 
   })
 
-  tictoc::toc()
+  #tictoc::toc() # Remember to not deploy this!
 
   return(response)
 
