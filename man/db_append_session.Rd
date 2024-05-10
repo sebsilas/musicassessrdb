@@ -6,9 +6,9 @@
 \usage{
 db_append_session(
   db_con,
-  condition_id = NA,
+  experiment_condition_id = NA,
   user_id,
-  psychTestR_session_id,
+  psychTestR_session_id = NA,
   session_time_started = Sys.time(),
   experiment_id = NA
 )

@@ -172,7 +172,7 @@ check_ids_exist <- function(db_con, experiment_id = NULL, experiment_condition_i
   }
 
   if(!is.null(experiment_condition_id)) {
-    if(!check_id_exists(db_con, table_name = "conditions", id_col = "condition_id", id = experiment_condition_id)) stop(paste0("Condition ID ", experiment_condition_id, " does not exist."))
+    if(!check_id_exists(db_con, table_name = "experiment_conditions", id_col = "experiment_condition_id", id = experiment_condition_id)) stop(paste0("Condition ID ", experiment_condition_id, " does not exist."))
   }
 
   if(!is.null(user_id)) {
@@ -445,49 +445,13 @@ elt_disconnect_from_db <- function() {
 #' @examples
 instrument_name_to_id <- function(inst_name) {
 
-  inst_id <- musicassessrdb::get_table(db_con, "instruments") %>%
-    dplyr::collect() %>%
+  inst_id <- inst_table_db %>%
     dplyr::filter(instrument_name == !! inst_name) %>%
     dplyr::pull(instrument_id)
 
 }
 
 
-
-#' Initiate a connection to the musicassessr db
-#'
-#' @param on_stop
-#' @param connect_to_db
-#'
-#' @return
-#' @export
-#'
-#' @examples
-musicassessr_shiny_init <- function(on_stop = TRUE, connect_to_db = TRUE) {
-
-  # Init DB
-  if(connect_to_db) {
-    db_con <<- musicassessr_con()
-  }
-
-  if(on_stop) shiny::onStop(musicassessr_shiny_on_stop)
-
-}
-
-#' Close up connections to the musicassessr db
-#'
-#' @return
-#' @export
-#'
-#' @examples
-musicassessr_shiny_on_stop <- function() {
-  logging::loginfo("Disconnecting from the DB")
-  if(exists("db_con")) {
-    if(DBI::dbIsValid(db_con)) {
-      DBI::dbDisconnect(db_con)
-    }
-  }
-}
 
 
 extract_item_bank_name_from_item_id <- function(db_con, item_id) {

@@ -78,7 +78,7 @@ append_demographics <- function(user_id, demographics_list) {
     list(
       status = 400,
       message = "Something went wrong!",
-      condition_id = NA
+      experiment_condition_id = NA
     )
 
   })

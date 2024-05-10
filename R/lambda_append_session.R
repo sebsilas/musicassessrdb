@@ -3,7 +3,6 @@
 store_db_session_api <- function(experiment_id = NA,
                                  experiment_condition_id = NA,
                                  user_id,
-                                 psychTestR_session_id,
                                  session_time_started = Sys.time()) {
 
   # Define the request body as a list
@@ -11,7 +10,6 @@ store_db_session_api <- function(experiment_id = NA,
     experiment_id = experiment_id,
     experiment_condition_id = experiment_condition_id,
     user_id = user_id,
-    psychTestR_session_id = psychTestR_session_id,
     session_time_started = session_time_started
   )
 
@@ -24,25 +22,22 @@ store_db_session_api <- function(experiment_id = NA,
 
 # This is the function that is called when the endpoint
 # is invoked
-append_session <- function(condition_id = NA,
+append_session <- function(experiment_condition_id = NA,
                            user_id,
-                           psychTestR_session_id,
                            session_time_started = Sys.time(),
                            experiment_id = NA) {
 
   logging::loginfo("Inside append_session function")
 
-  logging::loginfo("condition_id = %s", condition_id)
+  logging::loginfo("experiment_condition_id = %s", experiment_condition_id)
 
   logging::loginfo("user_id = %s", user_id)
-
-  logging::loginfo("psychTestR_session_id = %s", psychTestR_session_id)
 
   logging::loginfo("session_time_started= %s", session_time_started)
 
   logging::loginfo("experiment_id = %s", experiment_id)
 
-  condition_id <- if(length(condition_id) == 0) NA_integer_ else condition_id
+  experiment_condition_id <- if(length(experiment_condition_id) == 0) NA_integer_ else experiment_condition_id
   experiment_id <- if(length(experiment_id) == 0) NA_integer_ else experiment_id
 
 
@@ -50,9 +45,8 @@ append_session <- function(condition_id = NA,
 
     # Append session
     session_id <- db_append_session(db_con,
-                                    condition_id = as.integer(condition_id),
+                                    experiment_condition_id = as.integer(experiment_condition_id),
                                     user_id = as.integer(user_id),
-                                    psychTestR_session_id = psychTestR_session_id,
                                     session_time_started = session_time_started,
                                     experiment_id = as.integer(experiment_id))
 
@@ -84,7 +78,7 @@ append_session <- function(condition_id = NA,
 #' Store session information in sessions table
 #'
 #' @param db_con
-#' @param condition_id
+#' @param experiment_condition_id
 #' @param user_id
 #' @param psychTestR_session_id
 #' @param session_time_started
@@ -95,17 +89,17 @@ append_session <- function(condition_id = NA,
 #'
 #' @examples
 db_append_session <- function(db_con,
-                              condition_id = NA,
+                              experiment_condition_id = NA,
                               user_id,
-                              psychTestR_session_id,
+                              psychTestR_session_id = NA,
                               session_time_started = Sys.time(),
                               experiment_id = NA) {
 
 
-  condition_id <- if(length(condition_id) == 0) NA_integer_ else condition_id
+  experiment_condition_id <- if(length(experiment_condition_id) == 0) NA_integer_ else experiment_condition_id
   experiment_id <- if(length(experiment_id) == 0) NA_integer_ else experiment_id
 
-  session_df <- tibble::tibble(condition_id = condition_id,
+  session_df <- tibble::tibble(experiment_condition_id = experiment_condition_id,
                                user_id = user_id,
                                psychTestR_session_id = psychTestR_session_id,
                                session_time_started = session_time_started,
