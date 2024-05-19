@@ -97,8 +97,7 @@ get_items <- function(type = c("new", "review"),
                       user_trials,
                       fallback_item_bank_names,
                       num_items,
-                      user_id,
-                      dynamodb) {
+                      user_id) {
 
   logging::loginfo("get_items..")
   logging::loginfo("type: %s", type)
