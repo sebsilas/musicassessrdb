@@ -57,7 +57,8 @@ select_items <- function(user_id,
 
 
     # Append selected items to DynamoDB
-    update_job(dynamodb, job_id = 999, message = df_to_append, status = "FINISHED")
+    update_job(dynamodb, job_id = 999, message = list(review_items_ids = review_items_ids,
+                                                      new_items_ids = new_items_ids), status = "FINISHED")
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
@@ -191,6 +192,8 @@ get_items <- function(type = c("new", "review"),
 
   # Append prediction information to SQL DB
   db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
+
+  return(item_ids_df)
 
 }
 
