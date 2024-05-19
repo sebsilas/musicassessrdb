@@ -15,7 +15,6 @@ select_items <- function(user_id,
 
   dynamo_response <- store_job(dynamodb, job_id = 999, name = "sebtest", message = "hi", status = "PENDING")
 
-
   approach_name <- match.arg(approach_name)
 
 
@@ -56,6 +55,10 @@ select_items <- function(user_id,
       }
     }
 
+
+    # Append selected items to DynamoDB
+    update_job(dynamodb, job_id = 999, message = df_to_append, status = "FINISHED")
+
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
          review_items_ids = review_items_ids,
@@ -93,7 +96,8 @@ get_items <- function(type = c("new", "review"),
                       user_trials,
                       fallback_item_bank_names,
                       num_items,
-                      user_id) {
+                      user_id,
+                      dynamodb) {
 
   logging::loginfo("get_items..")
   logging::loginfo("type: %s", type)
@@ -185,13 +189,8 @@ get_items <- function(type = c("new", "review"),
                   prediction_statistic,
                   active)
 
-  update_job(job_id = 999, message = df_to_append, status = "FINISHED")
-
-
   # Append prediction information to SQL DB
   db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
-
-  # Append selected items to DynamoDB
 
 }
 
@@ -463,7 +462,7 @@ store_job <- function(dynamodb, job_id, name, message = "", status = "PENDING") 
 
 
 # Function to update the job in DynamoDB
-update_job <- function(job_id, message, status) {
+update_job <- function(dynamodb, job_id, message, status) {
   response <- dynamodb$update_item(
     TableName = 'jobs',
     Key = list(
