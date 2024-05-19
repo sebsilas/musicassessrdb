@@ -11,6 +11,11 @@ select_items <- function(user_id,
   # tictoc::tic() # Remember to not deploy this!
 
 
+  dynamodb <- paws::dynamodb()
+
+  dynamo_response <- store_job(dynamodb, job_id = 999, name = "sebtest", message = "hi", status = "PENDING")
+
+
   approach_name <- match.arg(approach_name)
 
 
@@ -181,8 +186,10 @@ get_items <- function(type = c("new", "review"),
                   active)
 
 
-  # Append to DB
+  # Append prediction information to SQL DB
   db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
+
+  # Append selected items to DynamoDB
 
 }
 
@@ -425,3 +432,51 @@ review_item_approaches <- list("choose_approach_randomly" = item_sel_choose_appr
 
 # t <- select_items(user_id = 58L)
 # t <- select_items(user_id = 2L)
+
+
+
+# Initialize the DynamoDB client
+# dynamodb <- paws::dynamodb()
+# t <- store_job(dynamodb, job_id = 999, name = "sebtest", message = "hi", status = "PENDING")
+
+
+store_job <- function(dynamodb, job_id, name, message = "", status = "PENDING") {
+
+  created_at <- format(Sys.time(), "%Y-%m-%dT%H:%M:%S")
+
+  response <- dynamodb$put_item(
+    TableName = 'jobs',
+    Item = list(
+      jobId = list(S = job_id),
+      name = list(S = name),
+      message = list(S = message),
+      status = list(S = status),
+      createdAt = list(S = created_at)
+    )
+  )
+
+  return(response)
+}
+
+
+
+# Function to update the job in DynamoDB
+update_job <- function(job_id, message, status) {
+  response <- dynamodb$update_item(
+    TableName = 'jobs',
+    Key = list(
+      jobId = list(S = job_id)
+    ),
+    UpdateExpression = 'SET message = :msg, #status = :sts',
+    ExpressionAttributeValues = list(
+      ':msg' = list(S = message),
+      ':sts' = list(S = status)
+    ),
+    ExpressionAttributeNames = list(
+      '#status' = 'status'
+    )
+  )
+
+  return(response)
+}
+

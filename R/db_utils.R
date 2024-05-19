@@ -202,21 +202,19 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
 
     logging::loginfo("elt_add_final_session_info_to_db!")
 
-    use_musicassessr_db <- psychTestR::get_global("use_musicassessr_db", state)
+    # Get session info
+    test_id <- psychTestR::get_global("test_id", state)
+    session_id <- psychTestR::get_global("session_id", state) # Created earlier
+    user_id <- psychTestR::get_global("user_id", state)
+    session_info <- psychTestR::get_session_info(state, complete = FALSE)
+    psychTestR_session_id <- session_info$p_id
 
-    if(use_musicassessr_db) {
+    if(asynchronous_api_mode) {
 
-      # Get session info
-      test_id <- psychTestR::get_global("test_id", state)
-      session_id <- psychTestR::get_global("session_id", state) # Created earlier
-      user_id <- psychTestR::get_global("user_id", state)
-
-      if(asynchronous_api_mode) {
-
-        logging::loginfo("call compute_session_scores_and_end_session_api...")
+      logging::loginfo("call compute_session_scores_and_end_session_api...")
 
         final_session_result <- future::future({
-          compute_session_scores_and_end_session_api(test_id, musicassessr::get_promise_value(session_id), user_id)
+          compute_session_scores_and_end_session_api(test_id, musicassessr::get_promise_value(session_id), user_id, psychTestR_session_id)
         }) %...>% (function(result) {
           logging::loginfo("Returning promise result: %s", result)
           if(result$status == 200) {
@@ -227,10 +225,6 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
         })
 
         psychTestR::set_global('final_session_result', final_session_result, state)
-
-      } else {
-        # add to DB synchronously...
-      }
 
     }
 

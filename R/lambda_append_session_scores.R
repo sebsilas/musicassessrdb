@@ -12,12 +12,14 @@
 
 compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_id,
-                                                       user_id) {
+                                                       user_id,
+                                                       psychTestR_session_id = NA) {
 
   # Define the request body as a list
   request_body <- list(test_id = test_id,
                        session_id = session_id,
-                       user_id = user_id)
+                       user_id = user_id,
+                       psychTestR_session_id = psychTestR_session_id)
 
   endpoint_wrapper(function_name = "compute-session-scores-and-end-session",
                    request_body = request_body)
@@ -31,7 +33,8 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
 # is invoked
 compute_session_scores_and_end_session <- function(test_id = NA,
                                                    session_id,
-                                                   user_id) {
+                                                   user_id,
+                                                   psychTestR_session_id = NA) {
 
   logging::loginfo("Inside compute_session_scores_and_end_session...")
 
@@ -44,6 +47,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
   logging::loginfo("user_id = %s", user_id)
 
+  logging::loginfo("psychTestR_session_id = %s", psychTestR_session_id)
+
   complete_time <- Sys.time()
 
 
@@ -55,7 +60,7 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     logging::loginfo("Storing complete time as %s", complete_time)
 
-    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time))
+    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time, psychTestR_session_id = psychTestR_session_id, session_complete = 1L))
 
     dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
 
