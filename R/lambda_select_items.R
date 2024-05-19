@@ -185,6 +185,8 @@ get_items <- function(type = c("new", "review"),
                   prediction_statistic,
                   active)
 
+  update_job(job_id = 999, message = df_to_append, status = "FINISHED")
+
 
   # Append prediction information to SQL DB
   db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
