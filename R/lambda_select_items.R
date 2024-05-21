@@ -15,11 +15,7 @@ select_items <- function(Records) {
 
   job_id <- records[[1]][1]
 
-  cat(job_id)
-
-  user_id <- records[[1]][2]
-
-  cat(user_id)
+  user_id <- records[[2]][1]
 
   logging::loginfo(job_id)
   logging::loginfo(user_id)
