@@ -16,6 +16,8 @@ select_items <- function(Records) {
 
   records <- rjson::fromJSON(Records$body)
 
+  logging::loginfo('records', records)
+
   logging::loginfo('records[[1]]', records[[1]])
   logging::loginfo('records[[1]][[1]]', records[[1]][[1]])
   logging::loginfo('records[[1]][[1]][[9]]', records[[1]][[1]][[9]])
@@ -496,3 +498,24 @@ update_job <- function(dynamodb, job_id, message, status) {
   return(response)
 }
 
+
+# t <- rjson::fromJSON('{
+#   "Records": [
+#     {
+#       "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
+#       "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
+#       "body": "{\"jobId\":\"36f93907-ba3a-41d6-90e5-b4da4c558f06\",\"user_id\":55}",
+#       "attributes": {
+#         "ApproximateReceiveCount": "1",
+#         "SentTimestamp": "1545082649183",
+#         "SenderId": "AIDAIENQZJOLO23YVJ4VO",
+#         "ApproximateFirstReceiveTimestamp": "1545082649185"
+#       },
+#       "messageAttributes": {},
+#       "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
+#       "eventSource": "aws:sqs",
+#       "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
+#       "awsRegion": "us-east-2"
+#     }
+#   ]
+# }')
