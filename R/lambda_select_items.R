@@ -11,22 +11,23 @@ select_items <- function(Records) {
 
   # tictoc::tic() # Remember to not deploy this!
 
+  records <- rjson::fromJSON(Records$body)
 
-  string_rep <- paste(deparse(Records), collapse = "\n")
+
+  string_rep <- paste(deparse(records), collapse = "\n")
 
   cat(string_rep)
 
-  logging::loginfo("string_rep", string_rep)
 
-  records <- rjson::fromJSON(Records$body)
+  job_id <- records[[1]]
 
-  logging::loginfo('records', records)
+  cat('job_id')
+  car(job_id)
 
-  logging::loginfo('records[1]', records[1])
-  logging::loginfo('records[2]', records[2])
+  cat('job_id2')
+  car(records[1])
 
-  job_id <- records[1]
-  user_id <- records[2]
+  user_id <- records[[2]]
 
   logging::loginfo('job_id', job_id)
   logging::loginfo('user_id', user_id)
