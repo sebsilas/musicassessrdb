@@ -16,9 +16,9 @@ select_items <- function(Records) {
 
   logging::loginfo("names(Records)", names(Records))
 
-  logging::loginfo("names(rjson::fromJSON(Records))", names(rjson::fromJSON(Records)))
-
   logging::loginfo('Records$body', Records$body)
+
+  logging::loginfo('Records$body', names(Records$body))
 
   records <- rjson::fromJSON(Records$body)
 
