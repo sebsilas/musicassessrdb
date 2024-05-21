@@ -22,10 +22,10 @@ select_items <- function(Records) {
   job_id <- records[[1]]
 
   cat('job_id')
-  car(job_id)
+  cat(job_id)
 
   cat('job_id2')
-  car(records[1])
+  cat(records[1])
 
   user_id <- records[[2]]
 
