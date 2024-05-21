@@ -4,12 +4,11 @@
 select_items <- function(Records) {
 
   # user_id,
-  # num_items_review = 3L,
-  # num_items_new = 3L,
-  # approach_name = c("new_and_review_randomly_chosen_approaches", names(new_item_approaches), names(review_item_approaches)),
-  # fallback_item_bank = c("singpause_phrase", "singpause_item"),
-  # only_use_items_from_fallback_item_banks = TRUE
-  #
+  num_items_review <- 3L
+  num_items_new <- 3L
+  approach_name <- "new_and_review_randomly_chosen_approaches"
+  fallback_item_bank = c("singpause_phrase", "singpause_item")
+  only_use_items_from_fallback_item_banks <- TRUE
 
   # tictoc::tic() # Remember to not deploy this!
 
@@ -18,11 +17,8 @@ select_items <- function(Records) {
 
   logging::loginfo('records', records)
 
-  logging::loginfo('records[[1]]', records[[1]])
-  # logging::loginfo('records[[1]][[1]]', records[[1]][[1]])
-  # logging::loginfo('records[[1]][[2]]', records[[1]][[2]])
-  logging::loginfo('records[[1]][1]', records[[1]][1])
-  logging::loginfo('records[[1]][2]', records[[1]][2])
+  logging::loginfo('records[1]', records[1])
+  logging::loginfo('records[2]', records[2])
 
 
   dynamodb <- paws::dynamodb()
