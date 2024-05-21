@@ -1,14 +1,27 @@
 
 # This is the function that is called when the endpoint
 # is invoked
-select_items <- function(user_id,
-                         num_items_review = 3L,
-                         num_items_new = 3L,
-                         approach_name = c("new_and_review_randomly_chosen_approaches", names(new_item_approaches), names(review_item_approaches)),
-                         fallback_item_bank = c("singpause_phrase", "singpause_item"),
-                         only_use_items_from_fallback_item_banks = TRUE) {
+select_items <- function(Records) {
+
+  # user_id,
+  # num_items_review = 3L,
+  # num_items_new = 3L,
+  # approach_name = c("new_and_review_randomly_chosen_approaches", names(new_item_approaches), names(review_item_approaches)),
+  # fallback_item_bank = c("singpause_phrase", "singpause_item"),
+  # only_use_items_from_fallback_item_banks = TRUE
+  #
 
   # tictoc::tic() # Remember to not deploy this!
+
+
+  records <- rjson::fromJSON(Records$body)
+
+  logging::loginfo('records[[1]]', records[[1]])
+  logging::loginfo('records[[1]][[1]]', records[[1]][[1]])
+  logging::loginfo('records[[1]][[1]][[9]]', records[[1]][[1]][[9]])
+  logging::loginfo('records[[1]][[1]][[9]][[4]]', records[[1]][[1]][[9]][[4]])
+  logging::loginfo('records[[1]][[1]][[9]][[4]][[1]]', records[[1]][[1]][[9]][[4]][[1]])
+  logging::loginfo('records[[1]][[1]][[9]][[4]][[1]][[1]]', records[[1]][[1]][[9]][[4]][[1]][[1]])
 
 
   dynamodb <- paws::dynamodb()
