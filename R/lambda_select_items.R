@@ -19,18 +19,23 @@ select_items <- function(Records) {
   cat(string_rep)
 
 
-  job_id <- records[[1]]
-
   cat('job_id')
-  cat(job_id)
+  job_id <- records[[1]]
+  string_rep <- paste(deparse(job_id), collapse = "\n")
+  cat(string_rep)
 
   cat('job_id2')
-  cat(records[1])
+  job_id <- records[[1]][[1]]
+  string_rep <- paste(deparse(job_id), collapse = "\n")
+  cat(string_rep)
 
-  user_id <- records[[2]]
+  cat('job_id3')
+  job_id <- records[[1]][[2]]
+  string_rep <- paste(deparse(job_id), collapse = "\n")
+  cat(string_rep)
 
   logging::loginfo('job_id', job_id)
-  logging::loginfo('user_id', user_id)
+
 
 
   dynamodb <- paws::dynamodb()
