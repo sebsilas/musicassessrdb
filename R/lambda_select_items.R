@@ -19,8 +19,8 @@ select_items <- function(Records) {
   logging::loginfo('records', records)
 
   logging::loginfo('records[[1]]', records[[1]])
-  logging::loginfo('records[[1]][[1]]', records[[1]][[1]])
-  logging::loginfo('records[[1]][[2]]', records[[1]][[2]])
+  # logging::loginfo('records[[1]][[1]]', records[[1]][[1]])
+  # logging::loginfo('records[[1]][[2]]', records[[1]][[2]])
   logging::loginfo('records[[1]][1]', records[[1]][1])
   logging::loginfo('records[[1]][2]', records[[1]][2])
 
