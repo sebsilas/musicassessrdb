@@ -13,8 +13,8 @@ select_items <- function(Records) {
 
   records <- rjson::fromJSON(Records$body)
 
-  job_id <- records[[1]][[1]]
-  user_id <- records[[1]][[2]]
+  job_id <- records[[1]][1]
+  user_id <- records[[1]][2]
 
   cat(job_id)
   cat(user_id)
