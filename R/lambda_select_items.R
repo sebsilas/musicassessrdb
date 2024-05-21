@@ -14,7 +14,6 @@ select_items <- function(Records) {
   records <- rjson::fromJSON(Records$body)
 
   job_id <- records[[1]][1]
-
   user_id <- records[[2]][1]
 
   logging::loginfo('job_id', job_id)
@@ -22,7 +21,7 @@ select_items <- function(Records) {
 
   dynamodb <- paws::dynamodb()
 
-  dynamo_response <- store_job(dynamodb, job_id = job_id, name = "sebtest", message = "hi", status = "PENDING")
+  dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
 
   logging::loginfo("Inside select_items function")
 
