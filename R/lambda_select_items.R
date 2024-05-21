@@ -12,7 +12,7 @@ select_items <- function(Records) {
   # tictoc::tic() # Remember to not deploy this!
 
 
-  loging::loginfo("Records", Records)
+  logging::loginfo("Records", Records)
 
   logging::loginfo('Records$body', Records$body)
 
