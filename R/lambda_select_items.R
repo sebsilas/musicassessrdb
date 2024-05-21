@@ -3,7 +3,6 @@
 # is invoked
 select_items <- function(Records) {
 
-  # user_id,
   num_items_review <- 3L
   num_items_new <- 3L
   approach_name <- "new_and_review_randomly_chosen_approaches"
@@ -13,6 +12,10 @@ select_items <- function(Records) {
   # tictoc::tic() # Remember to not deploy this!
 
 
+  loging::loginfo("Records", Records)
+
+  logging::loginfo('Records$body', Records$body)
+
   records <- rjson::fromJSON(Records$body)
 
   logging::loginfo('records', records)
@@ -20,10 +23,16 @@ select_items <- function(Records) {
   logging::loginfo('records[1]', records[1])
   logging::loginfo('records[2]', records[2])
 
+  job_id <- records[1]
+  user_id <- records[2]
+
+  logging::loginfo('job_id', job_id)
+  logging::loginfo('user_id', user_id)
+
 
   dynamodb <- paws::dynamodb()
 
-  dynamo_response <- store_job(dynamodb, job_id = 999, name = "sebtest", message = "hi", status = "PENDING")
+  dynamo_response <- store_job(dynamodb, job_id = job_id, name = "sebtest", message = "hi", status = "PENDING")
 
   approach_name <- match.arg(approach_name)
 
