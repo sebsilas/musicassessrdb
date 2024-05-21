@@ -6,7 +6,7 @@ select_items <- function(Records) {
   num_items_review <- 3L
   num_items_new <- 3L
   approach_name <- "new_and_review_randomly_chosen_approaches"
-  fallback_item_bank = c("singpause_phrase", "singpause_item")
+  fallback_item_bank <- c("singpause_phrase", "singpause_item")
   only_use_items_from_fallback_item_banks <- TRUE
 
   # tictoc::tic() # Remember to not deploy this!
@@ -17,17 +17,15 @@ select_items <- function(Records) {
 
   user_id <- records[[2]][1]
 
-  logging::loginfo(job_id)
-  logging::loginfo(user_id)
+  logging::loginfo('job_id', job_id)
+  logging::loginfo('user_id', user_id)
 
   dynamodb <- paws::dynamodb()
 
   dynamo_response <- store_job(dynamodb, job_id = job_id, name = "sebtest", message = "hi", status = "PENDING")
 
-  approach_name <- match.arg(approach_name)
-
-
   logging::loginfo("Inside select_items function")
+
   logging::loginfo("user_id = %s", user_id)
   logging::loginfo("num_items_review = %s", num_items_review)
   logging::loginfo("num_items_new = %s", num_items_new)
