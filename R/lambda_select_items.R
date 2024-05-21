@@ -64,7 +64,7 @@ select_items <- function(Records) {
 
 
     # Append selected items to DynamoDB
-    update_job(dynamodb, job_id = 999, message = rjson::toJSON(list(review_items_ids = review_items_ids,
+    update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(review_items_ids = review_items_ids,
                                                       new_items_ids = new_items_ids)), status = "FINISHED")
 
     list(status = 200,
