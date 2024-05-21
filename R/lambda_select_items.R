@@ -13,30 +13,14 @@ select_items <- function(Records) {
 
   records <- rjson::fromJSON(Records$body)
 
-
-  string_rep <- paste(deparse(records), collapse = "\n")
-
-  cat(string_rep)
-
-
-  cat('job_id')
-  job_id <- records[[1]]
-  string_rep <- paste(deparse(job_id), collapse = "\n")
-  cat(string_rep)
-
-  cat('job_id2')
   job_id <- records[[1]][[1]]
-  string_rep <- paste(deparse(job_id), collapse = "\n")
-  cat(string_rep)
+  user_id <- records[[1]][[2]]
 
-  cat('job_id3')
-  job_id <- records[[1]][[2]]
-  string_rep <- paste(deparse(job_id), collapse = "\n")
-  cat(string_rep)
+  cat(job_id)
+  cat(user_id)
 
-  logging::loginfo('job_id', job_id)
-
-
+  logging::loginfo(job_id)
+  logging::loginfo(user_id)
 
   dynamodb <- paws::dynamodb()
 
