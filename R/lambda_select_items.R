@@ -67,11 +67,8 @@ select_items <- function(Records) {
                                                       new_items_ids = new_items_ids)), status = "FINISHED")
 
     list(status = 200,
-         message = paste0("You have successfully selected new items for ", user_id, "!"),
-         review_items_ids = review_items_ids,
-         new_items_ids = new_items_ids,
-         no_items_review = length(review_items_ids),
-         no_items_new = length(new_items_ids))
+         message = paste0("You have successfully selected new items for ", user_id, "!")
+         )
 
 
   }, error = function(err) {
@@ -80,9 +77,7 @@ select_items <- function(Records) {
 
     list(
       status = 400,
-      message = "Something went wrong!",
-      no_items_new = NA,
-      no_items_review = NA
+      message = "Something went wrong!"
     )
 
   })
