@@ -20,10 +20,9 @@ select_items <- function(Records) {
 
   logging::loginfo('records[[1]]', records[[1]])
   logging::loginfo('records[[1]][[1]]', records[[1]][[1]])
-  logging::loginfo('records[[1]][[1]][[9]]', records[[1]][[1]][[9]])
-  logging::loginfo('records[[1]][[1]][[9]][[4]]', records[[1]][[1]][[9]][[4]])
-  logging::loginfo('records[[1]][[1]][[9]][[4]][[1]]', records[[1]][[1]][[9]][[4]][[1]])
-  logging::loginfo('records[[1]][[1]][[9]][[4]][[1]][[1]]', records[[1]][[1]][[9]][[4]][[1]][[1]])
+  logging::loginfo('records[[1]][[2]]', records[[1]][[2]])
+  logging::loginfo('records[[1]][1]', records[[1]][1])
+  logging::loginfo('records[[1]][2]', records[[1]][2])
 
 
   dynamodb <- paws::dynamodb()
