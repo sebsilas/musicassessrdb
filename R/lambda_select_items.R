@@ -1,4 +1,41 @@
 
+
+get_job_status_api <- function(job_id) {
+
+  # Define the request body as a list
+  request_body <- list(
+    job_id = job_id
+  )
+
+  endpoint_wrapper(function_name = "get-job-status",
+                   request_body = request_body,
+                   endpoint_url = )
+}
+
+get_job_status <- function(job_id) {
+
+  items <- get_job_status_api(job_id) %>%
+    purrr::pluck("message") %>%
+    rjson::fromJSON()
+
+  browser()
+
+  new_items <- items$new_items %>%
+    dplyr::bind_rows()
+
+  review_items <- items$review_items %>%
+    dplyr::bind_rows()
+
+  list(
+    new_items = new_items,
+    review_items = review_items
+  )
+
+
+}
+
+# t <- get_job_status("36f93907-ba3a-41d6-90e5-b4da4c558f06")
+
 # This is the function that is called when the endpoint
 # is invoked
 select_items <- function(Records) {
@@ -211,6 +248,9 @@ get_items <- function(type = c("new", "review"),
     items_df <- sampling_df %>%
       dplyr::filter(item_id %in% !! item_ids_df$item_id)
   }
+
+  items_df <- items_df %>%
+    dplyr::select(item_id, stimulus_abs_melody, stimulus_durations, abs_melody, durations, item_bank_id, onset, melody)
 
   return(items_df)
 
