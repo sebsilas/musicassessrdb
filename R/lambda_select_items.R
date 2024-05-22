@@ -3,36 +3,38 @@
 # is invoked
 select_items <- function(Records) {
 
-  num_items_review <- 3L
-  num_items_new <- 3L
-  approach_name <- "new_and_review_randomly_chosen_approaches"
-  fallback_item_bank <- c("singpause_phrase", "singpause_item")
-  only_use_items_from_fallback_item_banks <- TRUE
-
-  # tictoc::tic() # Remember to not deploy this!
-
-  records <- rjson::fromJSON(Records$body)
-
-  job_id <- records[[1]][1]
-  user_id <- records[[2]][1]
-
-  logging::loginfo('job_id', job_id)
-  logging::loginfo('user_id', user_id)
-
-  dynamodb <- paws::dynamodb()
-
-  dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
-
   logging::loginfo("Inside select_items function")
 
-  logging::loginfo("user_id = %s", user_id)
-  logging::loginfo("num_items_review = %s", num_items_review)
-  logging::loginfo("num_items_new = %s", num_items_new)
-  logging::loginfo("approach_name = %s", approach_name)
-  logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
-  logging::loginfo("Taking approach: %s", approach_name)
 
   response <- tryCatch({
+
+    # Init DB and store initial job
+    dynamodb <- paws::dynamodb()
+    dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
+
+    # Instantiate vars
+    num_items_review <- 3L
+    num_items_new <- 3L
+    approach_name <- "new_and_review_randomly_chosen_approaches"
+    fallback_item_bank <- c("singpause_phrase", "singpause_item")
+    only_use_items_from_fallback_item_banks <- TRUE
+
+    # Parse event
+    records <- rjson::fromJSON(Records$body)
+    job_id <- records[[1]][1]
+    user_id <- records[[2]][1]
+
+    logging::loginfo('job_id', job_id)
+    logging::loginfo('user_id', user_id)
+
+    logging::loginfo("user_id = %s", user_id)
+    logging::loginfo("num_items_review = %s", num_items_review)
+    logging::loginfo("num_items_new = %s", num_items_new)
+    logging::loginfo("approach_name = %s", approach_name)
+    logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
+    logging::loginfo("Taking approach: %s", approach_name)
+
+    # Compile user trials
 
     logging::loginfo("Compiling user trials")
 
@@ -47,24 +49,24 @@ select_items <- function(Records) {
 
     if(approach_name == "new_and_review_randomly_chosen_approaches") {
 
-      review_items_ids <- get_items(type = "review", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank, num_items_review, user_id)
-      new_items_ids <- get_items(type = "new", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank,  num_items_new, user_id)
+      review_items_df <- get_items(type = "review", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank, num_items_review, user_id)
+      new_items_df <- get_items(type = "new", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank,  num_items_new, user_id)
 
 
     } else {
       type <- if(approach_name %in% names(new_item_approaches)) "new" else if (approach_name %in% names(review_item_approaches)) "review" else stop("Approach not known")
-      item_ids <- get_items(type, approach_name, user_trials, fallback_item_bank, num_items, user_id)
+      items_df <- get_items(type, approach_name, user_trials, fallback_item_bank, num_items, user_id)
       if(type == "new") {
-        new_items_ids <- item_ids
+        new_items_df <- items_df
       } else {
-        review_items_ids <- item_ids
+        review_items_df <- items_df
       }
     }
 
 
     # Append selected items to DynamoDB
-    update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(review_items_ids = review_items_ids,
-                                                      new_items_ids = new_items_ids)), status = "FINISHED")
+    update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(review_items = review_items_df,
+                                                                       new_items = new_items_df)), status = "FINISHED")
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!")
@@ -153,6 +155,7 @@ get_items <- function(type = c("new", "review"),
 
     logging::loginfo("Not enough trials for user yet, apply random selection")
 
+    # This we use for storing the decision in the DB
     item_ids_df <- item_sel_random_item_selection(grand_fallback_item_bank, num_items)
 
     approach_name <- "random_item_selection"
@@ -171,11 +174,14 @@ get_items <- function(type = c("new", "review"),
   }
 
 
+  # Make sure there are not too many items (e.g., from ties or something earlier on)
   if(nrow(item_ids_df) > num_items) {
     item_ids_df <- item_ids_df %>%
       dplyr::slice_min(ranking, n = num_items)
   }
 
+
+  # Store meta data about the prediction
   df_to_append <- item_ids_df %>%
     dplyr::mutate(prediction_method = approach_name,
                   user_id = user_id,
@@ -193,7 +199,19 @@ get_items <- function(type = c("new", "review"),
   # Append prediction information to SQL DB
   db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
 
-  return(item_ids_df)
+  # Return the full item DF for the test
+  if(type == "review" && num_unique_items < num_items) {
+
+    items_df <- grand_fallback_item_bank %>%
+      dplyr::filter(item_id %in% !! item_ids_df$item_id)
+
+  } else {
+
+    items_df <- sampling_df %>%
+      dplyr::filter(item_id %in% !! item_ids_df$item_id)
+  }
+
+  return(items_df)
 
 }
 
