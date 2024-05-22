@@ -9,7 +9,7 @@ get_job_status_api <- function(job_id) {
 
   endpoint_wrapper(function_name = "get-job-status",
                    request_body = request_body,
-                   endpoint_url = )
+                   endpoint_url = 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/v2/')
 }
 
 get_job_status <- function(job_id) {
@@ -249,8 +249,12 @@ get_items <- function(type = c("new", "review"),
       dplyr::filter(item_id %in% !! item_ids_df$item_id)
   }
 
+  # N.B, we use charactor vector so we can user dplyr::any_of below
+  vars_to_select <- c("item_id", "stimulus_abs_melody", "stimulus_durations",
+                      "abs_melody", "durations", "item_bank_id", "onset", "melody")
+
   items_df <- items_df %>%
-    dplyr::select(item_id, stimulus_abs_melody, stimulus_durations, abs_melody, durations, item_bank_id, onset, melody)
+    dplyr::select(dplyr::any_of(vars_to_select))
 
   return(items_df)
 
