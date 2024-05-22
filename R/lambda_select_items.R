@@ -8,10 +8,6 @@ select_items <- function(Records) {
 
   response <- tryCatch({
 
-    # Init DB and store initial job
-    dynamodb <- paws::dynamodb()
-    dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
-
     # Instantiate vars
     num_items_review <- 3L
     num_items_new <- 3L
@@ -24,8 +20,13 @@ select_items <- function(Records) {
     job_id <- records[[1]][1]
     user_id <- records[[2]][1]
 
+
     logging::loginfo('job_id', job_id)
     logging::loginfo('user_id', user_id)
+
+    # Init DB and store initial job
+    dynamodb <- paws::dynamodb()
+    dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
 
     logging::loginfo("user_id = %s", user_id)
     logging::loginfo("num_items_review = %s", num_items_review)
