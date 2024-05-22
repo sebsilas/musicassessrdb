@@ -30,70 +30,23 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
         if(is.null(psychTestR::get_global("username", state))) { # Prevent the below logic firing twice, a weird quirk of psychTestR
 
-          # Init DB con
-          db_con <- connect_to_db_state(state)
-
           # Get URL parameters
           url_params <- psychTestR::get_url_params(state)
-          user_id <- url_params$user_id
-          proposed_token <- url_params$session_token
-          item_bank_name <- url_params$item_bank_name
-          item_bank_name <- paste0("item_bank_", item_bank_name)
-          item_ids <- url_params$item_ids
 
-          review_items_ids <- if(is.null(url_params$review_items_ids)) NULL else split_ids(url_params$review_items_ids)
-          new_items_ids <- if(is.null(url_params$new_items_ids)) NULL else split_ids(url_params$new_items_ids)
+          proposed_token <- url_params$session_token
+          user_id <- url_params$user_id
+          job_id <- url_params$job_id
 
           psychTestR::set_global("user_id", user_id, state)
+          psychTestR::set_global("job_id", job_id, state)
 
           username <- username_from_user_id(db_con, user_id)
 
           psychTestR::set_global("username", username, state)
 
-          logging::loginfo("Proposed token: %s",proposed_token )
+          logging::loginfo("Proposed token: %s", proposed_token)
 
           success <- authenticate_session_token(db_con, user_id, proposed_token)
-
-          if(!is.null(item_bank_name) && !is.null(item_ids)) {
-
-            logging::loginfo("item_bank_name: %s", item_bank_name)
-            logging::loginfo("item_ids: %s", item_ids)
-
-            item_ids <- trimws(strsplit(item_ids, ",")[[1]])
-            items <- get_items_from_db(db_con, item_bank_name, item_ids)
-            psychTestR::set_global('rhythmic_melody', items, state)
-          }
-
-          logging::loginfo("review_items_ids: %s", review_items_ids)
-          logging::loginfo("new_items_ids: %s", new_items_ids)
-
-          if(length(new_items_ids) > 0L) {
-
-            if(is.null(psychTestR::get_global('rhythmic_melody', state))) {
-              items <- get_selected_items_from_db(db_con, user_id, review_items_ids = NULL, new_items_ids)
-              logging::loginfo("Adding to rhythmic_melody: %s", items$new_items)
-              psychTestR::set_global('rhythmic_melody', items$new_items, state)
-            }
-
-          }
-
-          if(length(review_items_ids) > 0L) {
-
-            if(is.null(psychTestR::get_global('rhythmic_melody_review', state))) {
-
-              items <- get_selected_items_from_db(db_con, user_id, review_items_ids, new_items_ids = NULL)
-
-              logging::loginfo("Adding to rhythmic_melody_review: %s", items$review_items)
-              psychTestR::set_global('rhythmic_melody_review', items$review_items, state)
-            }
-
-          }
-
-          logging::loginfo("Disconnecting from the DB")
-
-          if(DBI::dbIsValid(db_con)) {
-            DBI::dbDisconnect(db_con)
-          }
 
         } else {
           success <- TRUE

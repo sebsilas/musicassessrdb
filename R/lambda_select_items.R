@@ -1,5 +1,13 @@
 
 
+#' Get job status API for select items lambda
+#'
+#' @param job_id
+#'
+#' @return
+#' @export
+#'
+#' @examples
 get_job_status_api <- function(job_id) {
 
   # Define the request body as a list
@@ -9,32 +17,14 @@ get_job_status_api <- function(job_id) {
 
   endpoint_wrapper(function_name = "get-job-status",
                    request_body = request_body,
-                   endpoint_url = 'https://kuqchtwsfb.execute-api.us-east-1.amazonaws.com/v2/')
+                   endpoint_url = paste0(Sys.getenv("ENDPOINT_URL"), 'v2/') )
 }
 
-get_job_status <- function(job_id) {
-
-  items <- get_job_status_api(job_id) %>%
-    purrr::pluck("message") %>%
-    rjson::fromJSON()
-
-  browser()
-
-  new_items <- items$new_items %>%
-    dplyr::bind_rows()
-
-  review_items <- items$review_items %>%
-    dplyr::bind_rows()
-
-  list(
-    new_items = new_items,
-    review_items = review_items
-  )
 
 
-}
-
-# t <- get_job_status("36f93907-ba3a-41d6-90e5-b4da4c558f06")
+# review_items <- t$review_items
+# review_items$stimulus_abs_melody[[1]] %>% itembankr::str_mel_to_vector() %>% diff()
+# review_items$abs_melody[[1]] %>% itembankr::str_mel_to_vector() %>% diff()
 
 # This is the function that is called when the endpoint
 # is invoked
