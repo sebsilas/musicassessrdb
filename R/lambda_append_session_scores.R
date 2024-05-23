@@ -18,9 +18,10 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_id,
                                                        user_id,
                                                        psychTestR_session_id = NA,
-                                                       session_complete = c(0, 1)) {
+                                                       session_complete = c("0", "1")) {
 
   session_complete <- match.arg(session_complete)
+  session_complete <- as.integer(session_complete)
 
   # Define the request body as a list
   request_body <- list(test_id = test_id,
@@ -43,11 +44,13 @@ compute_session_scores_and_end_session <- function(test_id = NA,
                                                    session_id,
                                                    user_id,
                                                    psychTestR_session_id = NA,
-                                                   session_complete = c(0, 1)) {
-
-  session_complete <- match.arg(session_complete)
+                                                   session_complete = c("0", "1")) {
 
   logging::loginfo("Inside compute_session_scores_and_end_session...")
+
+
+  session_complete <- match.arg(session_complete)
+  session_complete <- as.intger(session_complete)
 
   test_id <- as.integer(test_id)
   session_id <- as.integer(session_id)
