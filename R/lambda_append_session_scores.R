@@ -1,25 +1,21 @@
 
 
 
-# Test
-# t <- compute_session_scores_and_end_session_api(test_id = 2L,
-#                                                 session_id = 584L,
-#                                                 user_id = 2L)
-
-
-# compute_session_scores_and_end_session_api(session_id = 1172L, user_id = 60L)
-#
 
 compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_id,
                                                        user_id,
-                                                       psychTestR_session_id = NA) {
+                                                       psychTestR_session_id = NA,
+                                                       session_complete = c(0, 1)) {
+
+  session_complete <- match.arg(session_complete)
 
   # Define the request body as a list
   request_body <- list(test_id = test_id,
                        session_id = session_id,
                        user_id = user_id,
-                       psychTestR_session_id = psychTestR_session_id)
+                       psychTestR_session_id = psychTestR_session_id,
+                       session_complete = session_complete)
 
   endpoint_wrapper(function_name = "compute-session-scores-and-end-session",
                    request_body = request_body)
@@ -34,7 +30,10 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
 compute_session_scores_and_end_session <- function(test_id = NA,
                                                    session_id,
                                                    user_id,
-                                                   psychTestR_session_id = NA) {
+                                                   psychTestR_session_id = NA,
+                                                   session_complete = c(0, 1)) {
+
+  session_complete <- match.arg(session_complete)
 
   logging::loginfo("Inside compute_session_scores_and_end_session...")
 
@@ -49,6 +48,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
   logging::loginfo("psychTestR_session_id = %s", psychTestR_session_id)
 
+  logging::loginfo("session_complete = %s", session_complete)
+
   complete_time <- Sys.time()
 
 
@@ -60,7 +61,7 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     logging::loginfo("Storing complete time as %s", complete_time)
 
-    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time, psychTestR_session_id = psychTestR_session_id, session_complete = 1L))
+    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time, psychTestR_session_id = psychTestR_session_id, session_complete = session_complete))
 
     dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
 

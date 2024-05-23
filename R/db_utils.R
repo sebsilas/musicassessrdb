@@ -214,8 +214,8 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
       logging::loginfo("call compute_session_scores_and_end_session_api...")
 
         final_session_result <- future::future({
-          compute_session_scores_and_end_session_api(test_id, musicassessr::get_promise_value(session_id), user_id, psychTestR_session_id)
-        }) %...>% (function(result) {
+          compute_session_scores_and_end_session_api(test_id, musicassessr::get_promise_value(session_id), user_id, psychTestR_session_id, session_complete = 1)
+        }, seed = NULL) %...>% (function(result) {
           logging::loginfo("Returning promise result: %s", result)
           if(result$status == 200) {
             return(result)
@@ -224,6 +224,7 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
           }
         })
 
+        psychTestR::set_global("compute_session_scores_and_end_session_api_called", TRUE, state)
         psychTestR::set_global('final_session_result', final_session_result, state)
 
     }

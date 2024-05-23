@@ -30,6 +30,9 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
         if(is.null(psychTestR::get_global("username", state))) { # Prevent the below logic firing twice, a weird quirk of psychTestR
 
+          # Init DB con
+          db_con <- connect_to_db_state(state)
+
           # Get URL parameters
           url_params <- psychTestR::get_url_params(state)
 
@@ -47,6 +50,12 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
           logging::loginfo("Proposed token: %s", proposed_token)
 
           success <- authenticate_session_token(db_con, user_id, proposed_token)
+
+          logging::loginfo("Disconnecting from the DB")
+
+          if(DBI::dbIsValid(db_con)) {
+            DBI::dbDisconnect(db_con)
+          }
 
         } else {
           success <- TRUE
