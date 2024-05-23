@@ -2,6 +2,18 @@
 
 
 
+#' Compute session scores and end session API
+#'
+#' @param test_id
+#' @param session_id
+#' @param user_id
+#' @param psychTestR_session_id
+#' @param session_complete
+#'
+#' @return
+#' @export
+#'
+#' @examples
 compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_id,
                                                        user_id,
