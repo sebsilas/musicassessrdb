@@ -157,7 +157,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     current_score <- trial_scores %>%
       dplyr::filter(measure == !! score_to_use) %>%
-      dplyr::select(score)
+      dplyr::pull(score)
 
     logging::loginfo("current_score: %s", current_score)
 
