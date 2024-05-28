@@ -153,17 +153,25 @@ add_trial_and_compute_trial_scores <- function(Records) {
                                    item_id = item_id,
                                    measure = score_to_use)
 
+    logging::loginfo("last_score: %s", last_score)
+
     current_score <- trial_scores %>%
       dplyr::filter(measure == !! score_to_use)
+
+    logging::loginfo("current_score: %s", current_score)
+
+    logging::loginfo("last_score$score: %s", last_score$score)
 
 
     additional_scores <- tibble::tibble(
     learned_in_current_session = if(last_score$score < 1 && dplyr::near(current_score, 1)) 1L else 0L
     ) %>% dplyr::mutate(
-      change_in_score_from_last_session, current_score - last_score$score,
-      increase_since_last_session, if(change_in_score_from_last_session > 0) 1L else 0L,
-      time_since_last_item_studied, trial_time_completed - last_score$trial_time_completed
+      change_in_score_from_last_session = current_score - last_score$score,
+      increase_since_last_session = if(change_in_score_from_last_session > 0) 1L else 0L,
+      time_since_last_item_studied = trial_time_completed - last_score$trial_time_completed
     )
+
+    logging::loginfo("additional_scores: %s", additional_scores)
 
     trial_scores <- rbind(trial_scores, additional_scores)
 
