@@ -171,7 +171,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       increase_since_last_session = dplyr::case_when(change_in_score_from_last_session > 0 ~ 1L, TRUE ~ 0L),
       time_since_last_item_studied = lubridate::as_datetime(trial_time_completed) - lubridate::as_datetime(last_score$trial_time_completed)
     ) %>%
-      tidyr::pivot_longer(names_to = "score",
+      tidyr::pivot_longer(names_to = "measure",
                           values_to = "score")
 
 
