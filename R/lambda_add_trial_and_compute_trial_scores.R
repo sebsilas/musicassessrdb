@@ -94,12 +94,20 @@ add_trial_and_compute_trial_scores <- function(Records) {
         user_notes <- res$note
 
         logging::loginfo("Scoring melodic production...")
+
         logging::loginfo("res$freq %s", res$freq)
         logging::loginfo("user_notes %s", user_notes)
         logging::loginfo("res$dur %s", res$dur)
         logging::loginfo("res$onset %s", res$onset)
         logging::loginfo("stimuli %s", stimuli)
         logging::loginfo("stimuli_durations %s", stimuli_durations)
+
+        logging::loginfo("is.numeric(res$freq) %s", is.numeric(res$freq))
+        logging::loginfo("is.numeric(user_notes) %s", is.numeric(user_notes))
+        logging::loginfo("is.numeric(res$dur) %s", is.numeric(res$dur))
+        logging::loginfo("is.numeric(res$onset) %s", is.numeric(res$onset))
+        logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
+        logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
 
         # Store pYIN in DB
         scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
