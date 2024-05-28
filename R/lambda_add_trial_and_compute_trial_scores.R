@@ -86,7 +86,10 @@ add_trial_and_compute_trial_scores <- function(Records) {
         #pyin_pitch_track <- "blah"
 
         res <- res %>%
-          dplyr::mutate(note = round(hrep::freq_to_midi(freq)))
+          dplyr::mutate(freq = as.numeric(freq),
+                        dur = as.numeric(dur),
+                        onset = as.numeric(onset),
+                        note = round(hrep::freq_to_midi(freq)))
 
         user_notes <- res$note
 
