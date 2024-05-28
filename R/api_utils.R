@@ -10,11 +10,11 @@ endpoint_wrapper <- function(function_name, request_body, endpoint_url = Sys.get
   response <- httr::POST(endpoint, body = request_body, encode = "json", headers = headers)
 
   # Print the response
-  logging::loginfo("Response: %s", httr::content(response))
+  logging::loginfo("Response: %s", httr::content(response, encoding = "UTF-8"))
 
   if(httr::status_code(response) == 200) {
     result <- response %>%
-      httr::content("text") %>%
+      httr::content("text", encoding = "UTF-8") %>%
       rjson::fromJSON()
   } else {
     result <- NA

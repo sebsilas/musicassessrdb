@@ -26,6 +26,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     midi_vs_audio <- metadata$midi_vs_audio
     test_id <- as.integer(metadata$test_id)
     item_id <- metadata$item_id
+    user_id <- metadata$user_id
     instrument <- metadata$instrument
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
     score_to_use <- "opti3"
