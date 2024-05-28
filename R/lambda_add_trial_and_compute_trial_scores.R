@@ -163,11 +163,16 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("last_score$score: %s", last_score$score)
 
+    learned_in_current_session <- if(last_score$score < 1 && dplyr::near(current_score, 1)) 1L else 0L
+
+    logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
+
+    change_in_score_from_last_session <- current_score - last_score$score
 
     additional_scores <- tibble::tibble(
-    learned_in_current_session = if(last_score$score < 1 && dplyr::near(current_score, 1)) 1L else 0L
+    learned_in_current_session = learned_in_current_session
     ) %>% dplyr::mutate(
-      change_in_score_from_last_session = current_score - last_score$score,
+      change_in_score_from_last_session = change_in_score_from_last_session,
       increase_since_last_session = dplyr::case_when(change_in_score_from_last_session > 0 ~ 1L, TRUE ~ 0L),
       time_since_last_item_studied = lubridate::as_datetime(trial_time_completed) - lubridate::as_datetime(last_score$trial_time_completed)
     ) %>%
