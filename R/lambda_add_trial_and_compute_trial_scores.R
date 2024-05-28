@@ -161,13 +161,14 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("current_score: %s", current_score)
 
-    logging::loginfo("last_score$score: %s", last_score$score)
+    last_score_value <- last_score$score
+    logging::loginfo("last_score_value: %s", last_score_value)
 
-    learned_in_current_session <- if(last_score$score < 1 && dplyr::near(current_score, 1)) 1L else 0L
+    learned_in_current_session <- if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
 
     logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
 
-    change_in_score_from_last_session <- current_score - last_score$score
+    change_in_score_from_last_session <- current_score - last_score_value
 
     additional_scores <- tibble::tibble(
     learned_in_current_session = learned_in_current_session
