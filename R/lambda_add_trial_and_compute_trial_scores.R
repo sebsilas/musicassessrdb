@@ -183,7 +183,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
       tidyr::pivot_longer(dplyr::everything(),
                           names_to = "measure",
-                          values_to = "score")
+                          values_to = "score") %>%
+      dplyr::mutate(trial_id = trial_id)
 
 
     logging::loginfo("additional_scores: %s", additional_scores)
