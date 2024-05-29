@@ -15,7 +15,7 @@ check_jwt <- function(jwt) {
 
   jwt <- paste(readLines(jwt_file), collapse = "\n")
 
-  public_key_pem <- jose::jwt_read(jwt)
+  public_key_pem <- jose::jwk_read(jwt)
 
   tryCatch({
 

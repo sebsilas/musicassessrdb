@@ -33,14 +33,12 @@ Imports:
     shiny,
     tibble
 Depends:
-    R (>= 2.10),
-    shinyusermanagement (>= 0.1.0)
+    R (>= 2.10)
 URL: https://github.com/sebsilas/musicassessrdb
 BugReports: https://github.com/sebsilas/musicassessrdb/issues
 Remotes: 
     pmcharrison/psychTestR,
     pmcharrison/psychTestRCAT,
     sebsilas/psychTestRCATME,
-    sebsilas/shinyusermanagement,
     sebsilas/awslambdafuns,
     klausfrieler/psyquest
