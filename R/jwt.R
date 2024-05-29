@@ -23,7 +23,9 @@ check_jwt <- function(jwt) {
 
 
     tibble::tibble(success = TRUE,
-                   message = "The JWT token was valid.")
+                   message = "The JWT token was valid.",
+                   username = decoded_jwt$cognito:username,
+                   user_id = as.integer(decoded_jwt$custom:userId)
 
 
   }, error = function(err) {
@@ -31,7 +33,9 @@ check_jwt <- function(jwt) {
     logging::logerror(err)
 
     tibble::tibble(success = FALSE,
-                   message = "The JWT token was not valid.")
+                   message = "The JWT token was not valid.",
+                   username = NA,
+                   user_id = NA)
 
   })
 
