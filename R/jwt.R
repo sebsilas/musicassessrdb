@@ -19,7 +19,7 @@ check_jwt <- function(jwt) {
 
   tryCatch({
 
-    decoded_jwt <- jose::jwt_decode_sig(jwt_token, public_key_pem)
+    decoded_jwt <- jose::jwt_decode_sig(jwt, public_key_pem)
 
     tibble::tibble(success = TRUE,
                    message = "The JWT token was valid.")
