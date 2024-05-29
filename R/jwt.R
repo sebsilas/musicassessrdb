@@ -11,15 +11,16 @@
 #' @examples
 check_jwt <- function(jwt) {
 
-  jwt_file <- Sys.getenv("JWT_KEY")
+  jwk_file <- Sys.getenv("JWK_KEY")
 
-  jwt <- paste(readLines(jwt_file), collapse = "\n")
+  jwk <- paste(readLines(jwk_file), collapse = "\n")
 
-  public_key_pem <- jose::jwk_read(jwt)
+  public_key_pem <- jose::jwk_read(jwk)
 
   tryCatch({
 
     decoded_jwt <- jose::jwt_decode_sig(jwt, public_key_pem)
+
 
     tibble::tibble(success = TRUE,
                    message = "The JWT token was valid.")
