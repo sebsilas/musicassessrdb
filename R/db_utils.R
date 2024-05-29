@@ -466,6 +466,16 @@ get_item_bank_names <- function(db_con, item_ids) {
 }
 
 
+#' Left join on items
+#'
+#' @param db_con
+#' @param item_banks
+#' @param df_with_item_ids
+#'
+#' @return
+#' @export
+#'
+#' @examples
 left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
 
   item_banks_table <- get_table(db_con, "item_banks", collect = TRUE)

@@ -20,6 +20,7 @@ Imports:
     ggplot2,
     htmltools,
     httr,
+    jose,
     logging,
     lubridate,
     magrittr,
