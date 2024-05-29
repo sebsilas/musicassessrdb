@@ -3,19 +3,19 @@
 
 #' Check JWT
 #'
-#' @param jwt_token
+#' @param jwt
 #'
 #' @return
 #' @export
 #'
 #' @examples
-check_jwk <- function(jwt_token) {
+check_jwt <- function(jwt) {
 
-  jwk_file <- Sys.getenv("JWK_KEY")
+  jwt_file <- Sys.getenv("JWT_KEY")
 
-  jwk <- paste(readLines(jwk_file), collapse = "\n")
+  jwt <- paste(readLines(jwt_file), collapse = "\n")
 
-  public_key_pem <- jose::jwk_read(jwk)
+  public_key_pem <- jose::jwt_read(jwt)
 
   tryCatch({
 
