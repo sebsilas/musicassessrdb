@@ -10,11 +10,12 @@ db_append_session(
   user_id,
   psychTestR_session_id = NA,
   session_time_started = Sys.time(),
-  experiment_id = NA
+  experiment_id = NA,
+  user_info = NA
 )
 }
 \arguments{
-\item{experiment_id}{}
+\item{user_info}{}
 }
 \description{
 Store session information in sessions table

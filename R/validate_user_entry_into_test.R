@@ -35,7 +35,6 @@ validate_user_entry_into_test <- function(validate_user_entry_into_test, elts, .
 
           # Get URL parameters
           url_params <- psychTestR::get_url_params(state)
-
           proposed_token <- url_params$session_token
           user_id <- url_params$user_id
           job_id <- url_params$job_id

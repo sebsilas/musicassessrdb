@@ -208,13 +208,14 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
     user_id <- psychTestR::get_global("user_id", state)
     session_info <- psychTestR::get_session_info(state, complete = FALSE)
     psychTestR_session_id <- session_info$p_id
+    user_info <- psychTestR::get_global("user_info", state)
 
     if(asynchronous_api_mode) {
 
       logging::loginfo("call compute_session_scores_and_end_session_api...")
 
         final_session_result <- future::future({
-          compute_session_scores_and_end_session_api(test_id, musicassessr::get_promise_value(session_id), user_id, psychTestR_session_id, session_complete = 1)
+          compute_session_scores_and_end_session_api(test_id, musicassessr::get_promise_value(session_id), user_id, psychTestR_session_id, session_complete = "1", user_info = user_info)
         }, seed = NULL) %...>% (function(result) {
           logging::loginfo("Returning promise result: %s", result)
           if(result$status == 200) {
@@ -253,10 +254,12 @@ get_session_trials <- function(session_id) {
 #' @examples
 get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 
-  # Get DB con
-  db_con <- psychTestR::get_global("db_con", state)
+  # NB. This will be deprecated soon
+  db_con <- musicassessr_con()
   user_id <- psychTestR::get_global("user_id", state)
   current_test_id <- psychTestR::get_global("test_id", state)
+
+  browser()
 
   user_trials <- compile_item_trials(db_con, current_test_id, user_id = user_id) # Note, that there is a "session_id" argument we probably want to explore using in the future
 
@@ -281,6 +284,10 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
     dplyr::rename(abs_melody = stimulus_abs_melody,
                   durations = stimulus_durations) %>%
     dplyr::mutate(melody_no = dplyr::row_number() )
+
+  DBI::dbDisconnect(db_con)
+
+  return(user_trials)
 
 
 }
@@ -494,9 +501,12 @@ left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
 
 }
 
+# db_con <- musicassessr_con()
+# t <- get_study_history_stats(db_con, user_id = 83L, test_id = 1L, inst = NULL, item_id = "singpause_phrase_6")
+# DBI::dbDisconnect(db_con)
 
 # For a user, item, test, and measure combo, get the most recent score before the present moment
-get_latest_score <- function(db_con, user_id, test_id = NULL, inst = NULL, item_id = NULL, measure = "opti3") {
+get_study_history_stats <- function(db_con, user_id, test_id = NULL, inst = NULL, item_id = NULL, measure = "opti3") {
 
   tryCatch({
 
@@ -518,11 +528,8 @@ get_latest_score <- function(db_con, user_id, test_id = NULL, inst = NULL, item_
       df <- df %>% dplyr::filter(item_id == !! item_id)
     }
 
-    df <- df %>%
-      dplyr::slice_max(trial_time_completed) %>%
-      dplyr::collect()
-
-    trial_id <- df$trial_id
+    trial_id <- df %>%
+      dplyr::pull(trial_id)
 
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
       dplyr::filter(trial_id == !! trial_id,
@@ -530,22 +537,65 @@ get_latest_score <- function(db_con, user_id, test_id = NULL, inst = NULL, item_
       dplyr::collect()
 
     df <- df %>%
+      dplyr::collect() %>%
       dplyr::left_join(trial_scores, by = "trial_id")
 
-    score <- df %>% dplyr::select(score, trial_time_completed)
+    # Take on the last attempt
+    df <- df %>%
+      dplyr::group_by(item_id, trial_id) %>%
+      dplyr::slice_max(attempt) %>%
+      dplyr::ungroup()
 
-    return(score)
+    # Should we compute some stats on attempt too though?
+
+
+    # Compute item stats
+    no_times_practised <- nrow(df)
+
+
+    if(nrow(df) > 1L) {
+
+      # We use a date not so far in the past, to put the values on a reasonable scale for model fitting
+      reference_date <- as.numeric(as.POSIXct("2024-01-01 00:00:00", tz="UTC"))
+
+      df <- df %>%
+        dplyr::mutate(trial_time_completed_days =  as.numeric((trial_time_completed - reference_date)) / (60 * 60 * 24))
+
+      lm_score <- lm(score ~ trial_time_completed_days, data = df)
+
+      gradient_across_all_scores <- coef(lm_score)[['trial_time_completed_days']]
+
+    } else {
+      gradient_across_all_scores <- NA
+    }
+
+
+    item_stats <- tibble::tibble(no_times_practised = no_times_practised,
+                                 gradient_across_all_scores = gradient_across_all_scores)
+
+    # Get latest score
+    df <- df %>%
+      dplyr::slice_max(trial_time_completed) %>%
+      dplyr::collect()
+
+    score <- df %>%
+      dplyr::select(score, trial_time_completed)
+
+    # Combine with other stats
+    item_stats <- cbind(item_stats, score)
+
+    return(item_stats)
   }, error = function(err) {
     logging::logerror(err)
     logging::loginfo("Score not found, assuming not learned before and returning NA.")
-    return(tibble::tibble(score = NA, trial_time_completed = NA))
+    return(tibble::tibble(last_score = NA, trial_time_completed = NA, no_times_practised = NA, gradient_across_all_scores = NA))
   })
 
 }
 
 # db_con <- musicassessr_con()
-# t <- get_latest_score(db_con, 2L, 2L, "Voice", "WJD_phrase_8308")
-# t <- get_latest_score(db_con, 2L, 2L, "Voice", "fail")
+# t <- get_study_history_stats(db_con, 2L, 2L, "Voice", "WJD_phrase_8308")
+# t <- get_study_history_stats(db_con, 2L, 2L, "Voice", "fail")
 # DBI::dbDisconnect(db_con)
 
 # tests

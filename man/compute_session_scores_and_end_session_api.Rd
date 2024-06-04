@@ -9,11 +9,12 @@ compute_session_scores_and_end_session_api(
   session_id,
   user_id,
   psychTestR_session_id = NA,
-  session_complete = c("0", "1")
+  session_complete = c("0", "1"),
+  user_info = NA
 )
 }
 \arguments{
-\item{session_complete}{}
+\item{user_info}{}
 }
 \description{
 Compute session scores and end session API
