@@ -9,6 +9,7 @@
 #' @param user_id
 #' @param psychTestR_session_id
 #' @param session_complete
+#' @param user_info
 #'
 #' @return
 #' @export
@@ -18,7 +19,12 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_id,
                                                        user_id,
                                                        psychTestR_session_id = NA,
-                                                       session_complete = c("0", "1")) {
+                                                       session_complete = c("0", "1"),
+                                                       user_info = NA) {
+
+  if(is.null(user_info)) {
+    user_info <- NA
+  }
 
   session_complete <- match.arg(session_complete)
 
@@ -27,7 +33,8 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
                        session_id = session_id,
                        user_id = user_id,
                        psychTestR_session_id = psychTestR_session_id,
-                       session_complete = session_complete)
+                       session_complete = session_complete,
+                       user_info = user_info)
 
   endpoint_wrapper(function_name = "compute-session-scores-and-end-session",
                    request_body = request_body)
@@ -43,7 +50,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
                                                    session_id,
                                                    user_id,
                                                    psychTestR_session_id = NA,
-                                                   session_complete = c("0", "1")) {
+                                                   session_complete = c("0", "1"),
+                                                   user_info = NA) {
 
   logging::loginfo("Inside compute_session_scores_and_end_session...")
 
@@ -64,6 +72,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
   logging::loginfo("session_complete = %s", session_complete)
 
+  logging::loginfo("user_info = %s", user_info)
+
   complete_time <- Sys.time()
 
 
@@ -75,7 +85,7 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     logging::loginfo("Storing complete time as %s", complete_time)
 
-    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time, psychTestR_session_id = psychTestR_session_id, session_complete = session_complete))
+    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time, psychTestR_session_id = psychTestR_session_id, session_complete = session_complete, user_info = user_info))
 
     dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
 
