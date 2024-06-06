@@ -1,4 +1,86 @@
 
+# db_con <- musicassessr_con()
+# t <- select_items_test()
+# DBI::dbDisconnect(db_con)
+
+select_items_test <- function(job_id = "test", user_id = 77, fallback_item_bank = c("Berkowitz_ngram", "Berkowitz_phrase")) {
+
+  logging::loginfo("Inside select_items function")
+
+
+  response <- tryCatch({
+
+    # Instantiate vars
+    num_items_review <- 3L
+    num_items_new <- 3L
+    approach_name <- "new_and_review_randomly_chosen_approaches"
+    only_use_items_from_fallback_item_banks <- TRUE
+
+    logging::loginfo("user_id = %s", user_id)
+    logging::loginfo("num_items_review = %s", num_items_review)
+    logging::loginfo("num_items_new = %s", num_items_new)
+    logging::loginfo("approach_name = %s", approach_name)
+    logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
+    logging::loginfo("Taking approach: %s", approach_name)
+
+    # Compile user trials
+
+    logging::loginfo("Compiling user trials")
+
+    user_trials <- compile_item_trials(db_con,
+                                       user_id = user_id,
+                                       join_item_banks_on = TRUE,
+                                       filter_item_banks = if(only_use_items_from_fallback_item_banks) fallback_item_bank else NULL,
+                                       add_trial_scores = TRUE)
+
+    logging::loginfo("Got user trials")
+
+
+    if(approach_name == "new_and_review_randomly_chosen_approaches") {
+
+      review_items_df <- get_items(type = "review", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank, num_items_review, user_id)
+      new_items_df <- get_items(type = "new", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank,  num_items_new, user_id)
+
+
+    } else {
+      type <- if(approach_name %in% names(new_item_approaches)) "new" else if (approach_name %in% names(review_item_approaches)) "review" else stop("Approach not known")
+      items_df <- get_items(type, approach_name, user_trials, fallback_item_bank, num_items, user_id)
+      if(type == "new") {
+        new_items_df <- items_df
+      } else {
+        review_items_df <- items_df
+      }
+    }
+
+
+    # # Append selected items to DynamoDB
+    # update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(review_items = review_items_df,
+    #                                                                    new_items = new_items_df)), status = "FINISHED")
+
+    list(status = 200,
+         message = paste0("You have successfully selected new items for ", user_id, "!")
+    )
+
+
+  }, error = function(err) {
+
+    logging::logerror(err)
+
+    list(
+      status = 400,
+      message = "Something went wrong!"
+    )
+
+  })
+
+  #tictoc::toc() # Remember to not deploy this!
+
+  return(response)
+
+
+
+
+}
 
 #' Get job status API for select items lambda
 #'
@@ -141,12 +223,17 @@ get_items <- function(type = c("new", "review"),
 
   logging::loginfo("fallback_item_bank_id: %s", fallback_item_bank_ids)
 
+  logging::loginfo("Getting fallback item banks...")
+
   fallback_item_banks <- purrr::map2(fallback_item_bank_names, fallback_item_bank_ids, function(fallback_item_bank_name, fallback_item_bank_id) {
+    logging::loginfo(fallback_item_bank_name)
     dplyr::tbl(db_con, paste0("item_bank_", fallback_item_bank_name)) %>%
-      dplyr::slice_sample(n = 10000) %>%  # We don't want to collect too much information in
+      dplyr::slice_sample(n = 1000) %>%  # We don't want to collect too much information in
       dplyr::collect() %>%
       dplyr::mutate(item_bank_id = !! fallback_item_bank_id)
   })
+
+  logging::loginfo("... got fallback item banks.")
 
   shared_cols <- mutual_column_names(fallback_item_banks)
 
@@ -537,24 +624,4 @@ update_job <- function(dynamodb, job_id, message, status) {
   return(response)
 }
 
-
-# t <- rjson::fromJSON('{
-#   "Records": [
-#     {
-#       "messageId": "059f36b4-87a3-44ab-83d2-661975830a7d",
-#       "receiptHandle": "AQEBwJnKyrHigUMZj6rYigCgxlaS3SLy0a...",
-#       "body": "{\"jobId\":\"36f93907-ba3a-41d6-90e5-b4da4c558f06\",\"user_id\":55}",
-#       "attributes": {
-#         "ApproximateReceiveCount": "1",
-#         "SentTimestamp": "1545082649183",
-#         "SenderId": "AIDAIENQZJOLO23YVJ4VO",
-#         "ApproximateFirstReceiveTimestamp": "1545082649185"
-#       },
-#       "messageAttributes": {},
-#       "md5OfBody": "e4e68fb7bd0e697a0ae8f1bb342846b3",
-#       "eventSource": "aws:sqs",
-#       "eventSourceARN": "arn:aws:sqs:us-east-2:123456789012:my-queue",
-#       "awsRegion": "us-east-2"
-#     }
-#   ]
-# }')
+# t <- get_job_status_api("cae7bf1e-72b2-4ebc-bf7f-970cd792f86b")

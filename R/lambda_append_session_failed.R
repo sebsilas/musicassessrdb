@@ -15,10 +15,10 @@ append_failed_session_api <- function(session_time_failed = Sys.time(),
   # Define the request body as a list
   request_body <- list(
     session_time_failed = session_time_failed,
-    user_info = user_info,
+    user_info = user_info
   )
 
-  endpoint_wrapper(function_name = "append-session-failed",
+  endpoint_wrapper(function_name = "append-failed-session",
                    request_body = request_body)
 
 }

@@ -1,5 +1,8 @@
 
 
+# t <- get_trial_and_session_data(user_id = 77)
+# t2 <- t$user_stats %>% dplyr::bind_rows()
+
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
                                            trial_score_measure = "opti3",
@@ -56,17 +59,21 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::collect() %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
+    session_ids <- sessions$session_id
 
     session_scores <- get_table(db_con, "scores_session", collect = TRUE) %>%
         dplyr::filter(!is.na(measure) & !is.na(score)) %>%
         dplyr::filter(measure %in% c(session_score_measure_arrhythmic, session_score_measure_rhythmic)) %>%
-        dplyr::filter(session_id %in% !! sessions$session_id) %>%
+        dplyr::filter(session_id %in% !! session_ids) %>%
         dplyr::select(-scores_session_id) %>%
         dplyr::left_join(sessions, by = "session_id")
 
-    trials <- compile_item_trials(db_con, session_id = sessions$session_id, user_id = user_id, join_item_banks_on = TRUE) %>%
+    trials <- compile_item_trials(db_con, session_id = session_ids, user_id = user_id, join_item_banks_on = TRUE) %>%
               dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
       dplyr::collect()
+
+    browser()
+
 
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
       dplyr::select(-scores_trial_id) %>%

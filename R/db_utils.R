@@ -259,8 +259,6 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
   user_id <- psychTestR::get_global("user_id", state)
   current_test_id <- psychTestR::get_global("test_id", state)
 
-  browser()
-
   user_trials <- compile_item_trials(db_con, current_test_id, user_id = user_id) # Note, that there is a "session_id" argument we probably want to explore using in the future
 
   if(rhythmic) {

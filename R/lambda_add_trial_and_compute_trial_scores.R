@@ -31,6 +31,18 @@ add_trial_and_compute_trial_scores <- function(Records) {
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
     score_to_use <- "opti3"
 
+    # Return quick feedback, if need be
+    # feedback <- metadata$feedback
+    # if(feedback != 'none') {
+    #
+    #   if(feedback == "opti3") {
+    #     result <- get_opti3(stimuli, stimuli_durations, length(stimuli), user_input_as_pyin)
+    #   } else if(feedback == "produced_note") {
+    #     result <- round(mean(hrep::freq_to_midi(user_input_as_pyin$freq), na.rm = TRUE))
+    #   }
+    #
+    # }
+
     # Append trial info
     trial_id <- db_append_trials(
       db_con,
@@ -157,14 +169,14 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     # Compute a few "change in score/review" vars
 
-    last_score <- get_latest_score(db_con,
-                                   user_id = user_id,
-                                   test_id = test_id,
-                                   inst = instrument,
-                                   item_id = item_id,
-                                   measure = score_to_use)
+    study_history_stats <- get_study_history_stats(db_con,
+                                                   user_id = user_id,
+                                                   test_id = test_id,
+                                                   inst = instrument,
+                                                   item_id = item_id,
+                                                   measure = score_to_use)
 
-    logging::loginfo("last_score: %s", last_score)
+    logging::loginfo("study_history_stats: %s", study_history_stats)
 
     current_score <- trial_scores %>%
       dplyr::filter(measure == !! score_to_use) %>%
@@ -172,7 +184,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("current_score: %s", current_score)
 
-    last_score_value <- last_score$score
+    last_score_value <- study_history_stats$score
     logging::loginfo("last_score_value: %s", last_score_value)
 
     learned_in_current_session <- if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
@@ -184,9 +196,13 @@ add_trial_and_compute_trial_scores <- function(Records) {
     additional_scores <- tibble::tibble(
     learned_in_current_session = learned_in_current_session
     ) %>% dplyr::mutate(
+      last_score_value = last_score_value,
       change_in_score_from_last_session = change_in_score_from_last_session,
       increase_since_last_session = dplyr::case_when(change_in_score_from_last_session > 0 ~ 1L, TRUE ~ 0L),
-      time_since_last_item_studied = lubridate::as_datetime(trial_time_completed) - lubridate::as_datetime(last_score$trial_time_completed)
+      time_since_last_item_studied = lubridate::as_datetime(trial_time_completed) - lubridate::as_datetime(last_score$trial_time_completed),
+      # change_across_all_sessions
+      # no_times_practised
+      # something to do with similarity?
     ) %>%
       dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
       tidyr::pivot_longer(dplyr::everything(),
@@ -202,6 +218,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     print(names(additional_scores))
 
     trial_scores <- rbind(trial_scores, additional_scores)
+
 
 
     scores_trial_ids <- db_append_scores_trial(db_con,
@@ -447,3 +464,19 @@ get_rhythm_scores <- function(onset_res, stimuli_durations) {
 
 # pyin::test_pyin() %>% dplyr::select(onset:note) %>% db_append_melodic_production()
 
+c(56, 56, 58, 60, 58, 53, 55, 55, 56, 58, 51, 56, 56, 58, 60, 58, 53, 55, 55,
+  56, 58, 56, 63, 63, 63, 63, 62, 58, 58, 58, 58, 60, 61, 61, 61, 63, 61, 60, 63,
+  63, 63, 63, 62, 58, 58, 58, 58, 60, 61, 61, 61, 60, 58, 56) %>%
+  diff()
+
+c(65,65,67,69,67,62,64,64,65,67,60,65,65,67,69,67,62,64,64,65,67,65,72,72,72,72,71,67,
+  67,67,67,69,70,70,70,72,70,69,72,72,72,72,71,67,67,67,67,69,70,70,70,69,67,65) %>%
+  diff()
+
+
+
+c(64, 64, 63, 61, 61, 59, 57, 56, 56, 57, 61, 59, 57, 56) %>%
+  diff()
+
+c(69,69,68,66,66,64,62,61,61,62,66,64,62,61) %>%
+  diff()
