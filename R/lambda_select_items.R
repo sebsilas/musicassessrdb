@@ -3,7 +3,7 @@
 # t <- select_items_test()
 # DBI::dbDisconnect(db_con)
 
-select_items_test <- function(job_id = "test", user_id = 77, fallback_item_bank = c("Berkowitz_ngram", "Berkowitz_phrase")) {
+select_items_test <- function(job_id = "test", user_id = 77, fallback_item_bank = "Berkowitz_bottom_10th_percentile") {
 
   logging::loginfo("Inside select_items function")
 
@@ -121,7 +121,7 @@ select_items <- function(Records) {
     num_items_review <- 3L
     num_items_new <- 3L
     approach_name <- "new_and_review_randomly_chosen_approaches"
-    fallback_item_bank <- c("singpause_phrase", "singpause_item")
+    fallback_item_bank <- "Berkowitz_bottom_10th_percentile"
     only_use_items_from_fallback_item_banks <- TRUE
 
     # Parse event
