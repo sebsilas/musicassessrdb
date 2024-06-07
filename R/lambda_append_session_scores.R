@@ -1,6 +1,11 @@
 
 
-
+# t <- compute_session_scores_and_end_session_api(test_id = 1,
+#                                                 session_id = 1700,
+#                                                 user_id = 83,
+#                                                 psychTestR_session_id = "test",
+#                                                 session_complete = "0",
+#                                                 user_info = "test")
 
 #' Compute session scores and end session API
 #'
@@ -153,6 +158,9 @@ compute_session_scores_and_end_session <- function(test_id = NA,
         dplyr::pull(mean_opti3)
 
       logging::loginfo("mean_opti3_arrhythmic_last_attempt %s", mean_opti3_arrhythmic_last_attempt)
+
+      # lme4 namespace needed for predict method
+      loadNamespace("lme4")
 
       ### Ability estimate
       #### First attempt
