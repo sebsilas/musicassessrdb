@@ -259,7 +259,12 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
   user_id <- psychTestR::get_global("user_id", state)
   current_test_id <- psychTestR::get_global("test_id", state)
 
+  cat(file=stderr(), "user_id", user_id, "\n")
+  cat(file=stderr(), "current_test_id", current_test_id, "\n")
+
   user_trials <- compile_item_trials(db_con, current_test_id, user_id = user_id) # Note, that there is a "session_id" argument we probably want to explore using in the future
+
+  cat(file=stderr(), "nrow(user_trials)", nrow(user_trials), "\n")
 
   if(rhythmic) {
     logging::loginfo("Filtering to use only previously rhythmic trials")
@@ -270,6 +275,8 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
   }
 
   # Sample from previous trials
+
+  cat(file=stderr(), "Sample from previous trials \n")
 
   user_trials <- user_trials %>%
     dplyr::select(stimulus_abs_melody, stimulus_durations, item_id, rhythmic) %>%
@@ -282,6 +289,8 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
     dplyr::rename(abs_melody = stimulus_abs_melody,
                   durations = stimulus_durations) %>%
     dplyr::mutate(melody_no = dplyr::row_number() )
+
+  cat(file=stderr(), "nrow(user_trials)", nrow(user_trials), "\n")
 
   DBI::dbDisconnect(db_con)
 
