@@ -1,8 +1,4 @@
 
-# t <- add_trial_and_compute_trial_scores("Records")
-
-# debug(itembankr::produce_extra_melodic_features)
-
 # This is the function that is called when the endpoint
 # is invoked
 add_trial_and_compute_trial_scores <- function(Records) {
@@ -23,7 +19,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     stimuli <- itembankr::str_mel_to_vector(metadata$stimuli)
     stimuli_durations <- itembankr::str_mel_to_vector(metadata$stimuli_durations)
-    midi_vs_audio <- metadata$midi_vs_audio
     test_id <- as.integer(metadata$test_id)
     item_id <- metadata$item_id
     user_id <- metadata$user_id
@@ -60,99 +55,89 @@ add_trial_and_compute_trial_scores <- function(Records) {
       stimulus_abs_melody = if(test_id == 3L) NULL else metadata$stimuli, # RTT (test_id == 3), doesn't have a melody
       stimulus_durations = metadata$stimuli_durations,
       review_items_id = if(length(metadata$review_items_id) == 0) NA else as.integer(metadata$review_items_id),
-      new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$review_items_id)
+      new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
+      trial_type = 'audio'
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)
 
 
-    # Get pYIN (or onset) res
+    # Get pYIN (or rhythm onset) results
+
+    res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
+
+    logging::loginfo("res: %s", res)
 
 
-    if(midi_vs_audio == "audio") {
+    if(test_id == 3) { # i.e., the RTT
 
-      res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
+      logging::loginfo("Score rhythm production...")
 
-      logging::loginfo("res: %s", res)
+      logging::loginfo("names(res)")
+      logging::loginfo(names(res))
 
+      logging::loginfo("res")
+      logging::loginfo(res)
 
-      if(test_id == 3) { # i.e., the RTT
+      scores <- get_rhythm_scores(res, stimuli_durations)
 
-        logging::loginfo("Score rhythm production...")
-
-        logging::loginfo("names(res)")
-        logging::loginfo(names(res))
-
-        logging::loginfo("res")
-        logging::loginfo(res)
-
-        scores <- get_rhythm_scores(res, stimuli_durations)
-
-        melodic_production_ids <- NA
-
-      } else {
-
-        logging::loginfo("Score melodic production...")
-
-        # TODO.. pyin_pitch_track
-        #pyin_pitch_track <- "blah"
-
-        res <- res %>%
-          dplyr::mutate(freq = as.numeric(freq),
-                        dur = as.numeric(dur),
-                        onset = as.numeric(onset),
-                        note = round(hrep::freq_to_midi(freq)))
-
-        user_notes <- res$note
-
-        logging::loginfo("Scoring melodic production...")
-
-        logging::loginfo("res$freq %s", res$freq)
-        logging::loginfo("user_notes %s", user_notes)
-        logging::loginfo("res$dur %s", res$dur)
-        logging::loginfo("res$onset %s", res$onset)
-        logging::loginfo("stimuli %s", stimuli)
-        logging::loginfo("stimuli_durations %s", stimuli_durations)
-
-        logging::loginfo("is.numeric(res$freq) %s", is.numeric(res$freq))
-        logging::loginfo("is.numeric(user_notes) %s", is.numeric(user_notes))
-        logging::loginfo("is.numeric(res$dur) %s", is.numeric(res$dur))
-        logging::loginfo("is.numeric(res$onset) %s", is.numeric(res$onset))
-        logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
-        logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
-
-        # Store pYIN in DB
-        scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
-                                                         user_melody_input = user_notes,
-                                                         user_duration_input = res$dur,
-                                                         user_onset_input = res$onset,
-                                                         stimuli = stimuli,
-                                                         stimuli_durations = stimuli_durations,
-                                                         as_tb = FALSE)
-
-        correct_boolean <- scores$correct_boolean
-        correct_boolean_octaves_allowed <- scores$correct_boolean_octaves_allowed
-
-        logging::loginfo("length(correct_boolean) %s", length(correct_boolean))
-        logging::loginfo("correct_boolean: %s", correct_boolean)
-        logging::loginfo("correct_boolean_octaves_allowed: %s", correct_boolean_octaves_allowed)
-
-        logging::loginfo("Append melodic production...")
-
-        # Add melodic production
-        melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
-
-        logging::loginfo("...appended.")
-
-
-      }
-
-
-    } else if(midi_vs_audio == "midi") {
-      logging::logerror("No MIDI method implemented here yet.")
-    } else {
       melodic_production_ids <- NA
-      logging::logerror("This is not a method.")
+
+    } else {
+
+      logging::loginfo("Score melodic production...")
+
+      # TODO.. pyin_pitch_track
+      #pyin_pitch_track <- "blah"
+
+      res <- res %>%
+        dplyr::mutate(freq = as.numeric(freq),
+                      dur = as.numeric(dur),
+                      onset = as.numeric(onset),
+                      note = round(hrep::freq_to_midi(freq)))
+
+      user_notes <- res$note
+
+      logging::loginfo("Scoring melodic production...")
+
+      logging::loginfo("res$freq %s", res$freq)
+      logging::loginfo("user_notes %s", user_notes)
+      logging::loginfo("res$dur %s", res$dur)
+      logging::loginfo("res$onset %s", res$onset)
+      logging::loginfo("stimuli %s", stimuli)
+      logging::loginfo("stimuli_durations %s", stimuli_durations)
+
+      logging::loginfo("is.numeric(res$freq) %s", is.numeric(res$freq))
+      logging::loginfo("is.numeric(user_notes) %s", is.numeric(user_notes))
+      logging::loginfo("is.numeric(res$dur) %s", is.numeric(res$dur))
+      logging::loginfo("is.numeric(res$onset) %s", is.numeric(res$onset))
+      logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
+      logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
+
+      # Store pYIN in DB
+      scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
+                                                       user_melody_input = user_notes,
+                                                       user_duration_input = res$dur,
+                                                       user_onset_input = res$onset,
+                                                       stimuli = stimuli,
+                                                       stimuli_durations = stimuli_durations,
+                                                       as_tb = FALSE)
+
+      correct_boolean <- scores$correct_boolean
+      correct_boolean_octaves_allowed <- scores$correct_boolean_octaves_allowed
+
+      logging::loginfo("length(correct_boolean) %s", length(correct_boolean))
+      logging::loginfo("correct_boolean: %s", correct_boolean)
+      logging::loginfo("correct_boolean_octaves_allowed: %s", correct_boolean_octaves_allowed)
+
+      logging::loginfo("Append melodic production...")
+
+      # Add melodic production
+      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
+
+      logging::loginfo("...appended.")
+
+
     }
 
     logging::loginfo("...scored.")
@@ -167,43 +152,16 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("Append to scores_trial")
 
-    # Compute a few "change in score/review" vars
-
     study_history_stats <- get_study_history_stats(db_con,
                                                    user_id = user_id,
                                                    test_id = test_id,
                                                    inst = instrument,
                                                    item_id = item_id,
-                                                   measure = score_to_use)
+                                                   measure = score_to_use,
+                                                   current_trial_scores = trial_scores,
+                                                   current_trial_time_completed = trial_time_completed)
 
-    logging::loginfo("study_history_stats: %s", study_history_stats)
-
-    current_score <- trial_scores %>%
-      dplyr::filter(measure == !! score_to_use) %>%
-      dplyr::pull(score)
-
-    logging::loginfo("current_score: %s", current_score)
-
-    last_score_value <- study_history_stats$score
-    logging::loginfo("last_score_value: %s", last_score_value)
-
-    learned_in_current_session <- if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
-
-    logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
-
-    change_in_score_from_last_session <- current_score - last_score_value
-
-    additional_scores <- tibble::tibble(
-    learned_in_current_session = learned_in_current_session
-    ) %>% dplyr::mutate(
-      last_score_value = last_score_value,
-      change_in_score_from_last_session = change_in_score_from_last_session,
-      increase_since_last_session = dplyr::case_when(change_in_score_from_last_session > 0 ~ 1L, TRUE ~ 0L),
-      time_since_last_item_studied = lubridate::as_datetime(trial_time_completed) - lubridate::as_datetime(last_score$trial_time_completed),
-      # change_across_all_sessions
-      # no_times_practised
-      # something to do with similarity?
-    ) %>%
+    study_history_stats %>%
       dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
       tidyr::pivot_longer(dplyr::everything(),
                           names_to = "measure",
@@ -244,7 +202,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
     list(
       status = 400,
       message = "Something went wrong!",
-      experiment_condition_id = NA
+      trial_id = trial_id,
+      scores_trial_ids = NA,
+      melodic_production_ids = NA
     )
 
   })
@@ -433,7 +393,7 @@ get_metadata <- function(file, bucket = Sys.getenv("DESTINATION_BUCKET")) {
   tibble::as_tibble() %>%
   dplyr::rename_with(~ .x %>% stringr::str_remove("x-amz-meta-") %>% stringr::str_remove("x-amz-") %>% stringr::str_replace_all("-", "_")
                     ) %>%
-  dplyr::select(midi_vs_audio, session_id, rhythmic, display_modality,
+  dplyr::select(session_id, rhythmic, display_modality,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
           trial_time_started, onset)
@@ -452,31 +412,4 @@ get_rhythm_scores <- function(onset_res, stimuli_durations) {
   scores <- musicassessr::score_rhythm_production(stimuli_durations, user_durations)
 
 }
-# t <- get_metadata("f04af2f95a4e7749610e3482b60c1d9de3da31e23d5ae06b159aaf15b88d915d.arrhythmic_melody_1_attempt_1.12-12-2023--15-25--35.csv")
 
-# t <- add_trial_and_compute_trial_scores("f04af2f95a4e7749610e3482b60c1d9de3da31e23d5ae06b159aaf15b88d915d.arrhythmic_melody_1_attempt_1.12-12-2023--15-25--35.csv")
-
-
-
-# onset_res <- readFromS3(filename = "qwdqwe23421.rhythm_call_and_response.record_audio_page.9-3-2024--11-49--29.csv",
-#                         bucket = Sys.getenv("DESTINATION_BUCKET"))
-
-
-# pyin::test_pyin() %>% dplyr::select(onset:note) %>% db_append_melodic_production()
-
-c(56, 56, 58, 60, 58, 53, 55, 55, 56, 58, 51, 56, 56, 58, 60, 58, 53, 55, 55,
-  56, 58, 56, 63, 63, 63, 63, 62, 58, 58, 58, 58, 60, 61, 61, 61, 63, 61, 60, 63,
-  63, 63, 63, 62, 58, 58, 58, 58, 60, 61, 61, 61, 60, 58, 56) %>%
-  diff()
-
-c(65,65,67,69,67,62,64,64,65,67,60,65,65,67,69,67,62,64,64,65,67,65,72,72,72,72,71,67,
-  67,67,67,69,70,70,70,72,70,69,72,72,72,72,71,67,67,67,67,69,70,70,70,69,67,65) %>%
-  diff()
-
-
-
-c(64, 64, 63, 61, 61, 59, 57, 56, 56, 57, 61, 59, 57, 56) %>%
-  diff()
-
-c(69,69,68,66,66,64,62,61,61,62,66,64,62,61) %>%
-  diff()

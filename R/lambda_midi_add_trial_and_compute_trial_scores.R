@@ -16,8 +16,6 @@
 #' @param rhythmic
 #' @param session_id
 #' @param test_id
-#' @param stimulus_abs_melody
-#' @param stimulus_durations
 #' @param review_items_id
 #' @param new_items_id
 #' @param dur
@@ -42,8 +40,6 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                                                        phase,
                                                        rhythmic,
                                                        session_id,
-                                                       stimulus_abs_melody = NA,
-                                                       stimulus_durations,
                                                        review_items_id = NA,
                                                        new_items_id = NA,
                                                        dur,
@@ -66,8 +62,6 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                        rhythmic = rhythmic,
                        session_id = session_id,
                        test_id = test_id,
-                       stimulus_abs_melody = stimulus_abs_melody,
-                       stimulus_durations = stimulus_durations,
                        review_items_id = review_items_id,
                        new_items_id = new_items_id,
                        dur = dur,

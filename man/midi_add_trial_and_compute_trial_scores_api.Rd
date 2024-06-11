@@ -19,8 +19,6 @@ midi_add_trial_and_compute_trial_scores_api(
   phase,
   rhythmic,
   session_id,
-  stimulus_abs_melody = NA,
-  stimulus_durations,
   review_items_id = NA,
   new_items_id = NA,
   dur,

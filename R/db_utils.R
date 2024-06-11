@@ -509,93 +509,170 @@ left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
 }
 
 # db_con <- musicassessr_con()
-# t <- get_study_history_stats(db_con, user_id = 83L, test_id = 1L, inst = NULL, item_id = "singpause_phrase_6")
+# t <- get_study_history_stats(db_con, user_id = 2L, test_id = 2L, inst = NULL, item_id = "WJD_phrase_8633")
 # DBI::dbDisconnect(db_con)
 
 # For a user, item, test, and measure combo, get the most recent score before the present moment
-get_study_history_stats <- function(db_con, user_id, test_id = NULL, inst = NULL, item_id = NULL, measure = "opti3") {
+get_study_history_stats <- function(db_con,
+                                    user_id,
+                                    test_id = NULL,
+                                    inst = NULL,
+                                    item_id = NULL,
+                                    measure = "opti3",
+                                    current_trial_scores) {
 
   tryCatch({
 
     trials <- dplyr::tbl(db_con, "trials")
 
-    df <- dplyr::tbl(db_con, "sessions") %>%
+    trials <- dplyr::tbl(db_con, "sessions") %>%
       dplyr::filter(user_id == !! user_id) %>%
-      dplyr::left_join(trials, by = "session_id")
+      dplyr::left_join(trials, by = "session_id") %>%
+      dplyr::collect() # REMOVE THIS AFTER
 
-    if(!is.null(test_id)) {
-      df <- df %>% dplyr::filter(test_id == !! test_id)
-    }
 
-    if(!is.null(inst)) {
-      df <- df %>% dplyr::filter(instrument == !! inst)
-    }
-
-    if(!is.null(item_id)) {
-      df <- df %>% dplyr::filter(item_id == !! item_id)
-    }
-
-    trial_id <- df %>%
-      dplyr::pull(trial_id)
-
+    # Join on trial scores
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
-      dplyr::filter(trial_id == !! trial_id,
-                    measure == !! measure) %>%
+      dplyr::filter(measure == !! measure) %>%
       dplyr::collect()
 
-    df <- df %>%
+    trials <- trials %>%
       dplyr::collect() %>%
       dplyr::left_join(trial_scores, by = "trial_id")
 
-    # Take on the last attempt
-    df <- df %>%
-      dplyr::group_by(item_id, trial_id) %>%
+
+    if(!is.null(test_id)) {
+      trials <- trials %>%
+        dplyr::filter(test_id == !! test_id)
+    }
+
+    if(!is.null(inst)) {
+      trials <- trials %>% dplyr::filter(instrument == !! inst)
+    }
+
+
+    if(!is.null(item_id)) {
+      trials <- trials %>% dplyr::filter(item_id == !! item_id)
+    }
+
+
+    # Change across all sessions
+    first_trial <- trials %>% dplyr::slice_min(trial_time_completed) %>% dplyr::pull(score)
+    last_trial <- trials %>% dplyr::slice_max(trial_time_completed) %>% dplyr::pull(score)
+    change_across_all_sessions <- last_trial - first_trial
+
+    # Number of times practised
+    no_times_practised <- trials %>%
+      dplyr::pull(session_id) %>%
+      unique() %>%
+      length()
+
+
+    # Average no. attempts
+    avg_no_attempts <- trials %>%
+      dplyr::group_by(session_id) %>%
       dplyr::slice_max(attempt) %>%
-      dplyr::ungroup()
+      dplyr::ungroup() %>%
+      dplyr::pull(attempt) %>%
+      mean(na.rm = TRUE)
 
-    # Should we compute some stats on attempt too though?
+    # Average change across attempts
+    avg_change_across_attempts <- trials %>%
+      dplyr::group_by(session_id) %>%
+      dplyr::summarise(change_across_attempts = score[max(attempt)] - score[min(attempt)] ) %>%
+      dplyr::ungroup() %>%
+      dplyr::pull(change_across_attempts) %>%
+      mean(na.rm = TRUE)
 
 
-    # Compute item stats
-    no_times_practised <- nrow(df)
 
-
-    if(nrow(df) > 1L) {
+    if(length(unique(trials$session_id)) > 1L) {
 
       # We use a date not so far in the past, to put the values on a reasonable scale for model fitting
       reference_date <- as.numeric(as.POSIXct("2024-01-01 00:00:00", tz="UTC"))
 
-      df <- df %>%
+      trials <- trials %>%
         dplyr::mutate(trial_time_completed_days =  as.numeric((trial_time_completed - reference_date)) / (60 * 60 * 24))
 
-      lm_score <- lm(score ~ trial_time_completed_days, data = df)
+      lm_score <- lm(score ~ trial_time_completed_days + attempt, data = trials)
 
       gradient_across_all_scores <- coef(lm_score)[['trial_time_completed_days']]
+      item_intercept <- coef(lm_score)[['(Intercept)']]
 
     } else {
       gradient_across_all_scores <- NA
     }
 
 
-    item_stats <- tibble::tibble(no_times_practised = no_times_practised,
-                                 gradient_across_all_scores = gradient_across_all_scores)
-
-    # Get latest score
-    df <- df %>%
+    # Get last score
+    last_score <- trials %>%
       dplyr::slice_max(trial_time_completed) %>%
-      dplyr::collect()
-
-    score <- df %>%
+      dplyr::collect() %>%
       dplyr::select(score, trial_time_completed)
 
-    # Combine with other stats
-    item_stats <- cbind(item_stats, score)
+    last_score_value <- last_score %>%
+      dplyr::pull(score)
+
+    last_score_time_completed <- last_score %>%
+      dplyr::pull(trial_time_completed)
+
+    logging::loginfo("last_score_value: %s", last_score_value)
+
+
+    current_score <- current_trial_scores %>%
+      dplyr::filter(measure == !! measure) %>%
+      dplyr::pull(score)
+
+
+    logging::loginfo("current_score: %s", current_score)
+
+
+    learned_in_current_session <- if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
+
+    logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
+
+    change_in_score_from_last_session <- current_score - last_score_value
+
+    logging::loginfo("change_in_score_from_last_session: %s", change_in_score_from_last_session)
+
+
+    item_stats <- tibble::tibble(change_across_all_sessions = change_across_all_sessions,
+                                 no_times_practised = no_times_practised,
+                                 avg_no_attempts = avg_no_attempts,
+                                 avg_change_across_attempts = avg_change_across_attempts,
+                                 gradient_across_all_scores = gradient_across_all_scores,
+                                 item_intercept = item_intercept,
+                                 learned_in_current_session = learned_in_current_session,
+                                 last_score = last_score_value,
+                                 last_score_completed = last_score_time_completed,
+                                 change_in_score_from_last_session = change_in_score_from_last_session,
+                                 increase_since_last_session = dplyr::case_when(change_in_score_from_last_session > 0 ~ 1L, TRUE ~ 0L),
+                                 time_since_last_item_studied = lubridate::as_datetime(current_trial_time_completed) - lubridate::as_datetime(last_score_completed))
+
+    return(item_stats)
+
+
 
     return(item_stats)
   }, error = function(err) {
+
     logging::logerror(err)
+
     logging::loginfo("Score not found, assuming not learned before and returning NA.")
-    return(tibble::tibble(last_score = NA, trial_time_completed = NA, no_times_practised = NA, gradient_across_all_scores = NA))
+
+    return(tibble::tibble(change_across_all_sessions = NA,
+                          no_times_practised = NA,
+                          avg_no_attempts = NA,
+                          avg_change_across_attempts = NA,
+                          gradient_across_all_scores = NA,
+                          item_intercept = NA,
+                          learned_in_current_session = NA,
+                          last_score = NA,
+                          last_score_completed = NA,
+                          change_in_score_from_last_session = NA,
+                          increase_since_last_session = NA,
+                          time_since_last_item_studied = NA))
+
   })
 
 }
