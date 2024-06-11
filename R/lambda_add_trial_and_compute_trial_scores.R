@@ -161,7 +161,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
                                                    current_trial_scores = trial_scores,
                                                    current_trial_time_completed = trial_time_completed)
 
-    study_history_stats %>%
+    study_history_stats <- study_history_stats %>%
       dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
       tidyr::pivot_longer(dplyr::everything(),
                           names_to = "measure",
@@ -169,11 +169,11 @@ add_trial_and_compute_trial_scores <- function(Records) {
       dplyr::mutate(trial_id = trial_id)
 
 
-    logging::loginfo("additional_scores: %s", additional_scores)
+    logging::loginfo("study_history_stats: %s", study_history_stats)
 
     print(names(trial_scores))
 
-    print(names(additional_scores))
+    print(names(study_history_stats))
 
     trial_scores <- rbind(trial_scores, additional_scores)
 

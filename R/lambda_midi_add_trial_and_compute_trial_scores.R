@@ -241,34 +241,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                    current_trial_scores = trial_scores,
                                                    current_trial_time_completed = trial_time_completed)
 
-    logging::loginfo("study_history_stats: %s", study_history_stats)
-
-    current_score <- trial_scores %>%
-      dplyr::filter(measure == !! score_to_use) %>%
-      dplyr::pull(score)
-
-    logging::loginfo("current_score: %s", current_score)
-
-    last_score_value <- study_history_stats$score
-    logging::loginfo("last_score_value: %s", last_score_value)
-
-    learned_in_current_session <- if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
-
-    logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
-
-    change_in_score_from_last_session <- current_score - last_score_value
-
-    additional_scores <- tibble::tibble(
-    learned_in_current_session = learned_in_current_session
-    ) %>% dplyr::mutate(
-      last_score_value = last_score_value,
-      change_in_score_from_last_session = change_in_score_from_last_session,
-      increase_since_last_session = dplyr::case_when(change_in_score_from_last_session > 0 ~ 1L, TRUE ~ 0L),
-      time_since_last_item_studied = lubridate::as_datetime(trial_time_completed) - lubridate::as_datetime(last_score$trial_time_completed),
-      # change_across_all_sessions
-      # no_times_practised
-      # something to do with similarity?
-    ) %>%
+    study_history_stats <- study_history_stats %>%
       dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
       tidyr::pivot_longer(dplyr::everything(),
                           names_to = "measure",
@@ -276,11 +249,11 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       dplyr::mutate(trial_id = trial_id)
 
 
-    logging::loginfo("additional_scores: %s", additional_scores)
+    logging::loginfo("study_history_stats: %s", study_history_stats)
 
     print(names(trial_scores))
 
-    print(names(additional_scores))
+    print(names(study_history_stats))
 
     trial_scores <- rbind(trial_scores, additional_scores)
 
