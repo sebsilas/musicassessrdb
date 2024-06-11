@@ -255,7 +255,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
 
     print(names(study_history_stats))
 
-    trial_scores <- rbind(trial_scores, additional_scores)
+    trial_scores <- rbind(trial_scores, study_history_stats)
 
     scores_trial_ids <- db_append_scores_trial(db_con,
                                                trial_id,

@@ -175,7 +175,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     print(names(study_history_stats))
 
-    trial_scores <- rbind(trial_scores, additional_scores)
+    trial_scores <- rbind(trial_scores, study_history_stats)
 
 
 
