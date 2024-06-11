@@ -610,18 +610,27 @@ get_study_history_stats <- function(db_con,
 
     # Get last score
     last_score <- trials %>%
-      dplyr::slice_max(trial_time_completed) %>%
-      dplyr::collect() %>%
-      dplyr::select(score, trial_time_completed)
+      dplyr::slice_max(trial_time_completed)  %>%
+      dplyr::select(score, trial_time_completed) %>%
+      dplyr::collect()
+
+    logging::loginfo("last_score: %s", last_score)
 
     last_score_value <- last_score %>%
       dplyr::pull(score)
 
+    logging::loginfo("last_score_value: %s", last_score_value)
+
+    if(is.null(last_score_value)) {
+      last_score_value <- NA
+    }
+
+    logging::loginfo("last_score_value again: %s", last_score_value)
+
     last_score_time_completed <- last_score %>%
       dplyr::pull(trial_time_completed)
 
-    logging::loginfo("last_score_value: %s", last_score_value)
-
+    logging::loginfo("last_score_time_completed: %s", last_score_time_completed)
 
     current_score <- current_trial_scores %>%
       dplyr::filter(measure == !! measure) %>%
