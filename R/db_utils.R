@@ -641,7 +641,7 @@ get_study_history_stats <- function(db_con,
     logging::loginfo("current_score: %s", current_score)
 
 
-    learned_in_current_session <- if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
+    learned_in_current_session <- if(is.na(last_score_value) && is.na(current_score)) 0L else if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
 
     logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
 
