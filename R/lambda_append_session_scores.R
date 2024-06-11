@@ -1,11 +1,5 @@
 
 
-# t <- compute_session_scores_and_end_session_api(test_id = 1,
-#                                                 session_id = 1700,
-#                                                 user_id = 83,
-#                                                 psychTestR_session_id = "test",
-#                                                 session_complete = "0",
-#                                                 user_info = "test")
 
 #' Compute session scores and end session API
 #'
@@ -48,6 +42,14 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
 
 
 
+
+
+# t <- compute_session_scores_and_end_session_api(test_id = 1,
+#                                                 session_id = 1700,
+#                                                 user_id = 83,
+#                                                 psychTestR_session_id = "test",
+#                                                 session_complete = "0",
+#                                                 user_info = "test")
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -314,6 +316,6 @@ db_append_scores_session <- function(db_con, session_scores_df) {
 }
 
 
-# compute_session_scores_and_end_session(test_id = 2L, session_id = 594L, user_id = 2L)
+# t <- compute_session_scores_and_end_session(test_id = 2L, session_id = 594L, user_id = 2L)
 
 
