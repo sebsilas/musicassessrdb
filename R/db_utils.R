@@ -605,6 +605,7 @@ get_study_history_stats <- function(db_con,
 
     } else {
       gradient_across_all_scores <- NA
+      item_intercept <- NA
     }
 
 
