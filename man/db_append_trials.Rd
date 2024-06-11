@@ -44,6 +44,8 @@ db_append_trials(
 )
 }
 \arguments{
+\item{trial_type}{}
+
 \item{new_item_id}{}
 }
 \description{
