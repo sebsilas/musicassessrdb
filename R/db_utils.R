@@ -519,7 +519,11 @@ get_study_history_stats <- function(db_con,
                                     inst = NULL,
                                     item_id = NULL,
                                     measure = "opti3",
-                                    current_trial_scores) {
+                                    current_trial_scores,
+                                    current_trial_time_completed) {
+
+
+  logging::loginfo("get_study_history_stats")
 
   tryCatch({
 
@@ -592,7 +596,7 @@ get_study_history_stats <- function(db_con,
       reference_date <- as.numeric(as.POSIXct("2024-01-01 00:00:00", tz="UTC"))
 
       trials <- trials %>%
-        dplyr::mutate(trial_time_completed_days =  as.numeric((trial_time_completed - reference_date)) / (60 * 60 * 24))
+        dplyr::mutate(trial_time_completed_days =  as.numeric((current_trial_time_completed - reference_date)) / (60 * 60 * 24))
 
       lm_score <- lm(score ~ trial_time_completed_days + attempt, data = trials)
 
