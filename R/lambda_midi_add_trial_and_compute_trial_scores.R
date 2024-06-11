@@ -102,14 +102,32 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
 
   logging::loginfo("Inside midi_add_trial_and_compute_trial_scores function")
 
+  logging::loginfo("stimuli %s", stimuli)
+  logging::loginfo("stimuli_durations: %s", stimuli_durations)
+  logging::loginfo("test_id: %s", test_id)
+  logging::loginfo("item_id", item_id)
+  logging::loginfo("user_id: %s", user_id)
+  logging::loginfo("instrument: %s", instrument)
+  logging::loginfo("trial_time_started: %s", trial_time_started)
+  logging::loginfo("trial_time_completed: %s", trial_time_completed)
+  logging::loginfo("score_to_use: %s", score_to_use)
+  logging::loginfo("display_modality: %s", display_modality)
+  logging::loginfo("phase: %s", phase)
+  logging::loginfo("rhythmic: %s", rhythmic)
+  logging::loginfo("session_id: %s", session_id)
+  logging::loginfo("review_items_id: %s", review_items_id)
+  logging::loginfo("new_items_id: %s", new_items_id)
+  logging::loginfo("dur: %s", dur)
+  logging::loginfo("onset: %s", onset)
+  logging::loginfo("note: %s", note)
+  logging::loginfo("attempt: %s", attempt)
+
 
   # Return response
 
   response <- tryCatch({
 
 
-    stimuli <- itembankr::str_mel_to_vector(stimuli)
-    stimuli_durations <- itembankr::str_mel_to_vector(stimuli_durations)
     test_id <- as.integer(test_id)
     trial_time_completed <- lubridate::as_datetime(trial_time_completed)
     attempt <- as.integer(attempt)
@@ -153,9 +171,9 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     logging::loginfo("Score melodic production...")
 
 
-    res <- tibble::tibble(note = as.numeric(itembankr::str_mel_to_vector(note)),
-                          dur = as.numeric(itembankr::str_mel_to_vector(dur)),
-                          onset = as.numeric(itembankr::str_mel_to_vector(onset)),
+    res <- tibble::tibble(note = as.numeric(note),
+                          dur = as.numeric(dur),
+                          onset = as.numeric(onset),
                           freq = round(hrep::midi_to_freq(note)))
 
     user_notes <- res$note
@@ -176,7 +194,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
     logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
 
-    # Store pYIN in DB
+    # Store MIDI results in in DB
     scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
                                                      user_melody_input = user_notes,
                                                      user_duration_input = res$dur,
@@ -219,7 +237,9 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                    test_id = test_id,
                                                    inst = instrument,
                                                    item_id = item_id,
-                                                   measure = score_to_use)
+                                                   measure = score_to_use,
+                                                   current_trial_scores = trial_scores,
+                                                   current_trial_time_completed = trial_time_completed)
 
     logging::loginfo("study_history_stats: %s", study_history_stats)
 
