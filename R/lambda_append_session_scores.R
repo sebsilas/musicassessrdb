@@ -44,12 +44,11 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
 
 
 
-# t <- compute_session_scores_and_end_session_api(test_id = 1,
-#                                                 session_id = 1700,
-#                                                 user_id = 83,
-#                                                 psychTestR_session_id = "test",
-#                                                 session_complete = "0",
-#                                                 user_info = "test")
+# t <- compute_session_scores_and_end_session(test_id = 2L,
+#                                             session_id = 1765,
+#                                             user_id = 2L,
+#                                             psychTestR_session_id = NA,
+#                                             session_complete = "1")
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -113,10 +112,13 @@ compute_session_scores_and_end_session <- function(test_id = NA,
         unique() %>%
         tidyr::pivot_wider(names_from = "measure", values_from = "score")
 
+
       # Join on scores
       trial_table <- trial_table %>%
-        dplyr::rename(ngrukkon_between_melody_and_parent_melody = ngrukkon) %>%
+        { if("ngrukkon" %in% names(trial_table)) dplyr::rename(., ngrukkon_between_melody_and_parent_melody = ngrukkon) else . } %>%
+        { if(!"log_freq" %in% names(trial_table)) dplyr::mutate(., log_freq = NA) else . } %>%
         dplyr::left_join(scores_trial, by = "trial_id")
+
 
       # First attempt
       first_attempt_trial_table <- trial_table %>%
@@ -161,8 +163,12 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
       logging::loginfo("mean_opti3_arrhythmic_last_attempt %s", mean_opti3_arrhythmic_last_attempt)
 
+      logging::loginfo("Get ability estimates..")
+
       # lme4 namespace needed for predict method
       loadNamespace("lme4")
+
+      print(names(first_attempt_trial_table))
 
       ### Ability estimate
       #### First attempt
@@ -260,10 +266,6 @@ compute_session_scores_and_end_session <- function(test_id = NA,
     } else {
       scores_session_id <- NA
     }
-
-    # Predict items for next test time
-    #predict_new_items(user_id)
-
 
     # Return response
 

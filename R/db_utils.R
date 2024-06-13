@@ -509,7 +509,7 @@ left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
 }
 
 # db_con <- musicassessr_con()
-# t <- get_study_history_stats(db_con, user_id = 2L, test_id = 2L, inst = NULL, item_id = "WJD_phrase_8633")
+# t <- get_study_history_stats(db_con, user_id = 82L, test_id = 1L, inst = NULL, item_id = "Berkowitz_ngram_334774", current_trial_scores = tibble::tibble(measure = "opti3", score = NA), current_trial_time_completed = Sys.time() )
 # DBI::dbDisconnect(db_con)
 
 # For a user, item, test, and measure combo, get the most recent score before the present moment
@@ -524,15 +524,19 @@ get_study_history_stats <- function(db_con,
 
 
   logging::loginfo("get_study_history_stats")
+  logging::loginfo("user_id: %s", user_id)
+  logging::loginfo("item_id: %s", item_id)
+
 
   tryCatch({
+
 
     trials <- dplyr::tbl(db_con, "trials")
 
     trials <- dplyr::tbl(db_con, "sessions") %>%
       dplyr::filter(user_id == !! user_id) %>%
       dplyr::left_join(trials, by = "session_id") %>%
-      dplyr::collect() # REMOVE THIS AFTER
+      dplyr::collect()
 
 
     # Join on trial scores
@@ -550,8 +554,10 @@ get_study_history_stats <- function(db_con,
         dplyr::filter(test_id == !! test_id)
     }
 
+
     if(!is.null(inst)) {
-      trials <- trials %>% dplyr::filter(instrument == !! inst)
+      trials <- trials %>%
+        dplyr::filter(instrument == !! inst)
     }
 
 
@@ -559,9 +565,8 @@ get_study_history_stats <- function(db_con,
       trials <- trials %>% dplyr::filter(item_id == !! item_id)
     }
 
-
     # Change across all sessions
-    first_trial <- trials %>% dplyr::slice_min(trial_time_completed) %>% dplyr::pull(score)
+    first_trial <- trials %>% dplyr::slice_min(trial_time_completed) %>%  dplyr::slice_min(attempt) %>% dplyr::pull(score)
     last_trial <- trials %>% dplyr::slice_max(trial_time_completed) %>% dplyr::pull(score)
     change_across_all_sessions <- last_trial - first_trial
 
@@ -588,6 +593,10 @@ get_study_history_stats <- function(db_con,
       dplyr::pull(change_across_attempts) %>%
       mean(na.rm = TRUE)
 
+    if(is.nan(avg_change_across_attempts)) {
+      avg_change_across_attempts <- NA
+    }
+
 
 
     if(length(unique(trials$session_id)) > 1L) {
@@ -608,7 +617,6 @@ get_study_history_stats <- function(db_con,
       item_intercept <- NA
     }
 
-
     # Get last score
     last_score <- trials %>%
       dplyr::slice_max(trial_time_completed)  %>%
@@ -626,6 +634,7 @@ get_study_history_stats <- function(db_con,
       last_score_value <- NA
     }
 
+
     logging::loginfo("last_score_value again: %s", last_score_value)
 
     last_score_time_completed <- last_score %>%
@@ -641,7 +650,17 @@ get_study_history_stats <- function(db_con,
     logging::loginfo("current_score: %s", current_score)
 
 
-    learned_in_current_session <- if(is.na(last_score_value) && is.na(current_score)) 0L else if(is.na(last_score_value) && dplyr::near(current_score, 1)) 1L else if(last_score_value < 1 && dplyr::near(current_score, 1)) 1L else 0L
+    if(is.na(last_score_value) && is.na(current_score)) {
+      learned_in_current_session <-  0L
+    } else if(!is.na(last_score_value) && is.na(current_score)) {
+      learned_in_current_session <- 0L
+    } else if(is.na(last_score_value) && dplyr::near(current_score, 1)) {
+      learned_in_current_session <- 1L
+    } else if(last_score_value < 1 && dplyr::near(current_score, 1)) {
+      learned_in_current_session <- 1L
+    } else {
+      learned_in_current_session <- 0L
+    }
 
     logging::loginfo("learned_in_current_session: %s", learned_in_current_session)
 
