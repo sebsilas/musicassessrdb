@@ -32,6 +32,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("feedback: %s", feedback)
 
+
     if(feedback) {
 
       feedback_type <- metadata$feedback_type
@@ -433,7 +434,7 @@ get_metadata <- function(file, bucket = Sys.getenv("DESTINATION_BUCKET")) {
   dplyr::select(session_id, rhythmic, display_modality,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
-          trial_time_started, onset)
+          trial_time_started, onset, feedback, feedback_type)
 
 }
 
