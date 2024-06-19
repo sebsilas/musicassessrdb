@@ -30,9 +30,13 @@ add_trial_and_compute_trial_scores <- function(Records) {
     # Return quick feedback, if need be
     feedback <- metadata$feedback
 
+    logging::loginfo("feedback: %s", feedback)
+
     if(feedback) {
 
       feedback_type <- metadata$feedback_type
+
+      logging::loginfo("feedback_type: %s", feedback_type)
 
       if(feedback_type == "opti3") {
         result <- get_opti3(stimuli, stimuli_durations, length(stimuli), user_input_as_pyin)
@@ -42,14 +46,22 @@ add_trial_and_compute_trial_scores <- function(Records) {
         stop("feedback_type not recognised")
       }
 
+      logging::loginfo("result: %s", result)
+
       job_id <- digest(processed_file, algo = "md5", serialize = FALSE)
+
+      logging::loginfo("job_id to grab: %s", job_id)
 
       dynamodb <- paws::dynamodb()
 
       old_message <- get_job_message(dynamodb, job_id)
 
+      logging::loginfo("old_message: %s", old_message)
+
       new_message <- rjson::fromJSON(old_message)
       new_message$feedback <- result
+
+      logging::loginfo("new_message: %s", new_message)
 
       # Append selected items to DynamoDB
       update_job(dynamodb, job_id = job_id, message = rjson::toJSON(new_message), status = "FINISHED")
