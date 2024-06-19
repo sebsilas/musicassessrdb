@@ -50,9 +50,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
       logging::loginfo("feedback_type: %s", feedback_type)
 
       if(feedback_type == "opti3") {
-        result <- get_opti3(stimuli, stimuli_durations, length(stimuli), user_input_as_pyin)
+        result <- get_opti3(stimuli, stimuli_durations, length(stimuli), res)
       } else if(feedback_type == "produced_note") {
-        result <- round(mean(hrep::freq_to_midi(user_input_as_pyin$freq), na.rm = TRUE))
+        result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
       } else {
         stop("feedback_type not recognised")
       }
