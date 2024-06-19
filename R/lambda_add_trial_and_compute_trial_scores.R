@@ -26,6 +26,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     instrument <- metadata$instrument
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
     score_to_use <- "opti3"
+    audio_file <- stringr::str_replace(processed_file, ".csv", ".wav")
 
 
     # Get pYIN (or rhythm onset) results
@@ -59,7 +60,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("result: %s", result)
 
-      job_id <- digest::digest(processed_file, algo = "md5", serialize = FALSE)
+      job_id <- digest::digest(audio_file, algo = "md5", serialize = FALSE)
 
       logging::loginfo("job_id to grab: %s", job_id)
 
@@ -83,7 +84,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     # Append trial info
     trial_id <- db_append_trials(
       db_con,
-      audio_file = stringr::str_replace(processed_file, ".csv", ".wav"),
+      audio_file = audio_file,
       trial_time_started = lubridate::as_datetime(metadata$trial_time_started),
       trial_time_completed = trial_time_completed,
       instrument = instrument,
