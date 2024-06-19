@@ -1,13 +1,11 @@
 
-get_items_from_ids_api <- function(item_bank_name,
-                                   item_ids) {
+get_items_from_ids_api <- function(item_bank_name, item_ids) {
 
   # Define the request body as a list
   request_body <- list(item_bank_name = item_bank_name,
                        item_ids = item_ids)
 
-  endpoint_wrapper(function_name = "get-items-from-ids",
-                   request_body = request_body)
+  endpoint_wrapper(function_name = "get-items-from-ids", request_body = request_body)
 
 }
 
@@ -84,7 +82,7 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids = NULL,
       dplyr::pull(item_id) %>%
       get_item_bank_names(db_con = db_con)
 
-    review_items_filtered <- left_join_on_items(db_con, item_bank_names, review_items_filtered)
+    review_items_filtered <- left_join_on_items(db_con, review_items_filtered)
 
     review_items_filtered <- review_items_filtered %>% dplyr::collect()
 
@@ -114,7 +112,7 @@ get_selected_items_from_db <- function(db_con, user_id, review_items_ids = NULL,
       dplyr::pull(item_id) %>%
       get_item_bank_names(db_con = db_con)
 
-    new_items_filtered <- left_join_on_items(db_con, item_bank_names, new_items_filtered)
+    new_items_filtered <- left_join_on_items(db_con, new_items_filtered)
 
     new_items_filtered <- new_items_filtered %>% dplyr::collect()
 

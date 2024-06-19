@@ -82,11 +82,8 @@ compile_item_trials <- function(db_con,
   if(join_item_banks_on) {
 
     # Join items on
-    item_banks <- user_trials %>%
-      dplyr::pull(item_id) %>%
-      get_item_bank_names(db_con = db_con)
 
-    user_trials <- left_join_on_items(db_con, item_banks, df_with_item_ids = user_trials)
+    user_trials <- left_join_on_items(db_con, df_with_item_ids = user_trials)
 
   }
 
@@ -483,28 +480,41 @@ get_item_bank_names <- function(db_con, item_ids) {
 #' Left join on items
 #'
 #' @param db_con
-#' @param item_banks
 #' @param df_with_item_ids
 #'
 #' @return
 #' @export
 #'
 #' @examples
-left_join_on_items <- function(db_con, item_banks, df_with_item_ids) {
+left_join_on_items <- function(db_con, df_with_item_ids) {
 
-  item_banks_table <- get_table(db_con, "item_banks", collect = TRUE)
-  ib_ids <- item_bank_name_to_id(item_banks_table = item_banks_table, ib_name = item_banks)
+  all_item_ids <- df_with_item_ids %>% dplyr::pull(item_id) %>% unique()
 
-  purrr::map2_dfr(names(ib_ids), ib_ids, function(item_bank, ib_id) {
+  item_banks_table <- dplyr::tbl(db_con, "item_banks")
 
-    ib <- get_table(db_con, paste0("item_bank_", item_bank), collect = FALSE)
+  grand_item_bank_metadata <- tibble::tibble(item_id = all_item_ids) %>%
+      dplyr::rowwise() %>%
+      dplyr::mutate(item_bank_name = extract_item_bank_name_from_item_id(db_con, item_id),
+                    item_bank_id = item_bank_name_to_id(item_banks_table = item_banks_table, ib_name = item_bank_name)) %>%
+    dplyr::ungroup()
 
-    user_trials_sub <- df_with_item_ids %>%
-      dplyr::mutate(item_bank_id = ib_id) %>%
-      dplyr::left_join(ib, by = "item_id") %>%
+
+  item_banks <- grand_item_bank_metadata %>%
+    dplyr::select(item_bank_name, item_bank_id) %>%
+    unique()
+
+
+  grand_item_bank <- purrr::pmap_dfr(item_banks, function(item_bank_name, item_bank_id) {
+
+    ib <- get_table(db_con, paste0("item_bank_", item_bank_name), collect = FALSE) %>%
+      dplyr::filter(item_id %in% !! all_item_ids) %>%
       dplyr::collect()
 
   })
+
+  df_with_item_ids %>%
+    dplyr::collect() %>%
+    dplyr::left_join(grand_item_bank, by = "item_id")
 
 }
 

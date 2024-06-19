@@ -4,7 +4,7 @@
 \alias{left_join_on_items}
 \title{Left join on items}
 \usage{
-left_join_on_items(db_con, item_banks, df_with_item_ids)
+left_join_on_items(db_con, df_with_item_ids)
 }
 \arguments{
 \item{df_with_item_ids}{}

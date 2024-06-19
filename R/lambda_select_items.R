@@ -571,18 +571,29 @@ review_item_approaches <- list("choose_approach_randomly" = item_sel_choose_appr
 
 
 
-# db_con <- musicassessr_con(local = TRUE)
-# db_con <- dbConnect(duckdb::duckdb(), "musicassessr.duckdb")
-
-# t <- select_items(user_id = 58L)
-# t <- select_items(user_id = 2L)
-
-
 
 # Initialize the DynamoDB client
 # dynamodb <- paws::dynamodb()
 # t <- store_job(dynamodb, job_id = 999, name = "sebtest", message = "hi", status = "PENDING")
 
+get_job_message <- function(dynamodb, job_id) {
+
+  # Retrieve the item from DynamoDB
+  response <- dynamodb$get_item(
+    TableName = "jobs",
+    Key = list(
+      jobId = list(S = job_id)
+    )
+  )
+
+  # Extract the message from the response
+  if (!is.null(response$Item)) {
+    message <- response$Item$message$S
+    return(message)
+  } else {
+    logging::logerror("Item not found.")
+  }
+}
 
 store_job <- function(dynamodb, job_id, name, message = "", status = "PENDING") {
 
