@@ -27,9 +27,19 @@ add_trial_and_compute_trial_scores <- function(Records) {
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
     score_to_use <- "opti3"
 
+
+    # Get pYIN (or rhythm onset) results
+
+    res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET")) %>%
+      dplyr::mutate(freq = as.numeric(freq),
+                    dur = as.numeric(dur),
+                    onset = as.numeric(onset),
+                    note = round(hrep::freq_to_midi(freq)))
+
+    logging::loginfo("res: %s", res)
+
     # Return quick feedback, if need be
     feedback <- metadata$feedback
-
     logging::loginfo("feedback: %s", feedback)
 
 
@@ -94,13 +104,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("Got trial_id: %s", trial_id)
 
 
-    # Get pYIN (or rhythm onset) results
-
-    res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
-
-    logging::loginfo("res: %s", res)
-
-
     if(test_id == 3) { # i.e., the RTT
 
       logging::loginfo("Score rhythm production...")
@@ -121,12 +124,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       # TODO.. pyin_pitch_track
       #pyin_pitch_track <- "blah"
-
-      res <- res %>%
-        dplyr::mutate(freq = as.numeric(freq),
-                      dur = as.numeric(dur),
-                      onset = as.numeric(onset),
-                      note = round(hrep::freq_to_midi(freq)))
 
       user_notes <- res$note
 
