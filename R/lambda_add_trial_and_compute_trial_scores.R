@@ -66,17 +66,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       dynamodb <- paws::dynamodb()
 
-      old_message <- get_job_message(dynamodb, job_id)
-
-      logging::loginfo("old_message: %s", old_message)
-
-      new_message <- rjson::fromJSON(old_message)
-      new_message$feedback <- result
-
-      logging::loginfo("new_message: %s", new_message)
-
       # Append selected items to DynamoDB
-      update_job(dynamodb, job_id = job_id, message = rjson::toJSON(new_message), status = "FINISHED")
+      update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(opti3 = result)), status = "FINISHED")
 
     }
 
