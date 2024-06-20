@@ -51,7 +51,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       logging::loginfo("feedback_type: %s", feedback_type)
 
       if(feedback_type == "opti3") {
-        result <- get_opti3(stimuli, stimuli_durations, length(stimuli), res)
+        res <- res %>% itembankr::produce_extra_melodic_features()
+        result <- musicassessr::get_opti3(stimuli, stimuli_durations, length(stimuli), res)
       } else if(feedback_type == "produced_note") {
         result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
       } else {
