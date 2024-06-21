@@ -1,7 +1,17 @@
 
 
 
-musicassessr_con <- function(local = FALSE) {
+#' Connect to musicassessr DB
+#'
+#' @param local
+#' @param prod
+#'
+#' @return
+#' @export
+#'
+#' @examples
+musicassessr_con <- function(local = FALSE,
+                             prod = TRUE) {
 
   logging::loginfo("Connecting to musicassessr database")
 
@@ -17,7 +27,7 @@ musicassessr_con <- function(local = FALSE) {
     } else {
       RPostgres::dbConnect(
         RPostgres::Postgres(),
-        dbname = Sys.getenv("MUSICASSESSR_DB_NAME"),
+        dbname = if(prod) Sys.getenv("MUSICASSESSR_DB_NAME_PROD") else Sys.getenv("MUSICASSESSR_DB_NAME"),
         user = Sys.getenv("MUSICASSESSR_DB_USER"),
         password = Sys.getenv("MUSICASSESSR_DB_PASSWORD"),
         host = Sys.getenv("MUSICASSESSR_DB_HOST"),
