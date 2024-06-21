@@ -4,10 +4,10 @@
 \alias{musicassessr_con}
 \title{Connect to musicassessr DB}
 \usage{
-musicassessr_con(local = FALSE, prod = TRUE)
+musicassessr_con(local = FALSE)
 }
 \arguments{
-\item{prod}{}
+\item{local}{}
 }
 \description{
 Connect to musicassessr DB
