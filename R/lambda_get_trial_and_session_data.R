@@ -58,7 +58,6 @@ get_trial_and_session_data <- function(user_id = NULL,
     # Get sessions associated with user
     sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
         dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
-        #dplyr::collect() %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
     session_ids <- sessions$session_id
@@ -70,12 +69,14 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::select(-scores_session_id) %>%
         dplyr::left_join(sessions, by = "session_id")
 
-    trials <- compile_item_trials(db_con, session_id = session_ids, user_id = user_id, join_item_banks_on = F) %>%
-              dplyr::mutate(Date = lubridate::as_date(session_time_started))# %>%
-      #dplyr::collect()
+    trials <- compile_item_trials(db_con,
+                                  session_id = session_ids,
+                                  user_id = user_id,
+                                  join_item_banks_on = FALSE) %>% # Setting this to TRUE is likely to timeout lambdas...
+              dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
 
-    scores_trial <- get_table(db_con, "scores_trial", collect = F) %>%
+    scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
