@@ -70,12 +70,12 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::select(-scores_session_id) %>%
         dplyr::left_join(sessions, by = "session_id")
 
-    trials <- compile_item_trials(db_con, session_id = session_ids, user_id = user_id, join_item_banks_on = TRUE) %>%
+    trials <- compile_item_trials(db_con, session_id = session_ids, user_id = user_id, join_item_banks_on = F) %>%
               dplyr::mutate(Date = lubridate::as_date(session_time_started))# %>%
       #dplyr::collect()
 
 
-    scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
+    scores_trial <- get_table(db_con, "scores_trial", collect = F) %>%
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
@@ -94,8 +94,10 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::count(phrase_name) %>%
         dplyr::filter(n > 1 & !is.na(phrase_name))
 
+      phrase_name <- review_melodies %>% dplyr::pull(phrase_name)
+
       review_melodies_over_time <- scores_trial %>%
-        dplyr::filter(phrase_name %in% !! review_melodies$phrase_name) %>%
+        dplyr::filter(phrase_name %in% !! phrase_name) %>%
         dplyr::group_by(Date, phrase_name) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup()
@@ -115,8 +117,10 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::count(user_id, stimulus_abs_melody) %>%
         dplyr::filter(n > 1 & !is.na(stimulus_abs_melody))
 
+      stimulus_abs_melody <- review_melodies %>% dplyr::pull(stimulus_abs_melody)
+
       review_melodies_over_time <- scores_trial %>%
-        dplyr::filter(stimulus_abs_melody %in% !! review_melodies$stimulus_abs_melody) %>%
+        dplyr::filter(stimulus_abs_melody %in% !! stimulus_abs_melody) %>%
         dplyr::group_by(user_id, trial_time_started, stimulus_abs_melody) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup()
