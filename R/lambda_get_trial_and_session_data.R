@@ -2,6 +2,8 @@
 
 # t <- get_trial_and_session_data(user_id = 77)
 # t2 <- t$user_stats %>% dplyr::bind_rows()
+# t <- get_trial_and_session_data(user_id = 2L)
+# t <- get_trial_and_session_data_api(user_id = 2L)
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
@@ -56,7 +58,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     # Get sessions associated with user
     sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
         dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
-        dplyr::collect() %>%
+        #dplyr::collect() %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
     session_ids <- sessions$session_id
@@ -69,8 +71,8 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::left_join(sessions, by = "session_id")
 
     trials <- compile_item_trials(db_con, session_id = session_ids, user_id = user_id, join_item_banks_on = TRUE) %>%
-              dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
-      dplyr::collect()
+              dplyr::mutate(Date = lubridate::as_date(session_time_started))# %>%
+      #dplyr::collect()
 
 
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
