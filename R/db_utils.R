@@ -496,6 +496,8 @@ get_item_bank_names <- function(db_con, item_ids) {
 #' @examples
 left_join_on_items <- function(db_con, df_with_item_ids) {
 
+  logging::loginfo("Join on items...")
+
   all_item_ids <- df_with_item_ids %>% dplyr::pull(item_id) %>% unique()
 
   item_banks_table <- dplyr::tbl(db_con, "item_banks")
