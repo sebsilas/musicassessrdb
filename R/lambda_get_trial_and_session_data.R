@@ -72,8 +72,6 @@ get_trial_and_session_data <- function(user_id = NULL,
               dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
       dplyr::collect()
 
-    browser()
-
 
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
       dplyr::select(-scores_trial_id) %>%
