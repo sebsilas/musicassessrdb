@@ -518,9 +518,11 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
 
     ib <- get_table(db_con, paste0("item_bank_", item_bank_name), collect = FALSE) %>%
       dplyr::filter(item_id %in% !! all_item_ids) %>%
-      dplyr::collect()
+      dplyr::collect() %>%
+      dplyr::mutate(item_bank_id = item_bank_id)
 
   })
+
 
   df_with_item_ids %>%
     dplyr::collect() %>%
