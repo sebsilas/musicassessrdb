@@ -60,7 +60,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("result: %s", result)
 
-      job_id <- digest::digest(audio_file, algo = "md5", serialize = FALSE)
+      job_id <- digest::digest(utils::URLdecode(audio_file), algo = "md5", serialize = FALSE)
 
       logging::loginfo("job_id to grab: %s", job_id)
 

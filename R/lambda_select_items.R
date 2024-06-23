@@ -103,11 +103,6 @@ get_job_status_api <- function(job_id) {
 }
 
 
-
-# review_items <- t$review_items
-# review_items$stimulus_abs_melody[[1]] %>% itembankr::str_mel_to_vector() %>% diff()
-# review_items$abs_melody[[1]] %>% itembankr::str_mel_to_vector() %>% diff()
-
 # This is the function that is called when the endpoint
 # is invoked
 select_items <- function(Records) {
