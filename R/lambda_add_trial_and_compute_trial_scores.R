@@ -5,7 +5,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
-  processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
+  processed_file <- utils::URLdecode(rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]])
+  # URLdecode parses the name properly e.g., umlauts
 
   logging::loginfo("processed_file = %s", processed_file)
 
@@ -60,7 +61,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("result: %s", result)
 
-      job_id <- digest::digest(utils::URLdecode(audio_file), algo = "md5", serialize = FALSE)
+      job_id <- digest::digest(audio_file, algo = "md5", serialize = FALSE)
 
       logging::loginfo("job_id to grab: %s", job_id)
 
