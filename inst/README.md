@@ -18,5 +18,5 @@
 
 ## Deploy your functions and endpoints:
 ```
-serverless deploy --stage dev --aws-profile musicassessr --region eu-central-1 --verbose
+serverless deploy --stage dev --aws-profile musicassessr --region us-east-1 --verbose
 ```

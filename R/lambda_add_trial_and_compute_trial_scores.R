@@ -25,6 +25,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     item_id <- metadata$item_id
     user_id <- metadata$user_id
     instrument <- metadata$instrument
+    trial_paradigm <- metadata$trial_paradigm
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
     score_to_use <- "opti3"
     audio_file <- stringr::str_replace(processed_file, ".csv", ".wav")
@@ -91,7 +92,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       stimulus_durations = metadata$stimuli_durations,
       review_items_id = if(length(metadata$review_items_id) == 0) NA else as.integer(metadata$review_items_id),
       new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
-      trial_type = 'audio'
+      trial_type = 'audio',
+      trial_paradigm = trial_paradigm
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)

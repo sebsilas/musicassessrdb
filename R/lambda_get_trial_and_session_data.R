@@ -1,9 +1,10 @@
 
 
 # t <- get_trial_and_session_data(user_id = 77)
-# t2 <- t$user_stats %>% dplyr::bind_rows()
 # t <- get_trial_and_session_data(user_id = 2L)
 # t <- get_trial_and_session_data_api(user_id = 2L)
+
+# t <- get_trial_and_session_data_api(user_id = 89L)
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
@@ -72,7 +73,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     trials <- compile_item_trials(db_con,
                                   session_id = session_ids,
                                   user_id = user_id,
-                                  join_item_banks_on = FALSE) %>% # Setting this to TRUE is likely to timeout lambdas...
+                                  join_item_banks_on = T) %>% # Setting this to TRUE is likely to timeout lambdas...
               dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
 
@@ -377,3 +378,14 @@ last_month <- function(df) {
 # t <- get_trial_and_session_data(group_id = 5L)
 
 # DBI::dbDisconnect(db_con)
+
+
+
+# dat <- get_trial_and_session_data_api(user_id = 89L)
+# scores_trial <- dat$scores_trial %>% dplyr::bind_rows()
+# review_melodies <- dat$review_melodies %>% dplyr::bind_rows()
+# user_stats <- dat$user_stats %>% dplyr::bind_rows()
+
+# tt <- get_trial_and_session_data(user_id = 89L)
+
+# extract_item_bank_name_from_id("singpause_2024_phrase35")
