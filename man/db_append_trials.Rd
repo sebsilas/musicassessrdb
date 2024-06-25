@@ -21,11 +21,12 @@ db_append_trials(
   stimulus_durations,
   review_items_id = NULL,
   new_items_id = NULL,
-  trial_type = c("audio", "midi")
+  trial_type = c("audio", "midi"),
+  trial_paradigm = c("call_and_response", "simultaneous_recall")
 )
 }
 \arguments{
-\item{trial_type}{}
+\item{trial_paradigm}{}
 }
 \description{
 Append a trial to the trials table
