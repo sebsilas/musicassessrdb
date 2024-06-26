@@ -370,22 +370,5 @@ last_month <- function(df) {
 }
 
 
-# db_con <- musicassessr_con()
-# t <- get_trial_and_session_data(user_id = 2L)
-# t <- get_trial_and_session_data(group_id = 4L)
-# t <- get_trial_and_session_data(user_id = 47L)
-# t <- get_trial_and_session_data(user_id = 55L)
-# t <- get_trial_and_session_data(group_id = 5L)
-
-# DBI::dbDisconnect(db_con)
 
 
-
-# dat <- get_trial_and_session_data_api(user_id = 89L)
-# scores_trial <- dat$scores_trial %>% dplyr::bind_rows()
-# review_melodies <- dat$review_melodies %>% dplyr::bind_rows()
-# user_stats <- dat$user_stats %>% dplyr::bind_rows()
-
-# tt <- get_trial_and_session_data(user_id = 89L)
-
-# extract_item_bank_name_from_id("singpause_2024_phrase35")

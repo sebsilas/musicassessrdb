@@ -21,8 +21,14 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
                                                        session_complete = c("0", "1"),
                                                        user_info = NA) {
 
+  session_complete <- match.arg(session_complete)
+
   if(is.null(user_info)) {
     user_info <- NA
+  }
+
+  if(is.null(psychTestR_session_id)) {
+    psychTestR_session_id <- NA
   }
 
   session_complete <- match.arg(session_complete)
@@ -35,6 +41,8 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
                        session_complete = session_complete,
                        user_info = user_info)
 
+  print(request_body)
+
   endpoint_wrapper(function_name = "compute-session-scores-and-end-session",
                    request_body = request_body)
 
@@ -44,11 +52,17 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
 
 
 
-# t <- compute_session_scores_and_end_session(test_id = 2L,
-#                                             session_id = 1765,
-#                                             user_id = 2L,
+# t <- compute_session_scores_and_end_session(test_id = 1L,
+#                                             session_id = 2086,
+#                                             user_id = 93L,
 #                                             psychTestR_session_id = NA,
 #                                             session_complete = "1")
+
+# t <- compute_session_scores_and_end_session_api(test_id = 1L,
+#                                                 session_id = 2086,
+#                                                 user_id = 93L,
+#                                                 psychTestR_session_id = NA,
+#                                                 session_complete = "1")
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -67,6 +81,18 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
   test_id <- as.integer(test_id)
   session_id <- as.integer(session_id)
+
+  if(length(test_id) == 0) {
+    test_id <- NA
+  }
+
+  if(length(psychTestR_session_id) == 0) {
+    psychTestR_session_id <- NA
+  }
+
+  if(length(user_info) == 0) {
+    user_info <- NA
+  }
 
   logging::loginfo("test_id = %s", test_id)
 
@@ -91,7 +117,13 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     logging::loginfo("Storing complete time as %s", complete_time)
 
-    update <- dbplyr::copy_inline(db_con, data.frame(session_id = session_id, session_time_completed = complete_time, psychTestR_session_id = psychTestR_session_id, session_complete = session_complete, user_info = user_info))
+    new_dat <- tibble::tibble(session_id = session_id,
+                              session_time_completed = complete_time,
+                              psychTestR_session_id = psychTestR_session_id,
+                              session_complete = session_complete,
+                              user_info = user_info)
+
+    update <- dbplyr::copy_inline(db_con, new_dat)
 
     dplyr::rows_update(session_df, update, in_place = TRUE, by = "session_id", unmatched = "ignore")
 
@@ -168,14 +200,12 @@ compute_session_scores_and_end_session <- function(test_id = NA,
       # lme4 namespace needed for predict method
       loadNamespace("lme4")
 
-      print(names(first_attempt_trial_table))
-
       ### Ability estimate
       #### First attempt
       ability_estimate_arrhythmic_first_attempt <-
         first_attempt_trial_table %>%
         dplyr::filter(!rhythmic) %>%
-        dplyr::select(N, step.cont.loc.var, log_freq, i.entropy, opti3) %>%
+        dplyr::select(N, step.cont.loc.var, log_freq, i.entropy, opti3, tonalness) %>%
         dplyr::mutate(tmp_scores = opti3) %>%
         psychTestRCATME::predict_based_on_mixed_effects_arrhythmic_model(Berkowitz::lm2.2,  new_data = .)
 

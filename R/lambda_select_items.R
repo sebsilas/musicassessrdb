@@ -3,7 +3,9 @@
 # t <- select_items_test()
 # DBI::dbDisconnect(db_con)
 
-select_items_test <- function(job_id = "test", user_id = 2L, fallback_item_bank = "Berkowitz_bottom_10th_percentile") {
+select_items_test <- function(job_id = "test",
+                              user_id = 2L,
+                              fallback_item_bank = "Berkowitz_bottom_10th_percentile") {
 
   logging::loginfo("Inside select_items function")
 
