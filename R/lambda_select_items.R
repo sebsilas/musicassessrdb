@@ -212,7 +212,7 @@ get_items <- function(type = c("new", "review"),
 
   # Get the fallback item_bank
 
-  item_banks_table <- dplyr::tbl(db_con, "item_banks")
+  item_banks_table <- item_banks_table_static
 
   fallback_item_bank_ids <- as.integer(item_bank_name_to_id(item_banks_table, fallback_item_bank_names))
 

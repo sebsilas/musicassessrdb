@@ -306,10 +306,16 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 
 
 item_bank_name_to_id <- Vectorize(function(item_banks_table, ib_name) {
-    item_banks_table %>%
+
+    id <- item_banks_table %>%
       dplyr::filter(item_bank_name == ib_name) %>%
       dplyr::collect() %>%
       dplyr::pull(item_bank_id)
+
+    if(length(id) == 0) {
+      id <- NA
+    }
+    return(id)
   }, vectorize.args = "ib_name")
 
 # t <- item_bank_name_to_id(item_banks_table = get_table(db_con, "item_banks"), c("singpause_item", "singpause_phrase"))
@@ -500,13 +506,16 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
 
   all_item_ids <- df_with_item_ids %>% dplyr::pull(item_id) %>% unique()
 
-  item_banks_table <- dplyr::tbl(db_con, "item_banks")
+  # item_banks_table <- dplyr::tbl(db_con, "item_banks")
 
-  grand_item_bank_metadata <- tibble::tibble(item_id = all_item_ids) %>%
-      dplyr::rowwise() %>%
-      dplyr::mutate(item_bank_name = extract_item_bank_name_from_item_id(db_con, item_id),
-                    item_bank_id = item_bank_name_to_id(item_banks_table = item_banks_table, ib_name = item_bank_name)) %>%
-    dplyr::ungroup()
+  # We use static now for performance
+  item_banks_table <- item_banks_table_static
+
+  grand_item_bank_metadata <-
+    tibble::tibble(item_id = all_item_ids,
+                   item_bank_name = extract_item_bank_name_from_item_id(db_con, item_id),
+                   item_bank_id = item_bank_name_to_id(item_banks_table = item_banks_table, ib_name = item_bank_name)) %>%
+    na.omit
 
 
   item_banks <- grand_item_bank_metadata %>%
