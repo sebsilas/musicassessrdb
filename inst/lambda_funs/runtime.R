@@ -4,6 +4,7 @@ library(purrr)
 library(hrep)
 library(musicassessrdb)
 library(musicassessr)
+library(lme4)
 
 
 item_banks_table_static <- tibble::tibble(

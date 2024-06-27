@@ -4,6 +4,7 @@
 # t <- get_trial_and_session_data(user_id = 2L)
 # t <- get_trial_and_session_data_api(user_id = 2L)
 
+# t <- get_trial_and_session_data(user_id = 89L)
 # t <- get_trial_and_session_data_api(user_id = 89L)
 
 get_trial_and_session_data_api <- function(user_id = NULL,
@@ -73,7 +74,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     trials <- compile_item_trials(db_con,
                                   session_id = session_ids,
                                   user_id = user_id,
-                                  join_item_banks_on = T) %>% # Setting this to TRUE is likely to timeout lambdas...
+                                  join_item_banks_on = TRUE) %>% # We need this for phrase_name.. but could timeout Lambdas..
               dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
 
@@ -81,6 +82,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
+
 
     # TODO: Factor this if else (repeated logic)
     if("phrase_name" %in% names(trials)) {
@@ -102,7 +104,8 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::filter(phrase_name %in% !! phrase_name) %>%
         dplyr::group_by(Date, phrase_name) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
-        dplyr::ungroup()
+        dplyr::ungroup() %>%
+        dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
 
     } else {
       scores_trial <- trials %>%
@@ -125,23 +128,30 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::filter(stimulus_abs_melody %in% !! stimulus_abs_melody) %>%
         dplyr::group_by(user_id, trial_time_started, stimulus_abs_melody) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
-        dplyr::ungroup()
+        dplyr::ungroup() %>%
+        dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
     }
 
-
+    # But session scores we aggregate over the day
     # Aggregate across rhythmic and arrhythmic
     session_scores_agg <- session_scores %>%
-      dplyr::group_by(user_id, Date, session_id, session_time_started) %>%
+      dplyr::group_by(user_id, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
       dplyr::ungroup()
 
     session_scores_rhythmic <- session_scores %>%
       dplyr::filter(grepl("_rhythmic", measure)) %>%
-      dplyr::select(user_id, Date, session_id, session_time_started, session_time_completed, score)
+      dplyr::select(user_id, Date, session_id, session_time_started, session_time_completed, score) %>%
+      dplyr::group_by(Date) %>%
+      dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
+      dplyr::ungroup()
 
     session_scores_arrhythmic <- session_scores %>%
       dplyr::filter(grepl("_arrhythmic", measure)) %>%
-      dplyr::select(user_id, Date, session_id, session_time_started, session_time_completed, score)
+      dplyr::select(user_id, Date, session_id, session_time_started, session_time_completed, score) %>%
+      dplyr::group_by(Date) %>%
+      dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
+      dplyr::ungroup()
 
 
     # Compute engagement with app measures:
@@ -311,6 +321,13 @@ get_trial_and_session_data <- function(user_id = NULL,
         last_week_song_stats = last_week_song_stats)
 
     }
+
+    # Remove nans
+    if(is.data.frame(review_melodies)) {
+      review_melodies_over_time <- review_melodies_over_time %>%
+        dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
+    }
+
 
 
     # Return response

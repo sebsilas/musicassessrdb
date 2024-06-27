@@ -195,10 +195,13 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
       logging::loginfo("mean_opti3_arrhythmic_last_attempt %s", mean_opti3_arrhythmic_last_attempt)
 
-      logging::loginfo("Get ability estimates..")
+      logging::loginfo("Load lme4 namespace")
 
       # lme4 namespace needed for predict method
       loadNamespace("lme4")
+
+      logging::loginfo("Get ability estimates..")
+
 
       ### Ability estimate
       #### First attempt
