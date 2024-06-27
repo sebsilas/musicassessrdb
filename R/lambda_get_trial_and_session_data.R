@@ -325,7 +325,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     # Remove nans
     if(is.data.frame(review_melodies)) {
       review_melodies_over_time <- review_melodies_over_time %>%
-        dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
+        dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ 0, TRUE ~ score))
     }
 
 
