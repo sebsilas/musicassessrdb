@@ -15,6 +15,7 @@ Imports:
     awslambdafuns,
     DBI,
     dbplyr,
+    digest,
     dplyr,
     DT,
     ggplot2,
