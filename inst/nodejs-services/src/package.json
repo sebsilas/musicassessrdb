@@ -5,7 +5,9 @@
     "build": "yarn tsc"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.577.0",
     "@aws-sdk/client-s3": "^3.511.0",
+    "@aws-sdk/lib-dynamodb": "^3.577.0",
     "@aws-sdk/s3-request-presigner": "^3.511.0",
     "postgres": "^3.4.3"
   },
