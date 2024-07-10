@@ -1,0 +1,189 @@
+sample-melody-in-key: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - sample_melody_in_key_lambda # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /sample-melody-in-key # The path of the function in the HTTP API
+
+sample-from-item-bank:
+  timeout: 28
+  memorySize: 1500
+  image:
+    name: appimage
+    command:
+      - sample_from_item_bank
+  events:
+    - httpApi:
+        method: POST
+        path: /sample-from-item-bank
+
+append-session:
+  timeout: 28
+  memorySize: 1500
+  image:
+    name: appimage
+    command:
+      - append_session
+  events:
+    - httpApi:
+        method: POST
+        path: /append-session
+
+compute-session-scores-and-end-session:
+  timeout: 28
+  memorySize: 5000
+  image:
+    name: appimage
+    command:
+      - compute_session_scores_and_end_session
+  events:
+    - httpApi:
+        method: POST
+        path: /compute-session-scores-and-end-session
+
+append-conditions:
+  timeout: 28
+  memorySize: 1500
+  image:
+    name: appimage
+    command:
+      - append_conditions
+  events:
+    - httpApi:
+        method: POST
+        path: /append-conditions
+
+append-demographics:
+  timeout: 28
+  memorySize: 1500
+  image:
+    name: appimage
+    command:
+      - append_demographics
+  events:
+    - httpApi:
+        method: POST
+        path: /append-demographics
+
+get-available-tests-and-experiments: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_available_tests_and_experiments # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-available-tests-and-experiments # The path of the function in the HTTP API
+
+
+create-session-token: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - create_session_token_lambda # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /create-session-token # The path of the function in the HTTP API
+
+
+
+add-user-to-group-with-login-code: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - add_user_to_group_with_login_code # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /add-user-to-group-with-login-code # The path of the function in the HTTP API
+
+
+get-trial-and-session-data: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_trial_and_session_data # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-trial-and-session-data # The path of the function in the HTTP API
+
+
+get-items-from-ids: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_items_from_ids # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-items-from-ids # The path of the function in the HTTP API
+
+
+select-items: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - select_items # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /select-items # The path of the function in the HTTP API
+
+
+get-user-ids: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_user_ids # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-user-ids # The path of the function in the HTTP API
+
+
+append-failed-session: # Serverless framework logical name of the function
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - append_failed_session # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /append-failed-session # The path of the function in the HTTP API
+
+
+midi-add-trial-and-compute-trial-scores:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - midi_add_trial_and_compute_trial_scores # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /midi-add-trial-and-compute-trial-scores # The path of the function in the HTTP API
+

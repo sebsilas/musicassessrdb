@@ -1,0 +1,15 @@
+backendQueueHandler:
+  image:
+    name: appimage
+    command:
+      - add_trial_and_compute_trial_scores
+  memorySize: 2048 # memory should be optimized for complex db queries
+  timeout: 300 # Should be equal to Queue VisibilityTimeout
+  reservedConcurrency: 30 #
+  events:
+    - sqs:
+        batchSize: 1
+        arn:
+          Fn::GetAtt:
+            - BackendQueue
+            - Arn

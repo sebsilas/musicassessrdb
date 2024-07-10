@@ -1,0 +1,50 @@
+service: musicassessr-backend
+frameworkVersion: "3"
+useDotenv: true
+
+provider:
+  name: aws
+  region: ${opt:region, 'us-east-1'}
+  runtime: nodejs18.x
+  architecture: arm64
+  deploymentMethod: direct
+  environment: ${file(serverless/environment.yaml)}
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action: "*"
+          Resource: "*"
+  httpApi:
+    id: ${ssm:/${sls:stage}/musicassessr/HTTP_API_ID}
+    # authorizers:
+    #    cognitoAuthorizer:
+    #      name: cognitoAuthorizer
+    #      type: jwt
+    #      identitySource: $request.header.Authorization
+    #      issuerUrl: https://cognito-idp.${self:provider.region}.amazonaws.com/us-east-1_NjfBBY1JU
+    #      audience:
+    #        - 5h5ljb5rhsiif8p1c41fuktg63
+  tracing:
+    apiGateway: false
+    lambda: false
+
+
+custom:
+  deploymentBucket:
+    accelerate: true
+    blockPublicAccess: true
+
+package:
+  individually: true
+  patterns:
+    - "!./**"
+    - nodejs-services/src/dist/**
+    - nodejs-services/src/node_modules/**
+
+
+functions:
+  - ${file(serverless/functions/api-nodejs.yaml)}
+
+resources:
+  - ${file(serverless/resources/sqs-nodejs.yaml)}

@@ -1,0 +1,46 @@
+service: musicassessr
+frameworkVersion: "3"
+useDotenv: true
+configValidationMode: error
+
+provider:
+  name: aws
+  architecture: x86_64
+  deploymentMethod: direct
+  region: ${opt:region, 'eu-central-1'}
+  logRetentionInDays: 7
+  versionFunctions: false
+  environment: ${file(serverless/environment.yaml)}
+  iam:
+    role:
+      statements:
+        - Effect: "Allow"
+          Action: "*"
+          Resource: "*"
+  httpApi:
+    cors: true
+    payload: "2.0"
+  tracing:
+    apiGateway: false
+    lambda: false
+  ecr:
+    scanOnPush: false
+    images:
+      appimage:
+        path: ./
+
+custom:
+  isOffline: ${env:IS_OFFLINE, false}
+  deploymentBucket:
+    accelerate: true
+    blockPublicAccess: true
+
+
+functions:
+  - ${file(serverless/functions/api.yaml)}
+  - ${file(serverless/functions/sqs.yaml)}
+
+
+
+resources:
+  - ${file(serverless/resources/sqs.yaml)}

@@ -1,0 +1,19 @@
+{
+  "name": "http",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "yarn tsc"
+  },
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.577.0",
+    "@aws-sdk/client-s3": "^3.511.0",
+    "@aws-sdk/lib-dynamodb": "^3.577.0",
+    "@aws-sdk/s3-request-presigner": "^3.511.0",
+    "postgres": "^3.4.3"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.131",
+    "@types/node": "^20.11.17",
+    "typescript": "^5.3.3"
+  }
+}

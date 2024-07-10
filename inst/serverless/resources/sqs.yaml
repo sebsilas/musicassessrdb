@@ -1,0 +1,18 @@
+Resources:
+  BackendQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-Queue-${sls:stage}
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 345600 # default value seconds (4 days)
+      RedrivePolicy:
+        deadLetterTargetArn:
+          "Fn::GetAtt":
+            - BackendDeadLetterQueue
+            - Arn
+        maxReceiveCount: 3 # after 2 retries move to dead queue (see aws docs)
+  
+  BackendDeadLetterQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: ${self:service}-dql-${sls:stage}
