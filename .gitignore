@@ -24,7 +24,7 @@ test_apps
 .quarto
 app_configs
 data-raw/create_SAA_benchmark_data.Rmd
-inst/serverless.yaml
-inst/serverless-nodejs.yaml
-inst/serverless
-inst/nodejs-services
+# inst/serverless.yaml
+# inst/serverless-nodejs.yaml
+# inst/serverless
+# inst/nodejs-services

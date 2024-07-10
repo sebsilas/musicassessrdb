@@ -1,0 +1,50 @@
+get-available-tests-and-experiments:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/get-available-tests-and-experiments.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/get-available-tests-and-experiments
+
+
+add-user-to-group-with-login-code:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/add-user-to-group-with-login-code.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/add-user-to-group-with-login-code
+
+
+
+get-user-groups:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/get-user-groups.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/get-user-groups
+
+
+get-audio-presigned-url:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/get-audio-presigned-url.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/get-audio-presigned-url
+
+
+
+get-singpause-items:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/get-singpause-items.handler
+  events:
+    - httpApi:
+        method: GET
+        path: /v2/get-singpause-items

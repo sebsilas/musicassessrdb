@@ -1,0 +1,9 @@
+MUSICASSESSR_DB_HOST: ${ssm:/${sls:stage}/postgres/MUSICASSESSR_DB_HOST}
+MUSICASSESSR_DB_NAME: ${ssm:/${sls:stage}/postgres/MUSICASSESSR_DB_NAME}
+MUSICASSESSR_DB_PASSWORD: ${ssm:/${sls:stage}/postgres/MUSICASSESSR_DB_PASSWORD}
+MUSICASSESSR_DB_PORT: 5432
+MUSICASSESSR_DB_USER: ${ssm:/${sls:stage}/postgres/MUSICASSESSR_DB_USER}
+STAGE: ${sls:stage}
+SOURCE_BUCKET: ${ssm:/${sls:stage}/musicassessr/SOURCE_BUCKET}
+DESTINATION_BUCKET: ${ssm:/${sls:stage}/musicassessr/DESTINATION_BUCKET}
+TZ: "UTC"
