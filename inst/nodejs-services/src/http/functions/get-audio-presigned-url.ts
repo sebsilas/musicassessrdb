@@ -4,8 +4,9 @@ import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 const s3Client = new S3Client();
 
 export const handler = async (event) => {
-    const bucketName = process.env.AUDIO_BUCKET_NAME
-    const filename = JSON.parse(event.body).filename
+    const bucketName = process.env.SOURCE_BUCKET
+    const { filename, metadata } = JSON.parse(event.body);
+
     if (filename === undefined || filename.trim() === "") {
         return {
             statusCode: 400,
@@ -14,12 +15,14 @@ export const handler = async (event) => {
             }),
         };
     }
+
     try {
         const command = new PutObjectCommand({
             Bucket: bucketName,
             Key: `${filename}.wav`,
             ContentType: "audio/wav",
-            ACL: "public-read"
+            ACL: "public-read",
+            Metadata: metadata // Include metadata here
         });
 
         const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });

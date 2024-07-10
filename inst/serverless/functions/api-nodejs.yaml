@@ -46,5 +46,25 @@ get-singpause-items:
   handler: nodejs-services/src/dist/http/functions/get-singpause-items.handler
   events:
     - httpApi:
-        method: GET
+        method: POST
         path: /v2/get-singpause-items
+
+append-review-new-items:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/append-review-new-items.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/append-review-new-items
+
+
+get-job-status :
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/get-job-status.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/get-job-status
+       

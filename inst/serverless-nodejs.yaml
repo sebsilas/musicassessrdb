@@ -16,7 +16,15 @@ provider:
           Action: "*"
           Resource: "*"
   httpApi:
-    id: "kuqchtwsfb"
+    id: ${ssm:/${sls:stage}/musicassessr/HTTP_API_ID}
+    # authorizers:
+    #    cognitoAuthorizer:
+    #      name: cognitoAuthorizer
+    #      type: jwt
+    #      identitySource: $request.header.Authorization
+    #      issuerUrl: https://cognito-idp.${self:provider.region}.amazonaws.com/us-east-1_NjfBBY1JU
+    #      audience:
+    #        - 5h5ljb5rhsiif8p1c41fuktg63
   tracing:
     apiGateway: false
     lambda: false
@@ -37,3 +45,6 @@ package:
 
 functions:
   - ${file(serverless/functions/api-nodejs.yaml)}
+
+resources:
+  - ${file(serverless/resources/sqs-nodejs.yaml)}
