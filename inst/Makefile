@@ -1,5 +1,5 @@
-PROFILE=seb
-STAGE=dev
+# PROFILE=seb
+# STAGE=dev
 
 nodejs: install_and_build_nodejs deploy_nodejs
 
