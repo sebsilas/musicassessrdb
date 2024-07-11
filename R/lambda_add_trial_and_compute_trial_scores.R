@@ -433,7 +433,7 @@ get_metadata <- function(file, bucket = Sys.getenv("DESTINATION_BUCKET")) {
   dplyr::select(session_id, rhythmic, display_modality,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
-          trial_time_started, onset, feedback, feedback_type)
+          trial_time_started, onset, feedback, feedback_type, trial_paradigm)
 
 }
 
