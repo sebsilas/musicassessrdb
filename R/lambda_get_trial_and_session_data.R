@@ -1,14 +1,5 @@
 
 
-# t <- get_trial_and_session_data(user_id = 77)
-# t <- get_trial_and_session_data(user_id = 2L)
-# t <- get_trial_and_session_data_api(user_id = 2L)
-
-# t <- get_trial_and_session_data_api(user_id = 89L)
-
-# t <- get_trial_and_session_data_api(user_id = 98L) # testsingpauseprod3 on prod
-# t <- get_trial_and_session_data(user_id = 98L)
-
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
                                            trial_score_measure = "opti3",
