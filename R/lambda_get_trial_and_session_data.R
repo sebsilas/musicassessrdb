@@ -4,8 +4,10 @@
 # t <- get_trial_and_session_data(user_id = 2L)
 # t <- get_trial_and_session_data_api(user_id = 2L)
 
-# t <- get_trial_and_session_data(user_id = 89L)
 # t <- get_trial_and_session_data_api(user_id = 89L)
+
+# t <- get_trial_and_session_data_api(user_id = 98L) # testsingpauseprod3 on prod
+# t <- get_trial_and_session_data(user_id = 98L)
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
@@ -78,13 +80,13 @@ get_trial_and_session_data <- function(user_id = NULL,
               dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
 
+
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
 
 
-    # TODO: Factor this if else (repeated logic)
     if("phrase_name" %in% names(trials)) {
 
       scores_trial <- trials %>%
@@ -93,19 +95,14 @@ get_trial_and_session_data <- function(user_id = NULL,
                       attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name)
 
-      review_melodies <- scores_trial %>%
-        dplyr::count(phrase_name, trial_time_started) %>%
-        dplyr::count(phrase_name) %>%
-        dplyr::filter(n > 1 & !is.na(phrase_name))
-
-      phrase_name <- review_melodies %>% dplyr::pull(phrase_name)
+      # For phrases with names we  remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::filter(phrase_name %in% !! phrase_name) %>%
         dplyr::group_by(Date, phrase_name) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
-        dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
+        dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score)) %>%
+        dplyr::filter(!is.na(phrase_name)) # Typically this will be a standard SAA/PBET test
 
     } else {
       scores_trial <- trials %>%
@@ -323,7 +320,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     }
 
     # Remove nans
-    if(is.data.frame(review_melodies)) {
+    if(is.data.frame(review_melodies_over_time)) {
       review_melodies_over_time <- review_melodies_over_time %>%
         dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ 0, TRUE ~ score))
     }

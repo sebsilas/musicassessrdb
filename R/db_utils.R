@@ -1,6 +1,5 @@
 
 
-
 #' Connect to musicassessr DB
 #'
 #' @param local
@@ -69,6 +68,7 @@ compile_item_trials <- function(db_con,
     user_trials <- user_trials %>%
       dplyr::filter(test_id == !! current_test_id)
   }
+
 
   # Return early if nothing there
 

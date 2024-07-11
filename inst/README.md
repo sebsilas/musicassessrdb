@@ -17,6 +17,7 @@
   - Make sure to force the Dockerfile to reinstall the *musicassessrdb* package on rebuild
 
 ## Deploy your functions and endpoints:
+
 ```
 serverless deploy --stage dev --aws-profile musicassessr --region us-east-1 --verbose
 ```
