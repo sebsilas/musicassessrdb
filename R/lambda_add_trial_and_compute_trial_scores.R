@@ -30,6 +30,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
     score_to_use <- "opti3"
     audio_file <- stringr::str_replace(processed_file, ".csv", ".wav")
 
+    logging::loginfo("trial_paradigm: %s", trial_paradigm)
+
 
     # Get pYIN (or rhythm onset) results
 
