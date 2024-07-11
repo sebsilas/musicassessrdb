@@ -36,6 +36,14 @@ append_failed_session <- function(session_time_failed = Sys.time(),
 
   logging::loginfo("user_info = %s", user_info)
 
+  logging::loginfo("class(user_info) = %s", class(user_info))
+
+  if(!is.character(user_info)) {
+    logging::loginfo("user_info is not character, coerce to character")
+    user_info <- user_info %>% jsonlite::toJSON(pretty = TRUE, auto_unbox = TRUE)
+    logging::loginfo("class(user_info) = %s", class(user_info))
+  }
+
 
   response <- tryCatch({
 

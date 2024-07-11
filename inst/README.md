@@ -20,3 +20,10 @@
 ```
 serverless deploy --stage dev --aws-profile musicassessr --region us-east-1 --verbose
 ```
+
+
+Or for prod:
+
+```
+serverless deploy --stage prod --aws-profile musicassessr --region eu-central-1 --verbose
+```
