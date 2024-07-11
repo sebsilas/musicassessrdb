@@ -110,7 +110,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
   if(!is.character(user_info)) {
     logging::loginfo("user_info is not character, coerce to character")
-    user_info <- user_info %>% jsonlite::toJSON(pretty = TRUE, auto_unbox = TRUE)
+    user_info <- user_info %>% jsonlite::toJSON(pretty = TRUE, auto_unbox = TRUE) %>%
+      as.character()
     logging::loginfo("class(user_info) = %s", class(user_info))
   }
 
