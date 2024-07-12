@@ -4,7 +4,7 @@ useDotenv: true
 
 provider:
   name: aws
-  region: ${opt:region, 'us-east-1'}
+  region: ${opt:region, 'eu-central-1'}
   runtime: nodejs18.x
   architecture: arm64
   deploymentMethod: direct
@@ -31,6 +31,7 @@ provider:
 
 
 custom:
+  deadLetterQueue: arn:aws:sqs:${self:provider.region}:${aws:accountId}:musicassessr-dql-${sls:stage}
   deploymentBucket:
     accelerate: true
     blockPublicAccess: true
