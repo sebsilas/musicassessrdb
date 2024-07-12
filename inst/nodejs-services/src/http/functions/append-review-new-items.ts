@@ -81,7 +81,7 @@ export const handler = async (event) => {
         }
 
 
-        storeJob({ jobId: jobId, name: "review items job" });
+        await storeJob({ jobId: jobId, name: "review items job" });
 
 
         const item_bank_name = await db`select item_bank_name  from item_banks where item_bank_id = ${item_bank_id} limit 1`
@@ -122,7 +122,7 @@ export const handler = async (event) => {
 
 
 
-            updateJob({
+            await updateJob({
                 jobId: jobId, message: JSON.stringify({
                     new_items: item_bank_data.map(item => ({
                         ...item,
@@ -140,7 +140,7 @@ export const handler = async (event) => {
 
         const review_items_id = await db`insert into review_items (user_id,item_id,item_bank_id,ranking,prediction_statistic,prediction_time,prediction_method) values (${userId},${item_id},${item_bank_id},1,null,now(),'user_selected') returning review_items_id`
 
-        updateJob({
+        await updateJob({
             jobId: jobId, message: JSON.stringify({
                 review_items: item_bank_data.map(item => ({
                     ...item,
