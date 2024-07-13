@@ -36,7 +36,7 @@ export const handler = async (event) => {
     FROM (
       SELECT
         "q01".*,
-        RANK() OVER (PARTITION BY "item_id" ORDER BY "session_time_started" DESC) AS "col01"
+        RANK() OVER (PARTITION BY "item_id" ORDER BY "trial_time_completed" DESC) AS "col01"
       FROM (
         SELECT
           "trials".*,
@@ -97,7 +97,7 @@ union  select distinct
     FROM (
       SELECT
         "q01".*,
-        RANK() OVER (PARTITION BY "item_id" ORDER BY "session_time_started" DESC) AS "col01"
+        RANK() OVER (PARTITION BY "item_id" ORDER BY "trial_time_completed" DESC) AS "col01"
       FROM (
         SELECT
           "trials".*,
