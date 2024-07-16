@@ -1,0 +1,10 @@
+Resources:
+  JobsQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: Job-Queue-${sls:stage}
+      VisibilityTimeout: 300
+      MessageRetentionPeriod: 345600 # default value seconds (4 days)
+      RedrivePolicy:
+        deadLetterTargetArn:  ${self:custom.deadLetterQueue}
+        maxReceiveCount: 1 # after 2 retries move to dead queue (see aws docs)
