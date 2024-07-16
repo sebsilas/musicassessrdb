@@ -31,7 +31,7 @@ item_banks_table_static <- tibble::tibble(
     "The bottom 10th percentile of the difficulty values for the Berkowitz_ngram item bank",
     "Updated Singpause item item bank for 2024 testing",
     "Updated Singpause phrase item bank for 2024 testing",
-    "The bottom 5th percentile of the difficulty values for the Berkowitz_ngram item bank",
+    "The bottom 5th percentile of the difficulty values for the Berkowitz_ngram item bank"
   )
 )
 
