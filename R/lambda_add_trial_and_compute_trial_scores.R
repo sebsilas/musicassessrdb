@@ -41,6 +41,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
                     onset = as.numeric(onset),
                     note = round(hrep::freq_to_midi(freq)))
 
+
     logging::loginfo("res: %s", res)
 
     # Return quick feedback, if need be
@@ -55,7 +56,23 @@ add_trial_and_compute_trial_scores <- function(Records) {
       logging::loginfo("feedback_type: %s", feedback_type)
 
       if(feedback_type == "opti3") {
-        result <- musicassessr::get_opti3(stimuli, stimuli_durations, length(stimuli), res)
+
+        stim_length <- length(stimuli)
+        opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
+        transposition <- opti3_res$th
+        notes_with_best_transposition <- res$note + transposition
+        num_notes <- length(res$note)
+        num_notes_scaled <- min( c(num_notes, stim_length), na.rm = TRUE) / stim_length
+        f1_score <- compute_accuracy_measures_aligned(stimuli, notes_with_best_transposition)$F1_score
+
+        result <- list(opti3 = opti3_res,
+                       # Temporarilly returning some other stuff
+                       rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli, stimuli_durations, notes_with_best_transposition, res$dur),
+                       F1_score = f1_score,
+                       weighted_opti3_num_notes = mean( c(opti3_res$opti3 + num_notes_scaled), na.rm = TRUE),
+                       transcribed_notes = paste0(res$note)
+                       )
+
       } else if(feedback_type == "produced_note") {
         result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
       } else {
@@ -71,7 +88,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       dynamodb <- paws::dynamodb()
 
       # Append selected items to DynamoDB
-      update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(opti3 = result)), status = "FINISHED")
+      update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(feedback = result)), status = "FINISHED")
 
     }
 
@@ -449,4 +466,47 @@ get_rhythm_scores <- function(onset_res, stimuli_durations) {
   scores <- musicassessr::score_rhythm_production(stimuli_durations, user_durations)
 
 }
+
+
+# Some experimental stuff:
+
+edit_dist <- function(s, t) {
+  utils::adist(s, t)[1,1]
+}
+
+edit_sim <- function(s, t) {
+  offset <- min(c(s, t))
+  s <- s - offset + 128
+  t <- t - offset  + 128
+  s <- intToUtf8(s)
+  t <- intToUtf8(t)
+  1 - edit_dist(s, t)/max(nchar(s), nchar(t))
+}
+
+
+
+weight_rhythmic <- function(pitches, durs) {
+  purrr::map2(pitches, durs, function(pitch, dur) {
+    rep(pitch, dur)
+  }) %>% unlist() %>% as.integer()
+}
+
+rhythmic_weighting_sim <- function(pitches, durs, pitches2, durs2, sim_algo = edit_sim) {
+
+  stopifnot(length(pitches) == length(durs),
+            length(pitches2) == length(durs2))
+
+  # Assuming durations are in seconds
+  durs <- round(durs * 1000)
+  durs2 <- round(durs2 * 1000)
+
+  duration_weighted_pitches <- weight_rhythmic(pitches, durs)
+  duration_weighted_pitches2 <- weight_rhythmic(pitches2, durs2)
+
+  # Apply some similarity function, e.g., edit sim here
+
+  sim_algo(duration_weighted_pitches, duration_weighted_pitches2)
+
+}
+
 
