@@ -5,6 +5,14 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
+  logging::loginfo('jsonlite::fromJSON(Records$body)', jsonlite::fromJSON(Records$body))
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]]', jsonlite::fromJSON(Records$body)[[1]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[1]]', jsonlite::fromJSON(Records$body)[[1]][[1]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[1]][[9]]', jsonlite::fromJSON(Records$body)[[1]][[1]][[9]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]]', jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]]', jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]', jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]])
+
   processed_file <- utils::URLdecode(jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]])
   # URLdecode parses the name properly e.g., umlauts
 
