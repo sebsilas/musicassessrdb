@@ -46,7 +46,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       dplyr::mutate(freq = as.numeric(freq),
                     dur = as.numeric(dur),
                     onset = as.numeric(onset),
-                    note = round(hrep::freq_to_midi(freq)))
+                    note = round(hrep::freq_to_midi(freq))) %>%
+      itembankr::produce_extra_melodic_features()
 
 
     logging::loginfo("res: %s", res)
