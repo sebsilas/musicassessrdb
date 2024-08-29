@@ -88,7 +88,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
                        # Temporarilly returning some other stuff
                        rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli, stimuli_durations, notes_with_best_transposition, res$dur),
                        F1_score = f1_score,
-                       weighted_opti3_num_notes = mean( c(opti3_res$opti3 + num_notes_scaled), na.rm = TRUE),
+                       weighted_opti3_num_notes = mean( c(opti3_res$opti3, num_notes_scaled), na.rm = TRUE),
                        transcribed_notes = paste0(res$note)
                        )
 
