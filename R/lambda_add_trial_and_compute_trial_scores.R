@@ -8,11 +8,11 @@ add_trial_and_compute_trial_scores <- function(Records) {
   logging::loginfo('jsonlite::fromJSON(Records$body) %s', jsonlite::fromJSON(Records$body))
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]] %s', jsonlite::fromJSON(Records$body)[[1]])
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]])
-  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]][[3]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]][[3]])
-  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]][[3]][[1]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]][[3]][[1]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]][[4]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]][[4]])
+  logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]][[4]][[1]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]][[4]][[1]])
 
 
-  processed_file <- utils::URLdecode(jsonlite::fromJSON(Records$body)[[1]][[9]][[3]][[1]])
+  processed_file <- utils::URLdecode(jsonlite::fromJSON(Records$body)[[1]][[9]][[4]][[1]])
   # URLdecode parses the name properly e.g., umlauts
 
   logging::loginfo("processed_file = %s", processed_file)
