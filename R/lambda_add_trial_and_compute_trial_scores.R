@@ -71,14 +71,20 @@ add_trial_and_compute_trial_scores <- function(Records) {
         logging::loginfo("transposition %s", transposition)
         notes_with_best_transposition <- res$note + transposition
         num_notes <- length(res$note)
+        logging::loginfo("num_notes %s", num_notes)
+        logging::loginfo("stim_length %s", stim_length)
         num_notes_scaled <- min( c(num_notes, stim_length), na.rm = TRUE) / stim_length
+        logging::loginfo("num_notes_scaled %s", num_notes_scaled)
         f1_score <- compute_accuracy_measures_aligned(stimuli, notes_with_best_transposition)$F1_score
 
         logging::loginfo("res %s", res)
         logging::loginfo('notes_with_best_transposition %s', notes_with_best_transposition)
         logging::loginfo("res$dur %s", res$dur)
 
-        result <- list(opti3 = opti3_res,
+        result <- list(opti3 = opti3_res$opti3,
+                       ngrukkon = opti3_res$ngrukkon,
+                       rhythfuzz = opti3_res$rhythfuzz,
+                       harmcore = opti3_res$harmcore,
                        # Temporarilly returning some other stuff
                        rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli, stimuli_durations, notes_with_best_transposition, res$dur),
                        F1_score = f1_score,
