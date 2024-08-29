@@ -67,7 +67,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
         stim_length <- length(stimuli)
         opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
         logging::loginfo("opti3_res %s", opti3_res)
-        transposition <- opti3_res$th
+        transposition <- opti3_res$transposition
         logging::loginfo("transposition %s", transposition)
         notes_with_best_transposition <- res$note + transposition
         num_notes <- length(res$note)
