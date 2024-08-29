@@ -15,7 +15,7 @@ endpoint_wrapper <- function(function_name, request_body, endpoint_url = Sys.get
   if(httr::status_code(response) == 200) {
     result <- response %>%
       httr::content("text", encoding = "UTF-8") %>%
-      rjson::fromJSON()
+      jsonlite::fromJSON()
   } else {
     result <- NA
   }

@@ -56,7 +56,7 @@ select_items_test <- function(job_id = "test",
 
 
     # # Append selected items to DynamoDB
-    # update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(review_items = review_items_df,
+    # update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
     #                                                                    new_items = new_items_df)), status = "FINISHED")
 
     list(status = 200,
@@ -122,7 +122,7 @@ select_items <- function(Records) {
     only_use_items_from_fallback_item_banks <- TRUE
 
     # Parse event
-    records <- rjson::fromJSON(Records$body)
+    records <- jsonlite::fromJSON(Records$body)
     job_id <- records[[1]][1]
     user_id <- records[[2]][1]
 
@@ -172,7 +172,7 @@ select_items <- function(Records) {
 
 
     # Append selected items to DynamoDB
-    update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(review_items = review_items_df,
+    update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
                                                                        new_items = new_items_df)), status = "FINISHED")
 
     list(status = 200,

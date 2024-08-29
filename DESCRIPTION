@@ -22,6 +22,7 @@ Imports:
     htmltools,
     httr,
     jose,
+    jsonlite,
     logging,
     lubridate,
     magrittr,

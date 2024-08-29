@@ -5,7 +5,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
-  processed_file <- utils::URLdecode(rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]])
+  processed_file <- utils::URLdecode(jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]])
   # URLdecode parses the name properly e.g., umlauts
 
   logging::loginfo("processed_file = %s", processed_file)
@@ -88,7 +88,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       dynamodb <- paws::dynamodb()
 
       # Append selected items to DynamoDB
-      update_job(dynamodb, job_id = job_id, message = rjson::toJSON(list(feedback = result)), status = "FINISHED")
+      update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(feedback = result)), status = "FINISHED")
 
     }
 

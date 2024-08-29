@@ -3,7 +3,7 @@ feedback <- function(Records) {
 
   logging::loginfo("Inside feedback function")
 
-  processed_file <- rjson::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
+  processed_file <- jsonlite::fromJSON(Records$body)[[1]][[1]][[9]][[4]][[1]][[1]]
   logging::loginfo("processed_file = %s", processed_file)
 
   user_input_as_pyin <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
