@@ -66,11 +66,17 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
         stim_length <- length(stimuli)
         opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
+        logging::loginfo("opti3_res %s", opti3_res)
         transposition <- opti3_res$th
+        logging::loginfo("transposition %s", transposition)
         notes_with_best_transposition <- res$note + transposition
         num_notes <- length(res$note)
         num_notes_scaled <- min( c(num_notes, stim_length), na.rm = TRUE) / stim_length
         f1_score <- compute_accuracy_measures_aligned(stimuli, notes_with_best_transposition)$F1_score
+
+        logging::loginfo("res %s", res)
+        logging::loginfo('notes_with_best_transposition %s', notes_with_best_transposition)
+        logging::loginfo("res$dur %s", res$dur)
 
         result <- list(opti3 = opti3_res,
                        # Temporarilly returning some other stuff
