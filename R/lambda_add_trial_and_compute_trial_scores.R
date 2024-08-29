@@ -11,6 +11,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[8]][[3]] %s', jsonlite::fromJSON(Records$body)[[1]][[8]][[3]])
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[8]][[3]][[1]] %s', jsonlite::fromJSON(Records$body)[[1]][[8]][[3]][[1]])
 
+
   processed_file <- utils::URLdecode(jsonlite::fromJSON(Records$body)[[1]][[8]][[3]][[1]])
   # URLdecode parses the name properly e.g., umlauts
 
