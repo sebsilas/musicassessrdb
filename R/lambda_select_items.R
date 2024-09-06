@@ -1,7 +1,7 @@
 
 # db_con <- musicassessr_con()
 # t <- select_items_test()
-# DBI::dbDisconnect(db_con)
+# db_disconnect(db_con)
 
 select_items_test <- function(job_id = "test",
                               user_id = 2L,

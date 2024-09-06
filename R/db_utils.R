@@ -4,15 +4,18 @@
 #'
 #' @param local
 #' @param db_name
+#' @param pool
 #'
 #' @return
 #' @export
 #'
 #' @examples
 musicassessr_con <- function(local = FALSE,
-                             db_name = Sys.getenv("MUSICASSESSR_DB_NAME")) {
+                             db_name = Sys.getenv("MUSICASSESSR_DB_NAME"),
+                             pool = TRUE) {
 
   logging::loginfo("Connecting to musicassessr database")
+
 
   db_con <- if(local) {
     RPostgres::dbConnect(
@@ -24,7 +27,18 @@ musicassessr_con <- function(local = FALSE,
     port = Sys.getenv("LOCAL_DB_PORT"),
     timezone = "UTC")
     } else {
-      RPostgres::dbConnect(
+
+      if(pool) {
+        pool::dbPool(
+          RPostgres::Postgres(),
+          dbname = db_name,
+          user = Sys.getenv("MUSICASSESSR_DB_USER"),
+          password = Sys.getenv("MUSICASSESSR_DB_PASSWORD"),
+          host = Sys.getenv("MUSICASSESSR_DB_HOST"),
+          port = Sys.getenv("MUSICASSESSR_DB_PORT"),
+          timezone = "UTC")
+      } else {
+        RPostgres::dbConnect(
         RPostgres::Postgres(),
         dbname = db_name,
         user = Sys.getenv("MUSICASSESSR_DB_USER"),
@@ -32,8 +46,8 @@ musicassessr_con <- function(local = FALSE,
         host = Sys.getenv("MUSICASSESSR_DB_HOST"),
         port = Sys.getenv("MUSICASSESSR_DB_PORT"),
         timezone = "UTC")
+    }
   }
-
 
 }
 
@@ -299,7 +313,7 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 
   cat(file=stderr(), "nrow(user_trials)", nrow(user_trials), "\n")
 
-  DBI::dbDisconnect(db_con)
+  db_disconnect(db_con)
 
   return(user_trials)
 
@@ -355,7 +369,7 @@ db_disconnect_shiny <- function(state, ...) {
   db_con <- psychTestR::get_global("db_con", state)
   if(!is.null(db_con)) {
     logging::loginfo("Disconnecting from DB")
-    DBI::dbDisconnect(db_con)
+    db_disconnect(db_con)
   }
 }
 
@@ -452,7 +466,7 @@ elt_disconnect_from_db <- function() {
   psychTestR::code_block(function(state, ...) {
     logging::loginfo("Disconnecting from DB")
     db_con <- psychTestR::get_global("db_con", state)
-    DBI::dbDisconnect(db_con)
+    db_disconnect(db_con)
   })
 }
 
@@ -543,7 +557,7 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
 
 # db_con <- musicassessr_con()
 # t <- get_study_history_stats(db_con, user_id = 82L, test_id = 1L, inst = NULL, item_id = "Berkowitz_ngram_334774", current_trial_scores = tibble::tibble(measure = "opti3", score = NA), current_trial_time_completed = Sys.time() )
-# DBI::dbDisconnect(db_con)
+# db_disconnect(db_con)
 
 # For a user, item, test, and measure combo, get the most recent score before the present moment
 get_study_history_stats <- function(db_con,
@@ -743,10 +757,20 @@ get_study_history_stats <- function(db_con,
 
 }
 
+
+db_disconnect <- function(db_con) {
+  logging::loginfo("Disconnecting from db")
+  if(is(db_con, "Pool"))   {
+    pool::poolClose(db_con)
+  } else {
+    db_disconnect(db_con)
+  }
+}
+
 # db_con <- musicassessr_con()
 # t <- get_study_history_stats(db_con, 2L, 2L, "Voice", "WJD_phrase_8308")
 # t <- get_study_history_stats(db_con, 2L, 2L, "Voice", "fail")
-# DBI::dbDisconnect(db_con)
+# db_disconnect(db_con)
 
 # tests
 # extract_item_bank_id_from_item_id(db_con, "Berkowitz_ngram_76196")

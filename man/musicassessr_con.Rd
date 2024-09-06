@@ -4,10 +4,14 @@
 \alias{musicassessr_con}
 \title{Connect to musicassessr DB}
 \usage{
-musicassessr_con(local = FALSE, db_name = Sys.getenv("MUSICASSESSR_DB_NAME"))
+musicassessr_con(
+  local = FALSE,
+  db_name = Sys.getenv("MUSICASSESSR_DB_NAME"),
+  pool = TRUE
+)
 }
 \arguments{
-\item{db_name}{}
+\item{pool}{}
 }
 \description{
 Connect to musicassessr DB

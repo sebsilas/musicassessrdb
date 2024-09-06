@@ -79,4 +79,4 @@ run_admin_app <- function() {
 
 # user_data <- get_trial_and_session_data_api(user_id = 60)
 # user_stats <- user_data$user_stats %>% dplyr::bind_rows()
-# DBI::dbDisconnect(db_con)
+# db_disconnect(db_con)
