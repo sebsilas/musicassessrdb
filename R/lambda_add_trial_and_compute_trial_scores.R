@@ -528,7 +528,7 @@ benovelent_score <- function(score, attempt) {
   scaledScore <- 1 + benevolentScore * 9
 
   # Round up
-  scaledScore <- Math.ceil(scaledScore)
+  scaledScore <- ceiling(scaledScore)
 
   return(scaledScore)
 }
