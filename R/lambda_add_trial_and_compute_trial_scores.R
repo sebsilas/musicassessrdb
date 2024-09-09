@@ -530,6 +530,10 @@ benovelent_score <- function(score, attempt) {
   # Round up
   scaledScore <- ceiling(scaledScore)
 
+  if(scaledScore > 10) {
+    scaledScore <- 10
+  }
+
   return(scaledScore)
 }
 
