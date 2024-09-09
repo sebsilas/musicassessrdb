@@ -36,6 +36,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
     score_to_use <- "opti3"
     audio_file <- stringr::str_replace(processed_file, ".csv", ".wav")
+    attempt <- as.integer(metadata$attempt)
 
     logging::loginfo("trial_paradigm: %s", trial_paradigm)
 
@@ -68,31 +69,14 @@ add_trial_and_compute_trial_scores <- function(Records) {
         stim_length <- length(stimuli)
         opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
         logging::loginfo("opti3_res %s", opti3_res)
-        transposition <- opti3_res$transposition
-        logging::loginfo("transposition %s", transposition)
-        notes_with_best_transposition <- res$note + transposition
-        num_notes <- length(res$note)
-        logging::loginfo("num_notes %s", num_notes)
-        logging::loginfo("stim_length %s", stim_length)
-        num_notes_scaled <- min( c(num_notes, stim_length), na.rm = TRUE) / stim_length
-        logging::loginfo("num_notes_scaled %s", num_notes_scaled)
-        f1_score <- compute_accuracy_measures_aligned(stimuli, notes_with_best_transposition)$F1_score
-
-        logging::loginfo("res %s", res)
-        logging::loginfo('notes_with_best_transposition %s', notes_with_best_transposition)
-        logging::loginfo("res$dur %s", res$dur)
-
-        result <- list(opti3 = opti3_res$opti3,
+        opti3 <- opti3_res$opti3
+        benovelent_opti3 <- benovelent_score(opti3, attempt)
+        result <- list(benovelent_opti3 = benovelent_opti3,
+                       opti3 = opti3_res$opti3,
                        ngrukkon = opti3_res$ngrukkon,
                        rhythfuzz = opti3_res$rhythfuzz,
                        harmcore = opti3_res$harmcore,
-                       # Temporarilly returning some other stuff
-                       rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli, stimuli_durations, notes_with_best_transposition, res$dur),
-                       F1_score = f1_score,
-                       weighted_opti3_num_notes = mean( c(opti3_res$opti3, num_notes_scaled), na.rm = TRUE),
-                       transcribed_notes = paste0(res$note)
-                       )
-
+                       transcribed_notes = paste0(res$note, collapse = ","))
       } else if(feedback_type == "produced_note") {
         result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
       } else {
@@ -120,7 +104,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       trial_time_started = lubridate::as_datetime(metadata$trial_time_started),
       trial_time_completed = trial_time_completed,
       instrument = instrument,
-      attempt = as.integer(metadata$attempt),
+      attempt = attempt,
       item_id = item_id,
       display_modality = stringr::str_replace(metadata$display_modality, "-", "_"),
       phase = metadata$phase,
@@ -299,6 +283,7 @@ db_append_melodic_production <- function(db_con, trial_id, pyin_res, correct_boo
 
 
   melodic_production_df <- pyin_res %>%
+    dplyr::select(onset, dur, freq, note) %>%
     dplyr::mutate(trial_id = trial_id,
                   correct = correct_boolean,
                   correct_octaves_allowed = correct_boolean_octaves_allowed)
@@ -529,4 +514,22 @@ rhythmic_weighting_sim <- function(pitches, durs, pitches2, durs2, sim_algo = ed
 
 }
 
+
+
+benovelent_score <- function(score, attempt) {
+
+  # Give a boost for attempts
+  score = score * (10 + attempt) / 10
+
+  # Apply a quadratic transformation
+  benevolentScore = sqrt(score)
+
+  # Scale to the range 1 to 10
+  scaledScore <- 1 + benevolentScore * 9
+
+  # Round up
+  scaledScore <- Math.ceil(scaledScore)
+
+  return(scaledScore)
+}
 

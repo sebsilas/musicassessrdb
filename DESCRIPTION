@@ -26,6 +26,7 @@ Imports:
     logging,
     lubridate,
     magrittr,
+    pool,
     promises,
     psychTestR (>= 2.25.0),
     psychTestRCATME (>= 1.6.2),
