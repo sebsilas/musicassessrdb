@@ -70,12 +70,19 @@ add_trial_and_compute_trial_scores <- function(Records) {
         opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
         logging::loginfo("opti3_res %s", opti3_res)
         opti3 <- opti3_res$opti3
+
+        transposition <- opti3_res$transposition
+        logging::loginfo("transposition %s", transposition)
+        notes_with_best_transposition <- res$note + transposition
+
         benovelent_opti3 <- benovelent_score(opti3, attempt)
+
         result <- list(benovelent_opti3 = benovelent_opti3,
                        opti3 = opti3_res$opti3,
                        ngrukkon = opti3_res$ngrukkon,
                        rhythfuzz = opti3_res$rhythfuzz,
                        harmcore = opti3_res$harmcore,
+                       rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli, stimuli_durations, notes_with_best_transposition, res$dur),
                        transcribed_notes = paste0(res$note, collapse = ","))
       } else if(feedback_type == "produced_note") {
         result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
