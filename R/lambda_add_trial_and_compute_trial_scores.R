@@ -525,6 +525,10 @@ rhythmic_weighting_sim <- function(pitches, durs, pitches2, durs2, sim_algo = ed
 
 benovelent_score <- function(score, attempt) {
 
+  if(is.na(score) || length(score) == 0L) {
+    return(0)
+  }
+
   # Give a boost for attempts
   score = score * (10 + attempt) / 10
 
