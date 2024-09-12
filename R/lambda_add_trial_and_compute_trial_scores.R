@@ -87,8 +87,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
                                                                             notes_with_best_transposition,
                                                                             res$dur),
                        transcribed_notes = paste0(res$note, collapse = ","),
-                       notes_with_best_transposition = notes_with_best_transposition,
-                       stimuli = stimuli
+                       notes_with_best_transposition = paste0(notes_with_best_transposition, collapse = ","),
+                       stimulus = paste0(stimuli, collapse = ",")
                        )
       } else if(feedback_type == "produced_note") {
         result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
