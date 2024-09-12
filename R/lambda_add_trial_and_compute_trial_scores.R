@@ -523,10 +523,19 @@ rhythmic_weighting_sim <- function(pitches, durs, pitches2, durs2, sim_algo = ed
 
   # Apply some similarity function, e.g., edit sim here
 
-  sim_algo(duration_weighted_pitches, duration_weighted_pitches2)
+  octs <- 12*-3:3
+  purrr::map_dfr(octs, function(oct) {
+    tibble::tibble(oct = oct,
+                   score = sim_algo(duration_weighted_pitches, duration_weighted_pitches2 + oct))
+  }) %>%
+    dplyr::slice_max(score) %>%
+    dplyr::pull(score)
+
 
 }
 
+
+# rhythmic_weighting_sim(60:65+12, rep(1,6), 60:65, rep(1, 6))
 
 
 benovelent_score <- function(score, attempt) {
@@ -553,4 +562,57 @@ benovelent_score <- function(score, attempt) {
 
   return(scaledScore)
 }
+
+
+
+# Full mel
+
+# stimuli <- c(68, 66, 65, 66, 67)
+# stimuli_durations <- rep(0.5, 5)
+# stim_length <- length(stimuli)
+#
+# res <- tibble::tibble(onset = c(0, cumsum(rep(0.5, 4)) ),
+#                       dur = rep(0.5, 5),
+#                       freq = hrep::midi_to_freq(c(68, 66, 65, 66, 67)),
+#                       note = c(68, 66, 65, 66, 67)) %>%
+#   itembankr::produce_extra_melodic_features()
+#
+#
+# opti3 <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
+# opti3 %>%
+#   dplyr::pull(opti3) %>%
+#   benovelent_score(attempt = 1)
+#
+#
+# # Miss two notes
+#
+# res <- tibble::tibble(onset = c(0, cumsum(rep(0.5, 2)) ),
+#                       dur = rep(0.5, 3),
+#                       freq = hrep::midi_to_freq(c(68, 66, 65)),
+#                       note = c(68, 66, 65)) %>%
+#   itembankr::produce_extra_melodic_features()
+#
+#
+# opti3 <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
+# opti3
+# opti3 %>%
+#   dplyr::pull(opti3) %>%
+#   benovelent_score(attempt = 1)
+#
+#
+# # Miss three notes
+#
+# res <- tibble::tibble(onset = c(0, cumsum(rep(0.5, 1)) ),
+#                       dur = rep(0.5, 2),
+#                       freq = hrep::midi_to_freq(c(68, 66)),
+#                       note = c(68, 66)) %>%
+#   itembankr::produce_extra_melodic_features()
+#
+#
+# opti3 <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
+# opti3
+# opti3 %>%
+#   dplyr::pull(opti3) %>%
+#   benovelent_score(attempt = 1)
+#
 
