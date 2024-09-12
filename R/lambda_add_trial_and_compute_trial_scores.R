@@ -82,8 +82,14 @@ add_trial_and_compute_trial_scores <- function(Records) {
                        ngrukkon = opti3_res$ngrukkon,
                        rhythfuzz = opti3_res$rhythfuzz,
                        harmcore = opti3_res$harmcore,
-                       rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli, stimuli_durations, notes_with_best_transposition, res$dur),
-                       transcribed_notes = paste0(res$note, collapse = ","))
+                       rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli,
+                                                                            stimuli_durations,
+                                                                            notes_with_best_transposition,
+                                                                            res$dur),
+                       transcribed_notes = paste0(res$note, collapse = ","),
+                       notes_with_best_transposition = notes_with_best_transposition,
+                       stimuli = stimuli
+                       )
       } else if(feedback_type == "produced_note") {
         result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
       } else {
