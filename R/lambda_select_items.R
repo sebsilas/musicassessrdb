@@ -170,11 +170,6 @@ select_items <- function(Records) {
       }
     }
 
-    # For testing
-    review_items_df <- sing_scoring_test_ib
-    new_items_df <- sing_scoring_test_ib
-
-
     # Append selected items to DynamoDB
     update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
                                                                        new_items = new_items_df)), status = "FINISHED")
