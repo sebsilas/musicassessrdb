@@ -45,6 +45,8 @@ compute-session-scores-and-end-session:
     - httpApi:
         method: POST
         path: /compute-session-scores-and-end-session
+  environment:
+      DISABLE_POOL: 'TRUE'
 
 append-conditions:
   timeout: 28
