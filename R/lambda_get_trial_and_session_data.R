@@ -53,7 +53,8 @@ get_trial_and_session_data <- function(user_id = NULL,
     # Get sessions associated with user
     sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
         dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
-        dplyr::mutate(Date = lubridate::as_date(session_time_started))
+        dplyr::mutate(Date = lubridate::as_date(session_time_started))  %>%
+        dplyr::left_join(get_table(db_con, "users"), by = "user_id")
 
     session_ids <- sessions$session_id
 
@@ -68,8 +69,8 @@ get_trial_and_session_data <- function(user_id = NULL,
                                   session_id = session_ids,
                                   user_id = user_id,
                                   join_item_banks_on = TRUE) %>% # We need this for phrase_name.. but could timeout Lambdas..
-              dplyr::mutate(Date = lubridate::as_date(session_time_started))
-
+              dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
+      dplyr::left_join(get_table(db_con, "users"), by = "user_id")
 
 
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
@@ -82,14 +83,14 @@ get_trial_and_session_data <- function(user_id = NULL,
 
       scores_trial <- trials %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
-        dplyr::select(Date, user_id, trial_id, trial_time_started, trial_time_completed, instrument,
+        dplyr::select(Date, user_id, username, trial_id, trial_time_started, trial_time_completed, instrument,
                       attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name)
 
       # For phrases with names we  remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::group_by(Date, phrase_name) %>%
+        dplyr::group_by(Date, user_id, username, phrase_name) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score)) %>%
@@ -98,7 +99,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     } else {
       scores_trial <- trials %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
-        dplyr::select(Date, user_id, trial_id, trial_time_started, trial_time_completed, instrument,
+        dplyr::select(Date, user_id, username, trial_id, trial_time_started, trial_time_completed, instrument,
                       attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score)
 
@@ -114,7 +115,7 @@ get_trial_and_session_data <- function(user_id = NULL,
 
       review_melodies_over_time <- scores_trial %>%
         dplyr::filter(stimulus_abs_melody %in% !! stimulus_abs_melody) %>%
-        dplyr::group_by(user_id, trial_time_started, stimulus_abs_melody) %>%
+        dplyr::group_by(user_id, username, trial_time_started, stimulus_abs_melody) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
@@ -123,21 +124,21 @@ get_trial_and_session_data <- function(user_id = NULL,
     # But session scores we aggregate over the day
     # Aggregate across rhythmic and arrhythmic
     session_scores_agg <- session_scores %>%
-      dplyr::group_by(user_id, Date) %>%
+      dplyr::group_by(user_id, username, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
       dplyr::ungroup()
 
     session_scores_rhythmic <- session_scores %>%
       dplyr::filter(grepl("_rhythmic", measure)) %>%
-      dplyr::select(user_id, Date, session_id, session_time_started, session_time_completed, score) %>%
-      dplyr::group_by(Date) %>%
+      dplyr::select(user_id, username, Date, session_id, session_time_started, session_time_completed, score) %>%
+      dplyr::group_by(user_id, username, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
       dplyr::ungroup()
 
     session_scores_arrhythmic <- session_scores %>%
       dplyr::filter(grepl("_arrhythmic", measure)) %>%
-      dplyr::select(user_id, Date, session_id, session_time_started, session_time_completed, score) %>%
-      dplyr::group_by(Date) %>%
+      dplyr::select(user_id, username, Date, session_id, session_time_started, session_time_completed, score) %>%
+      dplyr::group_by(user_id, username, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
       dplyr::ungroup()
 
@@ -151,11 +152,9 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::mutate(seconds_spent = as.numeric(session_time_completed - session_time_started),
                     seconds_spent = dplyr::case_when(seconds_spent < 0 ~ 0, TRUE ~ seconds_spent),
                     minutes_spent = seconds_spent / 60) %>%
-      dplyr::group_by(user_id, Date) %>%
-      dplyr::summarise(
-        minutes_spent = sum(minutes_spent, na.rm = TRUE),
-        no_practice_sessions = dplyr::n()
-      ) %>%
+      dplyr::group_by(user_id, username, Date) %>%
+      dplyr::summarise(minutes_spent = sum(minutes_spent, na.rm = TRUE),
+                       no_practice_sessions = dplyr::n() ) %>%
       dplyr::ungroup()
 
 
@@ -194,20 +193,20 @@ get_trial_and_session_data <- function(user_id = NULL,
       # Average number practice sessions per user
 
       overall_avg_no_practice_session_per_user <- user_stats %>%
-        dplyr::group_by(user_id) %>%
+        dplyr::group_by(user_id, username) %>%
         dplyr::summarise(overall_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
         dplyr::ungroup()
 
       last_month_avg_no_practice_session_per_user <- user_stats %>%
         last_month() %>%
-        dplyr::group_by(user_id, month) %>%
+        dplyr::group_by(user_id, username, month) %>%
         dplyr::summarise(last_month_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
         dplyr::ungroup()
 
 
       last_week_avg_no_practice_session_per_user <- user_stats %>%
         last_week() %>%
-        dplyr::group_by(user_id, week) %>%
+        dplyr::group_by(user_id, username, week) %>%
         dplyr::summarise(last_week_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
         dplyr::ungroup()
 
@@ -232,7 +231,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       # Song scores
 
       overall_song_scores <- scores_trial %>%
-        dplyr::group_by(user_id, phrase_name) %>%
+        dplyr::group_by(user_id, username, phrase_name) %>%
         dplyr::slice_max(Date) %>%  # Get latest score
         dplyr::group_by(phrase_name) %>%
         dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
@@ -252,7 +251,7 @@ get_trial_and_session_data <- function(user_id = NULL,
 
       last_month_song_scores <- scores_trial %>%
         last_month() %>%
-        dplyr::group_by(user_id, phrase_name) %>%
+        dplyr::group_by(user_id, username, phrase_name) %>%
         dplyr::slice_max(Date) %>%  # Get latest score
         dplyr::group_by(phrase_name) %>%
         dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
@@ -274,7 +273,7 @@ get_trial_and_session_data <- function(user_id = NULL,
 
       last_week_song_scores <- scores_trial %>%
         last_week() %>%
-        dplyr::group_by(user_id, phrase_name) %>%
+        dplyr::group_by(user_id, username, phrase_name) %>%
         dplyr::slice_max(Date) %>%  # Get latest score
         dplyr::group_by(phrase_name) %>%
         dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
@@ -376,4 +375,4 @@ last_month <- function(df) {
 
 
 
-
+#  dat <- get_trial_and_session_data(group_id = 5L)
