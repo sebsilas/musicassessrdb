@@ -249,7 +249,8 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::ungroup()
 
       overall_song_stats <- overall_song_stats %>%
-        dplyr::left_join(overall_song_scores, by = "phrase_name")
+        dplyr::left_join(overall_song_scores, by = "phrase_name") %>%
+        dplyr::filter(!is.na(phrase_name))
 
       ## Last month
 
@@ -382,3 +383,5 @@ last_month <- function(df) {
 #  dat <- get_trial_and_session_data(group_id = 5L)
 # dat_filt <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE)
 # filter_pseudo_anonymous_ids
+
+# tt2 <- dat_filt$group_stats$overall_song_stats
