@@ -23,10 +23,13 @@ get_trial_and_session_data <- function(user_id = NULL,
                                        group_id = NULL,
                                        trial_score_measure = "opti3",
                                        session_score_measure_arrhythmic = "mean_opti3_arrhythmic",
-                                       session_score_measure_rhythmic = "mean_opti3_rhythmic") {
+                                       session_score_measure_rhythmic = "mean_opti3_rhythmic",
+                                       filter_pseudo_anonymous_ids = FALSE) {
 
 
   logging::loginfo("Inside get_trial_and_session_data function")
+
+  logging::loginfo("filter_pseudo_anonymous_ids: %s", filter_pseudo_anonymous_ids)
 
 
   # Choose group OR user
@@ -54,7 +57,8 @@ get_trial_and_session_data <- function(user_id = NULL,
     sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
         dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
         dplyr::mutate(Date = lubridate::as_date(session_time_started))  %>%
-        dplyr::left_join(get_table(db_con, "users"), by = "user_id")
+        dplyr::left_join(get_table(db_con, "users"), by = "user_id") %>%
+        { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . }
 
     session_ids <- sessions$session_id
 
@@ -376,3 +380,5 @@ last_month <- function(df) {
 
 
 #  dat <- get_trial_and_session_data(group_id = 5L)
+# dat_filt <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE)
+# filter_pseudo_anonymous_ids

@@ -119,3 +119,7 @@ format_item_ids_in_url <- function() {
          'review_items_ids=', review_item_ids_str)
 }
 
+filter_pseudo_anonymous_ids <- function(string) {
+  # Check if the string matches the pattern
+  grepl("^\\d{6}[A-Za-z]{2}\\d{2}.*", string)
+}

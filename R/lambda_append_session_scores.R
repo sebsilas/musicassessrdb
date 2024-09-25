@@ -64,6 +64,9 @@ compute_session_scores_and_end_session_api <- function(test_id = NA,
 #                                                 psychTestR_session_id = NA,
 #                                                 session_complete = "1")
 
+
+# t <- compute_session_scores_and_end_session(test_id = 2L, session_id = 2290, user_id = 95)
+
 # This is the function that is called when the endpoint
 # is invoked
 compute_session_scores_and_end_session <- function(test_id = NA,
@@ -142,8 +145,6 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     trial_table <- compile_item_trials(db_con, test_id, session_id, user_id, join_item_banks_on = TRUE) # Here we give a session ID, because we only want to assess trials in this session
 
-    browser()
-
     if(get_nrows(trial_table) > 0L) {
 
       scores_trial <- get_table(db_con, "scores_trial") %>%
@@ -155,7 +156,6 @@ compute_session_scores_and_end_session <- function(test_id = NA,
         dplyr::ungroup() %>%
         unique() %>%
         tidyr::pivot_wider(names_from = "measure", values_from = "score")
-
 
       # Join on scores
       trial_table <- trial_table %>%
