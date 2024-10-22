@@ -84,16 +84,25 @@ get_trial_and_session_data <- function(user_id = NULL,
 
     if("phrase_name" %in% names(trials)) {
 
+      # We assume this is a SongBird app
       scores_trial <- trials %>%
+        dplyr::filter(!email %in% c("sebsilas@gmail.com")) %>%
+        dplyr::mutate(phrase_name = dplyr::case_when(grepl("singpause", item_id) & is.na(phrase_name) ~ song_name, TRUE ~ phrase_name),
+                      songbird_type = dplyr::case_when(grepl("Berkowitz", item_id) ~ "Sing-Training",
+                                                       grepl("singpause", item_id) & trial_paradigm == "simultaneous_recall" ~ "SingPause Singalong",
+                                                       grepl("singpause", item_id) & trial_paradigm == "call_and_response" ~ "SingPause Solo",
+                                                       TRUE ~ NA
+                                                       ) ) %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
-        dplyr::select(Date, user_id, username, trial_id, trial_time_started, trial_time_completed, instrument,
-                      attempt, item_id, display_modality, phase,
-                      rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name)
+        dplyr::select(Date, user_id, username, trial_id, trial_time_started,
+                      trial_time_completed, instrument, attempt, item_id, display_modality, phase,
+                      rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id)
+
 
       # For phrases with names we  remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::group_by(Date, user_id, username, phrase_name) %>%
+        dplyr::group_by(Date, user_id, username, phrase_name, songbird_type) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score)) %>%
@@ -104,7 +113,7 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::left_join(scores_trial, by = "trial_id") %>%
         dplyr::select(Date, user_id, username, trial_id, trial_time_started, trial_time_completed, instrument,
                       attempt, item_id, display_modality, phase,
-                      rhythmic, stimulus_abs_melody, stimulus_durations, score)
+                      rhythmic, stimulus_abs_melody, stimulus_durations, score, new_items_id, review_items_id)
 
 
       # Melodies we aggregate at the session level (i.e, can see improvements in the same day)
@@ -234,20 +243,21 @@ get_trial_and_session_data <- function(user_id = NULL,
       # Song scores
 
       overall_song_scores <- scores_trial %>%
-        dplyr::group_by(user_id, username, phrase_name) %>%
+        dplyr::group_by(user_id, username, phrase_name, songbird_type) %>%
         dplyr::slice_max(Date) %>%  # Get latest score
-        dplyr::group_by(phrase_name) %>%
+        dplyr::group_by(phrase_name, songbird_type) %>%
         dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(Score = dplyr::case_when(is.nan(Score) ~ NA, TRUE ~ Score))
 
       overall_song_stats <- scores_trial %>%
-        dplyr::count(user_id, phrase_name, name = "NoTimesPractised") %>%
-        dplyr::group_by(phrase_name) %>%
+        dplyr::count(user_id, phrase_name, songbird_type, name = "NoTimesPractised") %>%
+        dplyr::group_by(phrase_name, songbird_type) %>%
         dplyr::summarise(NoTimesPractised = sum(NoTimesPractised, na.rm = TRUE)) %>%
         dplyr::ungroup()
 
       overall_song_stats <- overall_song_stats %>%
+        dplyr::select(-songbird_type) %>%
         dplyr::left_join(overall_song_scores, by = "phrase_name") %>%
         dplyr::filter(!is.na(phrase_name))
 
@@ -378,9 +388,6 @@ last_month <- function(df) {
 }
 
 
-
-#  dat <- get_trial_and_session_data(group_id = 5L)
+# db_con <- musicassessr_con()
 # dat_filt <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE)
-# filter_pseudo_anonymous_ids
-
 # tt2 <- dat_filt$group_stats$overall_song_stats
