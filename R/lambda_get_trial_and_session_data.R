@@ -82,7 +82,6 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
 
-
     if("phrase_name" %in% names(trials)) {
 
       scores_trial <- trials %>%

@@ -391,7 +391,10 @@ db_append_trials <- function(db_con,
                              review_items_id = NULL,
                              new_items_id = NULL,
                              trial_type = c("audio", "midi"),
-                             trial_paradigm = c("call_and_response", "simultaneous_recall")) {
+                             trial_paradigm = c("call_and_response",
+                                                "simultaneous_recall",
+                                                "long_note_call_and_response",
+                                                "long_note_simultaneous_recall")) {
 
   trial_type <- match.arg(trial_type)
   trial_paradigm <- match.arg(trial_paradigm)
@@ -413,7 +416,8 @@ db_append_trials <- function(db_con,
     is.integer(review_items_id) || is.na(review_items_id) || is.null(review_items_id),
     is.integer(new_items_id) || is.na(new_items_id) || is.null(new_items_id),
     trial_type %in% c("audio", "midi"),
-    trial_paradigm %in% c("call_and_response", "simultaneous_recall")
+    trial_paradigm %in% c("call_and_response", "simultaneous_recall",
+                          "long_note_call_and_response", "long_note_simultaneous_recall")
   )
 
 
