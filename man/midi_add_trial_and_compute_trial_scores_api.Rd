@@ -24,11 +24,12 @@ midi_add_trial_and_compute_trial_scores_api(
   dur,
   onset,
   note,
-  attempt
+  attempt,
+  additional
 )
 }
 \arguments{
-\item{attempt}{}
+\item{additional}{}
 }
 \description{
 Add MIDI trial via API

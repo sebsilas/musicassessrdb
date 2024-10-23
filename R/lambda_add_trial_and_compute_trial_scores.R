@@ -37,6 +37,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
     score_to_use <- "opti3"
     audio_file <- stringr::str_replace(processed_file, ".csv", ".wav")
     attempt <- as.integer(metadata$attempt)
+    additional <- metadata$additional
+
+    logging::loginfo("additional %s", additional)
 
     logging::loginfo("trial_paradigm: %s", trial_paradigm)
 
@@ -129,7 +132,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       review_items_id = if(length(metadata$review_items_id) == 0) NA else as.integer(metadata$review_items_id),
       new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
       trial_type = 'audio',
-      trial_paradigm = trial_paradigm
+      trial_paradigm = trial_paradigm,
+      additional = additional
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)

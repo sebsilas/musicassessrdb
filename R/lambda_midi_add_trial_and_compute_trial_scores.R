@@ -22,6 +22,7 @@
 #' @param onset
 #' @param note
 #' @param attempt
+#' @param additional
 #'
 #' @return
 #' @export
@@ -45,7 +46,8 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                                                        dur,
                                                        onset,
                                                        note,
-                                                       attempt) {
+                                                       attempt,
+                                                       additional) {
 
   # Define the request body as a list
   request_body <- list(stimuli = stimuli,
@@ -66,7 +68,8 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                        dur = dur,
                        onset = onset,
                        note = note,
-                       attempt = attempt)
+                       attempt = attempt,
+                       additional = jsonlite::toJSON(additional))
 
   res <- endpoint_wrapper(function_name = "midi-add-trial-and-compute-trial-scores",
                           request_body = request_body)
@@ -98,7 +101,8 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                     dur,
                                                     onset,
                                                     note,
-                                                    attempt) {
+                                                    attempt,
+                                                    additional) {
 
   logging::loginfo("Inside midi_add_trial_and_compute_trial_scores function")
 
@@ -121,7 +125,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("onset: %s", onset)
   logging::loginfo("note: %s", note)
   logging::loginfo("attempt: %s", attempt)
-
+  logging::loginfo("additional: %s", additional)
 
   # Return response
 
@@ -162,7 +166,8 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       stimulus_durations = paste0(stimuli, collapse = ","),
       review_items_id = if(length(review_items_id) == 0) NA else as.integer(review_items_id),
       new_items_id = if(length(new_items_id) == 0) NA else as.integer(new_items_id),
-      trial_type = 'midi')
+      trial_type = 'midi',
+      additional = additional)
 
     logging::loginfo("Got trial_id: %s", trial_id)
 
