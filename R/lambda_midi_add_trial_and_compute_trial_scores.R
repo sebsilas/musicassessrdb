@@ -69,7 +69,7 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                        onset = onset,
                        note = note,
                        attempt = attempt,
-                       additional = jsonlite::toJSON(additional))
+                       additional = if(is.scalar.character(additional)) additional else jsonlite::toJSON(additional) )
 
   res <- endpoint_wrapper(function_name = "midi-add-trial-and-compute-trial-scores",
                           request_body = request_body)
