@@ -373,6 +373,7 @@ db_append_scores_trial <- function(db_con,
 #' @param new_item_id
 #' @param trial_type
 #' @param trial_paradigm
+#' @param additional
 #'
 #' @return
 #' @export
@@ -398,7 +399,8 @@ db_append_trials <- function(db_con,
                              trial_paradigm = c("call_and_response",
                                                 "simultaneous_recall",
                                                 "long_note_call_and_response",
-                                                "long_note_simultaneous_recall")) {
+                                                "long_note_simultaneous_recall"),
+                             additional = NA) {
 
   trial_type <- match.arg(trial_type)
   trial_paradigm <- match.arg(trial_paradigm)
@@ -421,7 +423,8 @@ db_append_trials <- function(db_con,
     is.integer(new_items_id) || is.na(new_items_id) || is.null(new_items_id),
     trial_type %in% c("audio", "midi"),
     trial_paradigm %in% c("call_and_response", "simultaneous_recall",
-                          "long_note_call_and_response", "long_note_simultaneous_recall")
+                          "long_note_call_and_response", "long_note_simultaneous_recall"),
+    is.scalar.na(additional) || is.scalar.character(additional)
   )
 
 
@@ -441,7 +444,8 @@ db_append_trials <- function(db_con,
                              review_items_id = review_items_id,
                              new_items_id = new_items_id,
                              trial_type = trial_type,
-                             trial_paradigm = trial_paradigm)
+                             trial_paradigm = trial_paradigm,
+                             additional = additional)
 
   trial_id <- db_append_to_table(db_con, table = "trials", data = trial_df, primary_key_col = "trial_id")
 
