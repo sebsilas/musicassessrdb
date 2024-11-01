@@ -123,7 +123,7 @@ select_items <- function(Records) {
     # Parse event
     records <- jsonlite::fromJSON(Records$body)
 
-    user_id <- records[[2]][1]
+    user_id <- records[[1]][1]
 
 
     logging::loginfo('user_id', user_id)
