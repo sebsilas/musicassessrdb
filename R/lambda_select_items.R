@@ -106,7 +106,7 @@ get_job_status_api <- function(job_id) {
 
 # This is the function that is called when the endpoint
 # is invoked
-select_items <- function(Records) {
+select_items <- function(user_id) {
 
   logging::loginfo("Inside select_items function")
 
@@ -122,9 +122,6 @@ select_items <- function(Records) {
 
     # Parse event
     records <- jsonlite::fromJSON(Records$body)
-
-    user_id <- records[[1]][1]
-
 
     logging::loginfo('user_id', user_id)
 
