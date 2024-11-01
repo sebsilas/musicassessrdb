@@ -106,7 +106,7 @@ get_job_status_api <- function(job_id) {
 
 # This is the function that is called when the endpoint
 # is invoked
-select_items <- function(Records) {
+select_items <- function(user_id) {
 
   logging::loginfo("Inside select_items function")
 
@@ -120,17 +120,17 @@ select_items <- function(Records) {
     fallback_item_bank <- "Berkowitz_bottom_5th_percentile"
     only_use_items_from_fallback_item_banks <- TRUE
 
-    logging::loginfo("Records %s", Records)
+    #logging::loginfo("Records %s", Records)
 
-    # Parse event
-    records <- jsonlite::fromJSON(Records$body)
-
-    logging::loginfo("records %s", records)
-
-    logging::loginfo("records[[1]] %s", records[[1]])
-
-
-    user_id <- records[[1]][1]
+    # # Parse event
+    # records <- jsonlite::fromJSON(Records$body)
+    #
+    # logging::loginfo("records %s", records)
+    #
+    # logging::loginfo("records[[1]] %s", records[[1]])
+    #
+    #
+    # user_id <- records[[1]][1]
 
     logging::loginfo("user_id %s", user_id)
 
@@ -138,7 +138,6 @@ select_items <- function(Records) {
     # dynamodb <- paws::dynamodb()
     # dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
 
-    logging::loginfo("user_id = %s", user_id)
     logging::loginfo("num_items_review = %s", num_items_review)
     logging::loginfo("num_items_new = %s", num_items_new)
     logging::loginfo("approach_name = %s", approach_name)
