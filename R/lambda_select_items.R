@@ -60,8 +60,7 @@ select_items_test <- function(job_id = "test",
     #                                                                    new_items = new_items_df)), status = "FINISHED")
 
     list(status = 200,
-         message = paste0("You have successfully selected new items for ", user_id, "!")
-    )
+         message = paste0("You have successfully selected new items for ", user_id, "!"))
 
 
   }, error = function(err) {
@@ -123,7 +122,7 @@ select_items <- function(Records) {
 
     # Parse event
     records <- jsonlite::fromJSON(Records$body)
-    job_id <- records[[1]][1]
+    ##job_id <- records[[1]][1]
     user_id <- records[[2]][1]
 
 
@@ -131,8 +130,8 @@ select_items <- function(Records) {
     logging::loginfo('user_id', user_id)
 
     # Init DB and store initial job
-    dynamodb <- paws::dynamodb()
-    dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
+    # dynamodb <- paws::dynamodb()
+    # dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
 
     logging::loginfo("user_id = %s", user_id)
     logging::loginfo("num_items_review = %s", num_items_review)
@@ -170,12 +169,14 @@ select_items <- function(Records) {
       }
     }
 
-    # Append selected items to DynamoDB
-    update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
-                                                                       new_items = new_items_df)), status = "FINISHED")
+    # # Append selected items to DynamoDB
+    # update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
+    #                                                                    new_items = new_items_df)), status = "FINISHED")
 
     list(status = 200,
-         message = paste0("You have successfully selected new items for ", user_id, "!")
+         message = paste0("You have successfully selected new items for ", user_id, "!"),
+         new_items = new_items_df,
+         review_items = review_items_df
          )
 
 
@@ -418,7 +419,7 @@ item_sel_collaborative_filtering_item_based <- function(items) {
     # are entries for a user both 'opti3' and not 'opti3'
     # a survey, the 'opti3' entry is retained
     dplyr::arrange(desc(opti3)) %>%
-    dplyr::distinct(mel_p_id, .keep_all=T) %>%
+    dplyr::distinct(mel_p_id, .keep_all = TRUE) %>%
     dplyr::select(-mel_p_id) %>%
     tidyr::pivot_wider(names_from=abs_melody, values_from=opti3, values_fill = NA)
     # Transform into binarized matrix
