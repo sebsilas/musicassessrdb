@@ -106,7 +106,7 @@ get_job_status_api <- function(job_id) {
 
 # This is the function that is called when the endpoint
 # is invoked
-select_items <- function(user_id) {
+select_items <- function(Records) {
 
   logging::loginfo("Inside select_items function")
 
@@ -120,10 +120,19 @@ select_items <- function(user_id) {
     fallback_item_bank <- "Berkowitz_bottom_5th_percentile"
     only_use_items_from_fallback_item_banks <- TRUE
 
+    logging::loginfo("Records %s", Records)
+
     # Parse event
     records <- jsonlite::fromJSON(Records$body)
 
-    logging::loginfo('user_id', user_id)
+    logging::loginfo("records %s", records)
+
+    logging::loginfo("records[[1]] %s", records[[1]])
+
+
+    user_id <- records[[1]][1]
+
+    logging::loginfo("user_id %s", user_id)
 
     # Init DB and store initial job
     # dynamodb <- paws::dynamodb()
