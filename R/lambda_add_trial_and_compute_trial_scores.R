@@ -557,10 +557,10 @@ benovelent_score <- function(score, attempt) {
   }
 
   # Give a boost for attempts
-  score = score * (10 + attempt) / 10
+  score <- score * (10 + attempt) / 10
 
   # Apply a quadratic transformation
-  benevolentScore = sqrt(score)
+  benevolentScore <- sqrt(score)
 
   # Scale to the range 1 to 10
   scaledScore <- 1 + benevolentScore * 9
