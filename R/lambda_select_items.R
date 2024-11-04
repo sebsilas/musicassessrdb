@@ -225,7 +225,7 @@ get_items <- function(type = c("new", "review"),
                   active)
 
   # Append prediction information to SQL DB
-  db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
+  selected_items_ids <- db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
 
   # Return the full item DF for the test
   if(type == "review" && num_unique_items < num_items) {
@@ -245,6 +245,14 @@ get_items <- function(type = c("new", "review"),
 
   items_df <- items_df %>%
     dplyr::select(dplyr::any_of(vars_to_select))
+
+  if(type == "review") {
+    items_df <- items_df %>%
+      dplyr::mutate(review_items_id = selected_items_ids)
+  } else {
+    items_df <- items_df %>%
+      dplyr::mutate(new_items_id = selected_items_ids)
+  }
 
   return(items_df)
 
