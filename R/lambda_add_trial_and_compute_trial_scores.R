@@ -133,7 +133,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
       trial_type = 'audio',
       trial_paradigm = trial_paradigm,
-      additional = additional
+      additional = if(length(additional) == 0) NA else if(!is.scalar.character(additional)) jsonlite::toJSON(additional, auto_unbox = TRUE) else additional
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)
@@ -469,7 +469,8 @@ readFromS3 <- function(filename, bucket) {
 
 
 
-get_metadata <- function(file, bucket = Sys.getenv("DESTINATION_BUCKET")) {
+get_metadata <- function(file,
+                         bucket = Sys.getenv("DESTINATION_BUCKET")) {
 
   metadata <- aws.s3::head_object(object = file,
                                   bucket = Sys.getenv("DESTINATION_BUCKET")) %>%
