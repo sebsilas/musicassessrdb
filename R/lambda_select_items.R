@@ -2,7 +2,7 @@
 # db_con <- musicassessr_con()
 
 # t <- select_items(96L)
-#
+# tt <- tbl(db_con, "review_items") %>% collect()
 # t$new_items
 #
 # t$review_items
@@ -227,32 +227,42 @@ get_items <- function(type = c("new", "review"),
   # Append prediction information to SQL DB
   selected_items_ids <- db_append_to_table(db_con, tbl_name, df_to_append, primary_key_col = primary_key_col)
 
+  selected_rows <- dplyr::tbl(db_con, tbl_name)
+
+  if(type == "review") {
+    selected_rows <- selected_rows %>%
+      dplyr::filter(review_items_id %in% !! selected_items_ids)
+  } else {
+    selected_rows <- selected_rows %>%
+      dplyr::filter(new_items_id %in% !! selected_items_ids)
+  }
+
+  selected_rows <- selected_rows %>%
+    dplyr::collect()
+
   # Return the full item DF for the test
   if(type == "review" && num_unique_items < num_items) {
-
-    items_df <- grand_fallback_item_bank %>%
-      dplyr::filter(item_id %in% !! item_ids_df$item_id)
+    items_df <- selected_rows %>%
+      dplyr::left_join(grand_fallback_item_bank, by = "item_id")
 
   } else {
 
     items_df <- sampling_df %>%
-      dplyr::filter(item_id %in% !! item_ids_df$item_id)
+      dplyr::left_join(grand_fallback_item_bank, by = "item_id")
   }
 
   # N.B, we use charactor vector so we can user dplyr::any_of below
   vars_to_select <- c("item_id", "stimulus_abs_melody", "stimulus_durations",
                       "abs_melody", "durations", "item_bank_id", "onset", "melody")
 
+  if(type == "review") {
+    vars_to_select <- c(vars_to_select, "review_items_id")
+  } else {
+    vars_to_select <- c(vars_to_select, "new_items_id")
+  }
+
   items_df <- items_df %>%
     dplyr::select(dplyr::any_of(vars_to_select))
-
-  if(type == "review") {
-    items_df <- items_df %>%
-      dplyr::mutate(review_items_id = selected_items_ids)
-  } else {
-    items_df <- items_df %>%
-      dplyr::mutate(new_items_id = selected_items_ids)
-  }
 
   return(items_df)
 
