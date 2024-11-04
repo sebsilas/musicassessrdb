@@ -1,87 +1,8 @@
 
 # db_con <- musicassessr_con()
-# t <- select_items_test()
+# t <- select_items(2L)
 # db_disconnect(db_con)
 
-select_items_test <- function(job_id = "test",
-                              user_id = 2L,
-                              fallback_item_bank = "Berkowitz_bottom_5th_percentile") {
-
-  logging::loginfo("Inside select_items function")
-
-
-  response <- tryCatch({
-
-    # Instantiate vars
-    num_items_review <- 3L
-    num_items_new <- 3L
-    approach_name <- "new_and_review_randomly_chosen_approaches"
-    only_use_items_from_fallback_item_banks <- TRUE
-
-    logging::loginfo("user_id = %s", user_id)
-    logging::loginfo("num_items_review = %s", num_items_review)
-    logging::loginfo("num_items_new = %s", num_items_new)
-    logging::loginfo("approach_name = %s", approach_name)
-    logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
-    logging::loginfo("Taking approach: %s", approach_name)
-
-    # Compile user trials
-
-    logging::loginfo("Compiling user trials")
-
-    user_trials <- compile_item_trials(db_con,
-                                       user_id = user_id,
-                                       join_item_banks_on = TRUE,
-                                       filter_item_banks = if(only_use_items_from_fallback_item_banks) fallback_item_bank else NULL,
-                                       add_trial_scores = TRUE)
-
-    logging::loginfo("Got user trials")
-
-
-    if(approach_name == "new_and_review_randomly_chosen_approaches") {
-
-      review_items_df <- get_items(type = "review", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank, num_items_review, user_id)
-      new_items_df <- get_items(type = "new", approach_name = "choose_approach_randomly", user_trials, fallback_item_bank,  num_items_new, user_id)
-
-
-    } else {
-      type <- if(approach_name %in% names(new_item_approaches)) "new" else if (approach_name %in% names(review_item_approaches)) "review" else stop("Approach not known")
-      items_df <- get_items(type, approach_name, user_trials, fallback_item_bank, num_items, user_id)
-      if(type == "new") {
-        new_items_df <- items_df
-      } else {
-        review_items_df <- items_df
-      }
-    }
-
-
-    # # Append selected items to DynamoDB
-    # update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
-    #                                                                    new_items = new_items_df)), status = "FINISHED")
-
-    list(status = 200,
-         message = paste0("You have successfully selected new items for ", user_id, "!"))
-
-
-  }, error = function(err) {
-
-    logging::logerror(err)
-
-    list(
-      status = 400,
-      message = "Something went wrong!"
-    )
-
-  })
-
-  #tictoc::toc() # Remember to not deploy this!
-
-  return(response)
-
-
-
-
-}
 
 #' Get job status API for select items lambda
 #'

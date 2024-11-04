@@ -10,6 +10,7 @@ item_banks_table_static <- musicassessrdb::get_table(db_con, "item_banks") %>%
 
 db_disconnect(db_con)
 
-use_data(inst_table_db, internal = TRUE)
+use_data(inst_table_db, internal = TRUE, overwrite = TRUE)
 
-use_data(item_banks_table_static)
+use_data(item_banks_table_static, overwrite = TRUE)
+
