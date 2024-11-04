@@ -1,6 +1,12 @@
 
 # db_con <- musicassessr_con()
-# t <- select_items(2L)
+
+# t <- select_items(96L)
+#
+# t$new_items
+#
+# t$review_items
+
 # db_disconnect(db_con)
 
 
@@ -41,24 +47,8 @@ select_items <- function(user_id) {
     fallback_item_bank <- "Berkowitz_ngram_bottom_first_percentile"
     only_use_items_from_fallback_item_banks <- TRUE
 
-    #logging::loginfo("Records %s", Records)
-
-    # # Parse event
-    # records <- jsonlite::fromJSON(Records$body)
-    #
-    # logging::loginfo("records %s", records)
-    #
-    # logging::loginfo("records[[1]] %s", records[[1]])
-    #
-    #
-    # user_id <- records[[1]][1]
 
     logging::loginfo("user_id %s", user_id)
-
-    # Init DB and store initial job
-    # dynamodb <- paws::dynamodb()
-    # dynamo_response <- store_job(dynamodb, job_id = job_id, name = "Select items job", message = "Init", status = "PENDING")
-
     logging::loginfo("num_items_review = %s", num_items_review)
     logging::loginfo("num_items_new = %s", num_items_new)
     logging::loginfo("approach_name = %s", approach_name)
@@ -136,6 +126,7 @@ get_items <- function(type = c("new", "review"),
 
   logging::loginfo("get_items..")
   logging::loginfo("type: %s", type)
+  logging::loginfo("num_items %s", num_items)
 
   # Get the fallback item_bank
 
@@ -165,7 +156,8 @@ get_items <- function(type = c("new", "review"),
     })
 
   # Use reduce to perform inner joins on the list of tables
-  grand_fallback_item_bank <- dplyr::bind_rows(fallback_item_banks)
+  grand_fallback_item_bank <- dplyr::bind_rows(fallback_item_banks) %>%
+    unique() # In case duplicates due to partition DBs
 
   if(type == "new") {
     tbl_name <- "new_items"
@@ -209,7 +201,6 @@ get_items <- function(type = c("new", "review"),
       item_ids_df <- approach_fun(sampling_df, num_items, user_id, type)
     }
   }
-
 
   # Make sure there are not too many items (e.g., from ties or something earlier on)
   if(nrow(item_ids_df) > num_items) {
