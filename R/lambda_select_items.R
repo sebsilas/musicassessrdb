@@ -1,11 +1,16 @@
 
-# db_con <- musicassessr_con()
-
-# t <- select_items(96L)
-# tt <- tbl(db_con, "review_items") %>% collect()
-# t$new_items
 #
+
+# load_all()
+#
+
+# db_con <- musicassessr_con()
+# t <- select_items(96L)
+#
+# t$new_items
 # t$review_items
+
+# tt <- tbl(db_con, "review_items") %>% collect()
 
 # db_disconnect(db_con)
 
@@ -44,7 +49,7 @@ select_items <- function(user_id) {
     num_items_review <- 3L
     num_items_new <- 3L
     approach_name <- "new_and_review_randomly_chosen_approaches"
-    fallback_item_bank <- "Berkowitz_songbird"
+    fallback_item_bank <- "Berkowitz_ngram_bottom_first_percentile"
     only_use_items_from_fallback_item_banks <- TRUE
 
 
@@ -247,7 +252,8 @@ get_items <- function(type = c("new", "review"),
 
   } else {
 
-    items_df <- sampling_df %>%
+    items_df <- selected_rows %>%
+      dplyr::select(-item_bank_id) %>%
       dplyr::left_join(grand_fallback_item_bank, by = "item_id")
   }
 
