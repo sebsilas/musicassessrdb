@@ -1,6 +1,6 @@
 
 #
-
+# library(tidyverse)
 # load_all()
 #
 
@@ -9,6 +9,11 @@
 #
 # t$new_items
 # t$review_items
+
+
+# tt <- tbl(db_con, "item_bank_Berkowitz_songbird") %>%
+#   filter(item_id == "Berkowitz_ngram_407289") %>%
+#   collect()
 
 # tt <- tbl(db_con, "review_items") %>% collect()
 
@@ -49,7 +54,7 @@ select_items <- function(user_id) {
     num_items_review <- 3L
     num_items_new <- 3L
     approach_name <- "new_and_review_randomly_chosen_approaches"
-    fallback_item_bank <- "Berkowitz_ngram_bottom_first_percentile"
+    fallback_item_bank <- "Berkowitz_songbird"
     only_use_items_from_fallback_item_banks <- TRUE
 
 
