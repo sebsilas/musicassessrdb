@@ -1,5 +1,7 @@
 
 
+load_all()
+
 db_con <- musicassessr_con()
 
 inst_table_db <- musicassessrdb::get_table(db_con, "instruments") %>%
@@ -13,4 +15,6 @@ db_disconnect(db_con)
 use_data(inst_table_db, internal = TRUE, overwrite = TRUE)
 
 use_data(item_banks_table_static, overwrite = TRUE)
+
+document()
 
