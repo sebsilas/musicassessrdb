@@ -138,6 +138,21 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("Got trial_id: %s", trial_id)
 
+    if(trial_paradigm == "setup_sing_range_note") {
+
+      # Return early, we don't need to do any scoring for this
+
+      ret <- list(
+        status = 200,
+        message = "You have successfully added a trial and scores for the trial!",
+        trial_id = trial_id,
+        scores_trial_ids = NA,
+        melodic_production_ids = NA
+      )
+
+      return(ret)
+
+    }
 
     if(test_id == 3) { # i.e., the RTT
 
