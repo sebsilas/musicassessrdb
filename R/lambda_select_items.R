@@ -23,16 +23,18 @@
 #' Get job status API for select items lambda
 #'
 #' @param job_id
+#' @param filename
 #'
 #' @return
 #' @export
 #'
 #' @examples
-get_job_status_api <- function(job_id) {
+get_job_status_api <- function(job_id = NULL, filename = NULL) {
 
   # Define the request body as a list
   request_body <- list(
-    job_id = job_id
+    job_id = job_id,
+    filename = filename
   )
 
   endpoint_wrapper(function_name = "get-job-status",

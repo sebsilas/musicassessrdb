@@ -4,10 +4,10 @@
 \alias{get_job_status_api}
 \title{Get job status API for select items lambda}
 \usage{
-get_job_status_api(job_id)
+get_job_status_api(job_id = NULL, filename = NULL)
 }
 \arguments{
-\item{job_id}{}
+\item{filename}{}
 }
 \description{
 Get job status API for select items lambda
