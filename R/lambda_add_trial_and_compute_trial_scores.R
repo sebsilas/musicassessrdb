@@ -424,7 +424,8 @@ db_append_trials <- function(db_con,
     is.integer(new_items_id) || is.na(new_items_id) || is.null(new_items_id),
     trial_type %in% c("audio", "midi"),
     trial_paradigm %in% c("call_and_response", "simultaneous_recall",
-                          "long_note_call_and_response", "long_note_simultaneous_recall"),
+                          "long_note_call_and_response", "long_note_simultaneous_recall",
+                          "setup_sing_range_note"),
     is.scalar.na(additional) || is.scalar.character(additional)
   )
 
