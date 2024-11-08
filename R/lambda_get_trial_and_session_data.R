@@ -1,5 +1,9 @@
 
 
+# t <- get_trial_and_session_data_api(111)
+# db_con <- musicassessr_con()
+# t <- get_trial_and_session_data(111)
+
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
                                            trial_score_measure = "opti3",
@@ -91,7 +95,7 @@ get_trial_and_session_data <- function(user_id = NULL,
                       songbird_type = dplyr::case_when(grepl("Berkowitz", item_id) ~ "Sing-Training",
                                                        grepl("singpause", item_id) & trial_paradigm == "simultaneous_recall" ~ "SingPause Singalong",
                                                        grepl("singpause", item_id) & trial_paradigm == "call_and_response" ~ "SingPause Solo",
-                                                       TRUE ~ NA
+                                                       TRUE ~ as.character(NA)
                                                        ) ) %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
         dplyr::select(Date, user_id, username, trial_id, trial_time_started,

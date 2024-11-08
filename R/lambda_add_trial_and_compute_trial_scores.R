@@ -38,6 +38,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
     audio_file <- stringr::str_replace(processed_file, ".csv", ".wav")
     attempt <- as.integer(metadata$attempt)
     additional <- metadata$additional
+    session_id <- as.integer(metadata$session_id)
+
+    logging::loginfo("session_id %s", session_id)
 
     logging::loginfo("additional %s", additional)
 
@@ -125,7 +128,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       display_modality = stringr::str_replace(metadata$display_modality, "-", "_"),
       phase = metadata$phase,
       rhythmic = as.logical(metadata$rhythmic),
-      session_id = as.integer(metadata$session_id),
+      session_id = session_id,
       test_id = test_id,
       stimulus_abs_melody = if(test_id == 3L) NULL else metadata$stimuli, # RTT (test_id == 3), doesn't have a melody
       stimulus_durations = metadata$stimuli_durations,
