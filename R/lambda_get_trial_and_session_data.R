@@ -90,7 +90,7 @@ get_trial_and_session_data <- function(user_id = NULL,
 
       # We assume this is a SongBird app
       scores_trial <- trials %>%
-        dplyr::filter(!email %in% c("sebsilas@gmail.com")) %>%
+        { if(is.null(group_id)) . else dplyr::filter(., !email %in% c("sebsilas@gmail.com")) } %>%
         dplyr::mutate(phrase_name = dplyr::case_when(grepl("singpause", item_id) & is.na(phrase_name) ~ as.character(song_name), TRUE ~ as.character(phrase_name)),
                       songbird_type = dplyr::case_when(grepl("Berkowitz", item_id) ~ "Sing-Training",
                                                        grepl("singpause", item_id) & trial_paradigm == "simultaneous_recall" ~ "SingPause Singalong",
