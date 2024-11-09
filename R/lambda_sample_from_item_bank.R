@@ -1,5 +1,4 @@
 
-
 #' Sample from item bank via API
 #'
 #' @param item_bank_name
@@ -59,6 +58,11 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 }
 
 
+# t <- sample_from_item_bank_api(item_bank_name = "WJD_narrowed",
+#                           num_items = 20,
+#                           span = 14,
+#                           melody_length = "4,15")
+
 #' Sample from an item bank via the API
 #'
 #' @param item_bank_name
@@ -108,7 +112,7 @@ sample_from_item_bank <- function(item_bank_name, num_items, span, melody_length
   logging::loginfo("melody_length = %s", melody_length)
 
   stopifnot(
-    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase")
+    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed")
   )
 
   melody_length <- itembankr::str_mel_to_vector(melody_length)
