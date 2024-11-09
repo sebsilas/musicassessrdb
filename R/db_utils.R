@@ -111,7 +111,6 @@ compile_item_trials <- function(db_con,
 
   }
 
-
   if(!is.null(filter_item_banks)) {
     item_banks_table <- get_table(db_con, "item_banks", collect = TRUE)
     item_bank_ids <- item_bank_name_to_id(item_banks_table, ib_name = filter_item_banks)
