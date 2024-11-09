@@ -64,6 +64,13 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 #                           melody_length = "4,15")
 
 
+# For now use Berkowitz materialized view..
+
+# t <- sample_from_item_bank_api(item_bank_name = "Berkowitz_ngram_n_view",
+#                                num_items = 20,
+#                                span = 14,
+#                                melody_length = "4,15")
+
 
 #' Sample from an item bank via the API
 #'
@@ -100,7 +107,7 @@ sample_from_item_bank_api <- function(item_bank_name,
                    request_body = request_body)
 }
 
-
+# DBI::dbExecute(db_con, 'CREATE INDEX idx_N ON "item_bank_WJD_narrowed"("N")')
 
 # t <- sample_from_item_bank(item_bank_name = "WJD_narrowed",
 #                           num_items = 20,
@@ -119,7 +126,7 @@ sample_from_item_bank <- function(item_bank_name, num_items, span, melody_length
   logging::loginfo("melody_length = %s", melody_length)
 
   stopifnot(
-    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed")
+    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_ngram_n_view", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed")
   )
 
 
