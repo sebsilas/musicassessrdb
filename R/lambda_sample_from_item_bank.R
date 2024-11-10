@@ -114,9 +114,15 @@ sample_from_item_bank_api <- function(item_bank_name,
 #                           span = 14,
 #                           melody_length = "4,15")
 
+# t <- sample_from_item_bank(item_bank_name = "Berkowitz_ngram_n_view",
+#                            num_items = 20,
+#                            span = 14,
+#                            melody_length = "4,15")
+
+
 # This is the function that is called when the endpoint
 # is invoked
-sample_from_item_bank <- function(item_bank_name, num_items, span, melody_length) {
+sample_from_item_bank <- function(item_bank_name, num_items = NULL, span = 14, melody_length = NULL) {
 
   logging::loginfo("Inside sample_from_item_bank function")
 
@@ -126,46 +132,57 @@ sample_from_item_bank <- function(item_bank_name, num_items, span, melody_length
   logging::loginfo("melody_length = %s", melody_length)
 
   stopifnot(
-    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_ngram_n_view", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed")
+    item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_ngram_n_view", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed", "wjd_narrowed_n_view")
   )
 
+  if(grepl("n_view", item_bank_name)) {
 
-  item_bank_name <- paste0("item_bank_", item_bank_name)
+    sample <- musicassessr::item_sampler_materialized_view(db_con,
+                                                 no_items = num_items,
+                                                 table = item_bank_name,
+                                                 shuffle = TRUE)
 
-  melody_length <- itembankr::str_mel_to_vector(melody_length)
-
-  logging::loginfo("Grab item bank")
-
-  item_bank <- dplyr::tbl(db_con, item_bank_name)
-
-  logging::loginfo("Got item bank")
-
-  if(is.null(span) | span < 10) {
-    span <- 10
-  }
-
-  logging::loginfo("Get subset")
-
-  # Sample
-  item_bank_subset <- itembankr::subset_item_bank(item_bank = item_bank, span_max = span, item_length = melody_length)
-
-  logging::loginfo("Got subset")
-  logging::loginfo(get_nrows(item_bank_subset))
-
-  if(get_nrows(item_bank_subset) <= 1) {
-    item_bank_subset <- item_bank
-  }
-
-  logging::loginfo("Sample..")
-
-  sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
-
-  logging::loginfo(get_nrows(sample))
-
-  if(get_nrows(sample) < num_items) {
-    sample <- musicassessr::item_sampler(item_bank_subset, num_items, replace = TRUE, version = "2")
   } else {
+
+    item_bank_name <- paste0("item_bank_", item_bank_name)
+
+    melody_length <- itembankr::str_mel_to_vector(melody_length)
+
+    logging::loginfo("Grab item bank")
+
+    item_bank <- dplyr::tbl(db_con, item_bank_name)
+
+    logging::loginfo("Got item bank")
+
+    if(is.null(span) | span < 10) {
+      span <- 10
+    }
+
+    logging::loginfo("Get subset")
+
+    # Sample
+    item_bank_subset <- itembankr::subset_item_bank(item_bank = item_bank, span_max = span, item_length = melody_length)
+
+    logging::loginfo("Got subset")
+    logging::loginfo(get_nrows(item_bank_subset))
+
+    if(get_nrows(item_bank_subset) <= 1) {
+      item_bank_subset <- item_bank
+    }
+
+    logging::loginfo("Sample..")
+
     sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
+
+    logging::loginfo(get_nrows(sample))
+
+    if(get_nrows(sample) < num_items) {
+      sample <- musicassessr::item_sampler(item_bank_subset, num_items, replace = TRUE, version = "2")
+    } else {
+      sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
+    }
+
+
   }
 
   # Return response
