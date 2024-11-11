@@ -66,6 +66,11 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 #                                shuffle = FALSE)$sample
 
 
+# sample <- musicassessr::item_sampler_materialized_view(db_con,
+#                                                        no_items = num_items,
+#                                                        table = item_bank_name,
+#                                                        shuffle = shuffle)
+
 #' Sample from an item bank via the API
 #'
 #' @param item_bank_name
@@ -125,7 +130,8 @@ sample_from_item_bank <- function(item_bank_name,
                                   num_items = NULL,
                                   span = 14,
                                   melody_length = NULL,
-                                  shuffle = TRUE) {
+                                  shuffle = TRUE,
+                                  order_by_N = FALSE) {
 
   logging::loginfo("Inside sample_from_item_bank function")
 
@@ -134,6 +140,7 @@ sample_from_item_bank <- function(item_bank_name,
   logging::loginfo("span = %s", span)
   logging::loginfo("melody_length = %s", melody_length)
   logging::loginfo("shuffle = %s", shuffle)
+  logging::loginfo("order_by_N = %s", order_by_N)
 
   stopifnot(
     item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_ngram_n_view", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed", "wjd_narrowed_n_view")
@@ -189,6 +196,11 @@ sample_from_item_bank <- function(item_bank_name,
     }
 
 
+  }
+
+  if(order_by_N) {
+    sample <- sample %>%
+      dplyr::arrange(N)
   }
 
   # Return response

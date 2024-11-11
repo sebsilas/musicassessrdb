@@ -9,11 +9,12 @@ sample_from_item_bank_api(
   num_items,
   span = NULL,
   melody_length = NULL,
-  shuffle = TRUE
+  shuffle = TRUE,
+  order_by_N = FALSE
 )
 }
 \arguments{
-\item{shuffle}{}
+\item{order_by_N}{}
 }
 \description{
 Sample from an item bank via the API
