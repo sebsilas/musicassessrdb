@@ -4,7 +4,12 @@
 \alias{sample_from_item_bank_api}
 \title{Sample from an item bank via the API}
 \usage{
-sample_from_item_bank_api(item_bank_name, num_items, span, melody_length)
+sample_from_item_bank_api(
+  item_bank_name,
+  num_items,
+  span = NULL,
+  melody_length = NULL
+)
 }
 \arguments{
 \item{melody_length}{}

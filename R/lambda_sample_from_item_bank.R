@@ -58,18 +58,12 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 }
 
 
-# t <- sample_from_item_bank_api(item_bank_name = "WJD_narrowed",
-#                           num_items = 20,
-#                           span = 14,
-#                           melody_length = "4,15")
-
 
 # For now use Berkowitz materialized view..
 
-# t <- sample_from_item_bank_api(item_bank_name = "Berkowitz_ngram_n_view",
-#                                num_items = 20,
-#                                span = 14,
-#                                melody_length = "4,15")
+# t <- sample_from_item_bank_api(item_bank_name = "wjd_narrowed_n_view",
+#                                num_items = 20)
+# t2 <- t$sample
 
 
 #' Sample from an item bank via the API
@@ -85,8 +79,8 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 #' @examples
 sample_from_item_bank_api <- function(item_bank_name,
                                       num_items,
-                                      span,
-                                      melody_length) {
+                                      span = NULL,
+                                      melody_length = NULL) {
 
   if(!is.scalar.character(melody_length)) {
     melody_length <- paste0(melody_length, collapse = ",")
@@ -114,6 +108,8 @@ sample_from_item_bank_api <- function(item_bank_name,
 #                           span = 14,
 #                           melody_length = "4,15")
 
+# db_con <- musicassessr_con()
+
 # t <- sample_from_item_bank(item_bank_name = "Berkowitz_ngram_n_view",
 #                            num_items = 20,
 #                            span = 14,
@@ -122,7 +118,11 @@ sample_from_item_bank_api <- function(item_bank_name,
 
 # This is the function that is called when the endpoint
 # is invoked
-sample_from_item_bank <- function(item_bank_name, num_items = NULL, span = 14, melody_length = NULL) {
+sample_from_item_bank <- function(item_bank_name,
+                                  num_items = NULL,
+                                  span = 14,
+                                  melody_length = NULL,
+                                  shuffle = TRUE) {
 
   logging::loginfo("Inside sample_from_item_bank function")
 
@@ -137,10 +137,12 @@ sample_from_item_bank <- function(item_bank_name, num_items = NULL, span = 14, m
 
   if(grepl("n_view", item_bank_name)) {
 
+    logging::loginfo("Using materialised view db")
+
     sample <- musicassessr::item_sampler_materialized_view(db_con,
-                                                 no_items = num_items,
-                                                 table = item_bank_name,
-                                                 shuffle = TRUE)
+                                                           no_items = num_items,
+                                                           table = item_bank_name,
+                                                           shuffle = shuffle)
 
   } else {
 
@@ -172,14 +174,14 @@ sample_from_item_bank <- function(item_bank_name, num_items = NULL, span = 14, m
 
     logging::loginfo("Sample..")
 
-    sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
+    sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2", shuffle = shuffle)
 
     logging::loginfo(get_nrows(sample))
 
     if(get_nrows(sample) < num_items) {
-      sample <- musicassessr::item_sampler(item_bank_subset, num_items, replace = TRUE, version = "2")
+      sample <- musicassessr::item_sampler(item_bank_subset, num_items, replace = TRUE, version = "2", shuffle = shuffle)
     } else {
-      sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2")
+      sample <- musicassessr::item_sampler(item_bank_subset, num_items, version = "2", shuffle = shuffle)
     }
 
 
