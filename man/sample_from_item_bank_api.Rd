@@ -8,11 +8,12 @@ sample_from_item_bank_api(
   item_bank_name,
   num_items,
   span = NULL,
-  melody_length = NULL
+  melody_length = NULL,
+  shuffle = TRUE
 )
 }
 \arguments{
-\item{melody_length}{}
+\item{shuffle}{}
 }
 \description{
 Sample from an item bank via the API

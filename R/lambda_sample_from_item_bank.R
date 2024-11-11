@@ -72,6 +72,7 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 #' @param num_items
 #' @param span
 #' @param melody_length
+#' @param shuffle
 #'
 #' @return
 #' @export
@@ -80,7 +81,8 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 sample_from_item_bank_api <- function(item_bank_name,
                                       num_items,
                                       span = NULL,
-                                      melody_length = NULL) {
+                                      melody_length = NULL,
+                                      shuffle = TRUE) {
 
   if(!is.scalar.character(melody_length)) {
     melody_length <- paste0(melody_length, collapse = ",")
@@ -94,7 +96,8 @@ sample_from_item_bank_api <- function(item_bank_name,
     item_bank_name = item_bank_name,
     num_items = num_items,
     span = span,
-    melody_length = melody_length
+    melody_length = melody_length,
+    shuffle = shuffle
   )
 
   endpoint_wrapper(function_name = "sample-from-item-bank",
