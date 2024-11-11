@@ -62,8 +62,8 @@ sample_from_item_bank_elts <- function(item_bank_name = "WJD_ngram", num_items, 
 # For now use Berkowitz materialized view..
 
 # t <- sample_from_item_bank_api(item_bank_name = "wjd_narrowed_n_view",
-#                                num_items = 20)
-# t2 <- t$sample
+#                                num_items = 20,
+#                                shuffle = FALSE)$sample
 
 
 #' Sample from an item bank via the API
@@ -133,6 +133,7 @@ sample_from_item_bank <- function(item_bank_name,
   logging::loginfo("num_items = %s", num_items)
   logging::loginfo("span = %s", span)
   logging::loginfo("melody_length = %s", melody_length)
+  logging::loginfo("shuffle = %s", shuffle)
 
   stopifnot(
     item_bank_name %in% c("Berkowitz_ngram", "Berkowitz_ngram_n_view", "Berkowitz_phrase", "WJD_ngram", "WJD_phrase", "WJD_narrowed", "wjd_narrowed_n_view")
