@@ -25,11 +25,12 @@ db_append_trials(
   trial_paradigm = c("call_and_response", "simultaneous_recall",
     "long_note_call_and_response", "long_note_simultaneous_recall",
     "setup_sing_range_note"),
-  additional = NA
+  additional = NA,
+  melody_block_paradigm
 )
 }
 \arguments{
-\item{additional}{}
+\item{melody_block_paradigm}{}
 }
 \description{
 Append a trial to the trials table

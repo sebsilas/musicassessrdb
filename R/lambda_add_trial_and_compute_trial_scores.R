@@ -39,12 +39,15 @@ add_trial_and_compute_trial_scores <- function(Records) {
     attempt <- as.integer(metadata$attempt)
     additional <- metadata$additional
     session_id <- as.integer(metadata$session_id)
+    melody_block_paradigm <- metadata$melody_block_paradigm
 
     logging::loginfo("session_id %s", session_id)
 
     logging::loginfo("additional %s", additional)
 
     logging::loginfo("trial_paradigm: %s", trial_paradigm)
+
+    logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
 
 
     # Get pYIN (or rhythm onset) results
@@ -136,7 +139,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
       trial_type = 'audio',
       trial_paradigm = trial_paradigm,
-      additional = if(length(additional) == 0) NA else if(!is.scalar.character(additional)) jsonlite::toJSON(additional, auto_unbox = TRUE) else additional
+      additional = if(length(additional) == 0) NA else if(!is.scalar.character(additional)) jsonlite::toJSON(additional, auto_unbox = TRUE) else additional,
+      melody_block_paradigm = melody_block_paradigm
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)
@@ -392,6 +396,7 @@ db_append_scores_trial <- function(db_con,
 #' @param trial_type
 #' @param trial_paradigm
 #' @param additional
+#' @param melody_block_paradigm
 #'
 #' @return
 #' @export
@@ -419,7 +424,8 @@ db_append_trials <- function(db_con,
                                                 "long_note_call_and_response",
                                                 "long_note_simultaneous_recall",
                                                 "setup_sing_range_note"),
-                             additional = NA) {
+                             additional = NA,
+                             melody_block_paradigm) {
 
   trial_type <- match.arg(trial_type)
   trial_paradigm <- match.arg(trial_paradigm)
@@ -444,7 +450,8 @@ db_append_trials <- function(db_con,
     trial_paradigm %in% c("call_and_response", "simultaneous_recall",
                           "long_note_call_and_response", "long_note_simultaneous_recall",
                           "setup_sing_range_note"),
-    is.scalar.na(additional) || is.scalar.character(additional)
+    is.scalar.na(additional) || is.scalar.character(additional),
+    is.scalar.character(melody_block_paradigm)
   )
 
 
@@ -465,7 +472,8 @@ db_append_trials <- function(db_con,
                              new_items_id = new_items_id,
                              trial_type = trial_type,
                              trial_paradigm = trial_paradigm,
-                             additional = additional)
+                             additional = additional,
+                             melody_block_paradigm = melody_block_paradigm)
 
   trial_id <- db_append_to_table(db_con, table = "trials", data = trial_df, primary_key_col = "trial_id")
 
