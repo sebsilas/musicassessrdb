@@ -39,7 +39,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     attempt <- as.integer(metadata$attempt)
     additional <- metadata$additional
     session_id <- as.integer(metadata$session_id)
-    melody_block_paradigm <- metadata$melody_block_paradigm
+    melody_block_paradigm <- if(length(metadata$melody_block_paradigm) == 0) "" else metadata$melody_block_paradigm
 
     logging::loginfo("session_id %s", session_id)
 
