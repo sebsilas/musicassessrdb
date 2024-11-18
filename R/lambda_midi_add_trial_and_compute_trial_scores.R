@@ -135,6 +135,9 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     test_id <- as.integer(test_id)
     trial_time_completed <- lubridate::as_datetime(trial_time_completed)
     attempt <- as.integer(attempt)
+    if(length(item_id) == 0) {
+      item_id <- NA
+    }
 
     # Return quick feedback, if need be
     # feedback <- feedback
