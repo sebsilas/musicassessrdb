@@ -49,6 +49,8 @@ select_items <- function(user_id) {
 
   logging::loginfo("Inside select_items function")
 
+  logging::loginfo("Test log!")
+
 
   response <- tryCatch({
 
