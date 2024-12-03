@@ -4,7 +4,7 @@ useDotenv: true
 
 provider:
   name: aws
-  region: ${opt:region, 'eu-central-1'}
+  region: ${opt:region, 'us-east-1'}
   runtime: nodejs18.x
   architecture: arm64
   deploymentMethod: direct
