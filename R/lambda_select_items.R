@@ -51,6 +51,8 @@ select_items <- function(user_id) {
 
   logging::loginfo("Test log!")
 
+  logging::loginfo("Test log 2!")
+
 
   response <- tryCatch({
 
