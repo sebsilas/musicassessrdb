@@ -26,11 +26,12 @@ midi_add_trial_and_compute_trial_scores_api(
   note,
   attempt,
   additional,
-  melody_block_paradigm = NA
+  melody_block_paradigm = NA,
+  page_label
 )
 }
 \arguments{
-\item{melody_block_paradigm}{}
+\item{page_label}{}
 }
 \description{
 Add MIDI trial via API
