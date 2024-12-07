@@ -24,6 +24,7 @@
 #' @param attempt
 #' @param additional
 #' @param melody_block_paradigm
+#' @param page_label
 #'
 #' @return
 #' @export
@@ -49,7 +50,8 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                                                        note,
                                                        attempt,
                                                        additional,
-                                                       melody_block_paradigm = NA) {
+                                                       melody_block_paradigm = NA,
+                                                       page_label) {
 
   # Define the request body as a list
   request_body <- list(stimuli = stimuli,
@@ -72,7 +74,8 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                        note = note,
                        attempt = attempt,
                        additional = if(is.scalar.character(additional)) additional else jsonlite::toJSON(additional),
-                       melody_block_paradigm = melody_block_paradigm)
+                       melody_block_paradigm = melody_block_paradigm,
+                       page_label = page_label)
 
   res <- endpoint_wrapper(function_name = "midi-add-trial-and-compute-trial-scores",
                           request_body = request_body)
@@ -106,7 +109,8 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                     note,
                                                     attempt,
                                                     additional,
-                                                    melody_block_paradigm) {
+                                                    melody_block_paradigm,
+                                                    page_label) {
 
   logging::loginfo("Inside midi_add_trial_and_compute_trial_scores function")
 
@@ -131,6 +135,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("attempt: %s", attempt)
   logging::loginfo("additional: %s", additional)
   logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
+  logging::loginfo("page_label: %s", page_label)
 
   # Return response
 
@@ -177,7 +182,8 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       new_items_id = if(length(new_items_id) == 0) NA else as.integer(new_items_id),
       trial_type = 'midi',
       additional = additional,
-      melody_block_paradigm = melody_block_paradigm
+      melody_block_paradigm = melody_block_paradigm,
+      page_label = page_label
       )
 
     logging::loginfo("Got trial_id: %s", trial_id)

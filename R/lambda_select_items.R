@@ -49,6 +49,7 @@ select_items <- function(user_id) {
 
   logging::loginfo("Inside select_items function")
 
+  logging::loginfo("A lovely new log!")
 
   response <- tryCatch({
 

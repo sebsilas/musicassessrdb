@@ -67,4 +67,14 @@ get-job-status :
     - httpApi:
         method: POST
         path: /v2/get-job-status
-       
+
+
+
+get-audio-presigned-url-legacy:
+  memorySize: 128
+  timeout: 28
+  handler: nodejs-services/src/dist/http/functions/get-audio-presigned-url-legacy.handler
+  events:
+    - httpApi:
+        method: POST
+        path: /v2/get-audio-presigned-url-legacy

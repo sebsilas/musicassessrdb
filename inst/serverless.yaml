@@ -27,7 +27,7 @@ provider:
     scanOnPush: false
     images:
       appimage:
-        path: ./
+        uri: ${aws:accountId}.dkr.ecr.${self:provider.region}.amazonaws.com/serverless-${self:service}-${sls:stage}:latest
 
 custom:
   isOffline: ${env:IS_OFFLINE, false}

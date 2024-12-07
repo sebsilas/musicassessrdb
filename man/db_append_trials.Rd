@@ -26,11 +26,12 @@ db_append_trials(
     "long_note_call_and_response", "long_note_simultaneous_recall",
     "setup_sing_range_note"),
   additional = NA,
-  melody_block_paradigm
+  melody_block_paradigm,
+  page_label
 )
 }
 \arguments{
-\item{melody_block_paradigm}{}
+\item{page_label}{}
 }
 \description{
 Append a trial to the trials table

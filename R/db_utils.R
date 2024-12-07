@@ -52,7 +52,7 @@ musicassessr_con <- function(local = FALSE,
 }
 
 
-compile_item_trials <- function(db_con,
+compile_item_trials <- function(db_con = NULL,
                                 current_test_id = NULL,
                                 session_id = NULL,
                                 user_id,
@@ -61,6 +61,12 @@ compile_item_trials <- function(db_con,
                                 add_trial_scores = FALSE,
                                 score_to_use = "opti3") {
 
+  if(is.null(db_con)) {
+    connected_to_db_locally <- TRUE
+    db_con <- musicassessr_con()
+  } else {
+    connected_to_db_locally <- FALSE
+  }
 
   # Grab session info
   sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
@@ -125,6 +131,10 @@ compile_item_trials <- function(db_con,
 
     user_trials <- user_trials %>%
       dplyr::left_join(trial_scores, by = "trial_id")
+  }
+
+  if(connected_to_db_locally) {
+    db_disconnect(db_con)
   }
 
   user_trials
