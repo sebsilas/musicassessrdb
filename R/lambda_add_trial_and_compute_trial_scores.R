@@ -518,7 +518,7 @@ get_metadata <- function(file,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
           trial_time_started, onset, feedback, feedback_type, trial_paradigm,
-         melody_block_paradigm, additional)
+         melody_block_paradigm, additional, page_label)
 
 }
 
