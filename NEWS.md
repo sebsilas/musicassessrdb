@@ -1,3 +1,5 @@
+# musicassessrdb 0.4.1
+
 # musicassessrdb 0.4.0
 
 - Add `page_label` argument to trials table.
