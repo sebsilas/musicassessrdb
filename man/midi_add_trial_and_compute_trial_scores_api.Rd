@@ -27,11 +27,12 @@ midi_add_trial_and_compute_trial_scores_api(
   attempt,
   additional,
   melody_block_paradigm = NA,
-  page_label = ""
+  page_label = "",
+  module = "NA"
 )
 }
 \arguments{
-\item{page_label}{}
+\item{module}{}
 }
 \description{
 Add MIDI trial via API

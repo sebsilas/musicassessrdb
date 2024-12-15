@@ -25,6 +25,7 @@
 #' @param additional
 #' @param melody_block_paradigm
 #' @param page_label
+#' @param module
 #'
 #' @return
 #' @export
@@ -51,7 +52,8 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                                                        attempt,
                                                        additional,
                                                        melody_block_paradigm = NA,
-                                                       page_label = "") {
+                                                       page_label = "",
+                                                       module = "NA") {
 
   # Define the request body as a list
   request_body <- list(stimuli = stimuli,
@@ -75,7 +77,8 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                        attempt = attempt,
                        additional = if(is.scalar.character(additional)) additional else jsonlite::toJSON(additional),
                        melody_block_paradigm = melody_block_paradigm,
-                       page_label = page_label)
+                       page_label = page_label,
+                       module = module)
 
   res <- endpoint_wrapper(function_name = "midi-add-trial-and-compute-trial-scores",
                           request_body = request_body)

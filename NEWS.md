@@ -1,3 +1,7 @@
+# musicassessrdb 0.4.2
+
+- Add `module` argument
+
 # musicassessrdb 0.4.1
 
 - Make sure to select `page_label`
