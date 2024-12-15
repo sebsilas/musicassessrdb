@@ -41,8 +41,10 @@ add_trial_and_compute_trial_scores <- function(Records) {
     session_id <- as.integer(metadata$session_id)
     melody_block_paradigm <- if(length(metadata$melody_block_paradigm) == 0) "" else metadata$melody_block_paradigm
     page_label <- metadata$page_label
+    module <- metadata$module
 
     logging::loginfo("page_label: %s", page_label)
+    logging::loginfo("module: %s", module)
 
     logging::loginfo("session_id %s", session_id)
 
@@ -144,7 +146,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       trial_paradigm = trial_paradigm,
       additional = if(length(additional) == 0) NA else if(!is.scalar.character(additional)) jsonlite::toJSON(additional, auto_unbox = TRUE) else additional,
       melody_block_paradigm = melody_block_paradigm,
-      page_label = page_label
+      page_label = page_label,
+      module = if(length(module) == 0) "NA" else module
     )
 
     logging::loginfo("Got trial_id: %s", trial_id)
@@ -402,6 +405,7 @@ db_append_scores_trial <- function(db_con,
 #' @param additional
 #' @param melody_block_paradigm
 #' @param page_label
+#' @param module
 #'
 #' @return
 #' @export
@@ -431,7 +435,8 @@ db_append_trials <- function(db_con,
                                                 "setup_sing_range_note"),
                              additional = NA,
                              melody_block_paradigm,
-                             page_label) {
+                             page_label,
+                             module = "") {
 
   trial_type <- match.arg(trial_type)
   trial_paradigm <- match.arg(trial_paradigm)
@@ -458,7 +463,8 @@ db_append_trials <- function(db_con,
                           "setup_sing_range_note"),
     is.scalar.na(additional) || is.scalar.character(additional),
     is.scalar.character(melody_block_paradigm),
-    is.scalar.character(page_label)
+    is.scalar.character(page_label),
+    is.null.or(module, is.scalar.character)
   )
 
 
@@ -481,7 +487,8 @@ db_append_trials <- function(db_con,
                              trial_paradigm = trial_paradigm,
                              additional = additional,
                              melody_block_paradigm = melody_block_paradigm,
-                             page_label = page_label)
+                             page_label = page_label,
+                             module = module)
 
   trial_id <- db_append_to_table(db_con, table = "trials", data = trial_df, primary_key_col = "trial_id")
 
@@ -518,7 +525,7 @@ get_metadata <- function(file,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
           trial_time_started, onset, feedback, feedback_type, trial_paradigm,
-         melody_block_paradigm, additional, page_label)
+         melody_block_paradigm, additional, page_label, module)
 
 }
 

@@ -51,7 +51,7 @@ midi_add_trial_and_compute_trial_scores_api <- function(stimuli,
                                                        attempt,
                                                        additional,
                                                        melody_block_paradigm = NA,
-                                                       page_label) {
+                                                       page_label = "") {
 
   # Define the request body as a list
   request_body <- list(stimuli = stimuli,
@@ -110,7 +110,9 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                     attempt,
                                                     additional,
                                                     melody_block_paradigm,
-                                                    page_label) {
+                                                    page_label,
+                                                    module = "NA") {
+
 
   logging::loginfo("Inside midi_add_trial_and_compute_trial_scores function")
 
@@ -136,6 +138,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("additional: %s", additional)
   logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
   logging::loginfo("page_label: %s", page_label)
+  logging::loginfo("module: %s", module)
 
   # Return response
 
@@ -183,7 +186,8 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       trial_type = 'midi',
       additional = additional,
       melody_block_paradigm = melody_block_paradigm,
-      page_label = page_label
+      page_label = page_label,
+      module = module
       )
 
     logging::loginfo("Got trial_id: %s", trial_id)
