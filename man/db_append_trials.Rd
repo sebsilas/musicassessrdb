@@ -27,11 +27,12 @@ db_append_trials(
     "setup_sing_range_note"),
   additional = NA,
   melody_block_paradigm,
-  page_label
+  page_label,
+  module = ""
 )
 }
 \arguments{
-\item{page_label}{}
+\item{module}{}
 }
 \description{
 Append a trial to the trials table

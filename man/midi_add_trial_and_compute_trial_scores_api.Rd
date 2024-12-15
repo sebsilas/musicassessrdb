@@ -27,7 +27,7 @@ midi_add_trial_and_compute_trial_scores_api(
   attempt,
   additional,
   melody_block_paradigm = NA,
-  page_label
+  page_label = ""
 )
 }
 \arguments{
