@@ -126,7 +126,7 @@ compile_item_trials <- function(db_con = NULL,
   if(add_trial_scores) {
 
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
-      dplyr::filter(measure == !! score_to_use) %>%
+      dplyr::filter(measure %in% !! score_to_use) %>%
       dplyr::collect()
 
     user_trials <- user_trials %>%
@@ -686,7 +686,7 @@ get_study_history_stats <- function(db_con,
 
     logging::loginfo("last_score_value: %s", last_score_value)
 
-    if(is.null(last_score_value)) {
+    if(length(last_score_value) == 0L) {
       last_score_value <- NA
     }
 
@@ -703,6 +703,7 @@ get_study_history_stats <- function(db_con,
       dplyr::pull(score)
 
 
+    logging::loginfo("last_score_value: %s", last_score_value)
     logging::loginfo("current_score: %s", current_score)
 
 
