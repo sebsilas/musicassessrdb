@@ -225,6 +225,12 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
 
       logging::loginfo("Invalid input, no scores possible")
 
+      scores_trial_ids <- NA
+      melodic_production_ids <- NA
+
+
+    } else {
+
       # Store MIDI results in in DB
       scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
                                                        user_melody_input = user_notes,
@@ -293,13 +299,6 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                  measure = trial_scores$measure,
                                                  score = trial_scores$score)
       logging::loginfo("...appended.")
-
-      # logging::loginfo("scores_trial_id: %s", scores_trial_id)
-
-    } else {
-
-      scores_trial_ids <- NA
-      melodic_production_ids <- NA
 
     }
 
