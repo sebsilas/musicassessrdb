@@ -207,8 +207,6 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
 
     user_notes <- res$note
 
-    logging::loginfo("Scoring melodic production...")
-
     logging::loginfo("res$freq %s", res$freq)
     logging::loginfo("user_notes %s", user_notes)
     logging::loginfo("res$dur %s", res$dur)
@@ -223,76 +221,88 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
     logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
 
-    # Store MIDI results in in DB
-    scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
-                                                     user_melody_input = user_notes,
-                                                     user_duration_input = res$dur,
-                                                     user_onset_input = res$onset,
-                                                     stimuli = stimuli,
-                                                     stimuli_durations = stimuli_durations,
-                                                     as_tb = FALSE)
+    if(nrow(res) < 1L) {
 
-    correct_boolean <- scores$correct_boolean
-    correct_boolean_octaves_allowed <- scores$correct_boolean_octaves_allowed
+      logging::loginfo("Invalid input, no scores possible")
 
-    logging::loginfo("length(correct_boolean) %s", length(correct_boolean))
-    logging::loginfo("correct_boolean: %s", correct_boolean)
-    logging::loginfo("correct_boolean_octaves_allowed: %s", correct_boolean_octaves_allowed)
+      # Store MIDI results in in DB
+      scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
+                                                       user_melody_input = user_notes,
+                                                       user_duration_input = res$dur,
+                                                       user_onset_input = res$onset,
+                                                       stimuli = stimuli,
+                                                       stimuli_durations = stimuli_durations,
+                                                       as_tb = FALSE)
 
-    logging::loginfo("Append melodic production...")
+      correct_boolean <- scores$correct_boolean
+      correct_boolean_octaves_allowed <- scores$correct_boolean_octaves_allowed
 
-    # Add melodic production
-    melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
+      logging::loginfo("length(correct_boolean) %s", length(correct_boolean))
+      logging::loginfo("correct_boolean: %s", correct_boolean)
+      logging::loginfo("correct_boolean_octaves_allowed: %s", correct_boolean_octaves_allowed)
 
-    logging::loginfo("...appended.")
+      logging::loginfo("Append melodic production...")
 
+      # Add melodic production
+      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
 
-    logging::loginfo("...scored.")
-    logging::loginfo("scores: %s", scores)
-
-    # Grab trial scores, which are actually numeric scores and don't have NA-like values
-    trial_scores <- scores %>%
-      scores_to_long_format() %>%
-      dplyr::mutate(trial_id = trial_id)
-
-    logging::loginfo("trial_scores: %s", trial_scores)
-
-    logging::loginfo("Append to scores_trial")
-
-    # Compute a few "change in score/review" vars
-
-    study_history_stats <- get_study_history_stats(db_con,
-                                                   user_id = user_id,
-                                                   test_id = test_id,
-                                                   inst = instrument,
-                                                   item_id = item_id,
-                                                   measure = score_to_use,
-                                                   current_trial_scores = trial_scores,
-                                                   current_trial_time_completed = trial_time_completed)
-
-    study_history_stats <- study_history_stats %>%
-      dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
-      tidyr::pivot_longer(dplyr::everything(),
-                          names_to = "measure",
-                          values_to = "score") %>%
-      dplyr::mutate(trial_id = trial_id)
+      logging::loginfo("...appended.")
 
 
-    logging::loginfo("study_history_stats: %s", study_history_stats)
+      logging::loginfo("...scored.")
+      logging::loginfo("scores: %s", scores)
 
-    print(names(trial_scores))
+      # Grab trial scores, which are actually numeric scores and don't have NA-like values
+      trial_scores <- scores %>%
+        scores_to_long_format() %>%
+        dplyr::mutate(trial_id = trial_id)
 
-    print(names(study_history_stats))
+      logging::loginfo("trial_scores: %s", trial_scores)
 
-    trial_scores <- rbind(trial_scores, study_history_stats)
+      logging::loginfo("Append to scores_trial")
 
-    scores_trial_ids <- db_append_scores_trial(db_con,
-                                               trial_id,
-                                               measure = trial_scores$measure,
-                                               score = trial_scores$score)
-    logging::loginfo("...appended.")
+      # Compute a few "change in score/review" vars
 
-    # logging::loginfo("scores_trial_id: %s", scores_trial_id)
+      study_history_stats <- get_study_history_stats(db_con,
+                                                     user_id = user_id,
+                                                     test_id = test_id,
+                                                     inst = instrument,
+                                                     item_id = item_id,
+                                                     measure = score_to_use,
+                                                     current_trial_scores = trial_scores,
+                                                     current_trial_time_completed = trial_time_completed)
+
+      study_history_stats <- study_history_stats %>%
+        dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
+        tidyr::pivot_longer(dplyr::everything(),
+                            names_to = "measure",
+                            values_to = "score") %>%
+        dplyr::mutate(trial_id = trial_id)
+
+
+      logging::loginfo("study_history_stats: %s", study_history_stats)
+
+      print(names(trial_scores))
+
+      print(names(study_history_stats))
+
+      trial_scores <- rbind(trial_scores, study_history_stats)
+
+      scores_trial_ids <- db_append_scores_trial(db_con,
+                                                 trial_id,
+                                                 measure = trial_scores$measure,
+                                                 score = trial_scores$score)
+      logging::loginfo("...appended.")
+
+      # logging::loginfo("scores_trial_id: %s", scores_trial_id)
+
+    } else {
+
+      scores_trial_ids <- NA
+      melodic_production_ids <- NA
+
+    }
+
 
     list(
       status = 200,

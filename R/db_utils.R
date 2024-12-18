@@ -777,6 +777,21 @@ db_disconnect <- function(db_con) {
   }
 }
 
+
+get_melodic_production <- function(db_con = NULL, trial_id) {
+
+  if(is.null(db_con)) {
+    db_con <- musicassessr_con()
+  }
+
+  dplyr::tbl(db_con, "melodic_production") %>%
+    dplyr::filter(trial_id %in% !! trial_id) %>%
+    dplyr::collect() %>%
+    dplyr::group_by(trial_id) %>%
+    musicassessr::to_string_df() %>%
+    dplyr::ungroup()
+}
+
 # db_con <- musicassessr_con()
 # t <- get_study_history_stats(db_con, 2L, 2L, "Voice", "WJD_phrase_8308")
 # t <- get_study_history_stats(db_con, 2L, 2L, "Voice", "fail")
