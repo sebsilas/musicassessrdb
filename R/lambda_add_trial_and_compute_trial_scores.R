@@ -191,8 +191,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       user_notes <- res$note
 
-      logging::loginfo("Scoring melodic production...")
-
       logging::loginfo("res$freq %s", res$freq)
       logging::loginfo("user_notes %s", user_notes)
       logging::loginfo("res$dur %s", res$dur)
