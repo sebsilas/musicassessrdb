@@ -1,5 +1,13 @@
 
 
+
+# curl -X POST 'https://api.songbird.training/sample-in-ntiles-wjd' \
+# -H 'Content-Type: application/json' \
+# -d '{
+#   "num_items": 12
+# }'
+
+
 sample_in_ntiles_wjd <- function(num_items = 12L) {
 
   tryCatch({
