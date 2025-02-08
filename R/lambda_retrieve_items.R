@@ -12,22 +12,24 @@ retrieve_items_api <- function(item_bank_name, num_items_per_page, page_number) 
 
 
 # t <- retrieve_items("DTL1000", 10, 1)$items
-# t2 <- retrieve_items("DTL1000", 10, 1, sort_direction = "desc")$items
+# t2 <- retrieve_items("DTL1000", 10, 1, sort_direction = "desc", sort_key = "arrhythmic_difficulty_percentile")$items
 
 # This is the function that is called when the endpoint
 # is invoked
 retrieve_items <- memoise::memoise(function(item_bank_name,
                                             num_items_per_page,
                                             page_number,
-                                            sort_key = "arrhythmic_difficulty_percentile",
-                                            sort_direction = "asc") {
+                                            sort_key = NULL,
+                                            sort_direction = NULL) {
 
   stopifnot(
     is.scalar.character(item_bank_name),
     is.scalar.integerlike(num_items_per_page),
     is.scalar.integerlike(page_number),
-    is.scalar.character(sort_key),
-    sort_direction %in% c('asc', 'desc')
+    is.null.or(sort_key, is.scalar.character),
+    is.null.or(sort_direction, function(x) {
+      x %in% c('asc', 'desc')
+    })
   )
 
   logging::loginfo("Inside retrieve_items function")
@@ -43,11 +45,25 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
 
     nos <- get_item_numbers(page_number, num_items_per_page)
 
-    sort_key_name <- as.symbol(sort_key)
 
     items <- dplyr::tbl(db_con, paste0("item_bank_", item_bank_name)) %>%
-      dplyr::collect() %>% # We only expect to use small dataframes here
-      { if (sort_direction == "asc") dplyr::arrange(., !!sort_key_name) else dplyr::arrange(., dplyr::desc(!!sort_key_name)) } %>%
+      dplyr::collect() # We only expect to use small dataframes here
+
+
+    if(!is.null(sort_direction)) {
+      sort_key_name <- as.symbol(sort_key)
+
+      if (sort_direction == "asc") {
+        items <- items %>%
+          dplyr::arrange(!!sort_key_name)
+      } else {
+        items <- items %>%
+          dplyr::arrange(dplyr::desc(!!sort_key_name))
+      }
+
+    }
+
+    items <- items %>%
       dplyr::slice(nos$start_number:nos$end_number)
 
     db_disconnect(db_con)
