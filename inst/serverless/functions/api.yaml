@@ -213,3 +213,16 @@ retrieve-items:
     - httpApi:
         method: POST
         path: /retrieve-items # The path of the function in the HTTP API
+
+
+get-available-musical-instruments:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_available_musical_instruments # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-available-musical-instruments
