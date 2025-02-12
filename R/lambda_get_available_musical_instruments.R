@@ -14,7 +14,7 @@ get_available_musical_instruments_api <- function() {
 
 # This is the function that is called when the endpoint
 # is invoked
-lambda_get_available_musical_instruments <- function() {
+lambda_get_available_musical_instruments <- memoise::memoise(function() {
 
   logging::loginfo("Inside get_available_musical_instrument function")
 
@@ -48,4 +48,4 @@ lambda_get_available_musical_instruments <- function() {
 
   return(response)
 
-}
+})
