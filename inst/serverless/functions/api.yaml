@@ -221,7 +221,7 @@ get-available-musical-instruments:
   image:
     name: appimage
     command:
-      - get_available_musical_instruments # The name of the function in the R package
+      - lambda_get_available_musical_instruments # The name of the function in the R package
   events:
     - httpApi:
         method: POST
