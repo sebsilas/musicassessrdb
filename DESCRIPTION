@@ -36,7 +36,7 @@ Imports:
     shiny,
     tibble
 Depends:
-    R (>= 2.10)
+    R (>= 3.5)
 URL: https://github.com/sebsilas/musicassessrdb
 BugReports: https://github.com/sebsilas/musicassessrdb/issues
 Remotes: 
