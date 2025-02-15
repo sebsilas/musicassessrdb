@@ -29,6 +29,11 @@ set_user_preferences_lambda <- function(user_id,
   response <- tryCatch({
 
     preferences <- preferences %>%
+      tibble::as_tibble()
+
+    logging::loginfo("preferences after tibble coercion: %s", preferences)
+
+    preferences <- preferences %>%
       dplyr::mutate(user_id = user_id,
                     preference_change_date_time = Sys.time() )
 
