@@ -25,7 +25,8 @@ store_db_session_api <- function(experiment_id = NA,
 append_session <- function(experiment_condition_id = NA,
                            user_id,
                            session_time_started = Sys.time(),
-                           experiment_id = NA) {
+                           experiment_id = NA,
+                           user_info = NA) {
 
   logging::loginfo("Inside append_session function")
 
@@ -36,6 +37,8 @@ append_session <- function(experiment_condition_id = NA,
   logging::loginfo("session_time_started= %s", session_time_started)
 
   logging::loginfo("experiment_id = %s", experiment_id)
+
+  logging::loginfo("user_info: %s", user_info)
 
   experiment_condition_id <- if(length(experiment_condition_id) == 0) NA_integer_ else experiment_condition_id
   experiment_id <- if(length(experiment_id) == 0) NA_integer_ else experiment_id
@@ -49,8 +52,7 @@ append_session <- function(experiment_condition_id = NA,
                                     user_id = as.integer(user_id),
                                     session_time_started = session_time_started,
                                     experiment_id = as.integer(experiment_id),
-                                    user_info = NA) # We do this at the end
-
+                                    user_info = user_info) # In psychTestR, this will be NA and updated at the end
     # Return response
 
    list(
