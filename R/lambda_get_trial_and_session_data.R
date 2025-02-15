@@ -106,7 +106,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       # For phrases with names we  remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::group_by(Date, user_id, username, phrase_name, songbird_type) %>%
+        dplyr::group_by(Date, user_id, username, phrase_name, item_id, songbird_type) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score)) %>%
@@ -347,8 +347,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       scores_session = session_scores_agg,
       review_melodies = review_melodies_over_time,
       user_stats = user_stats,
-      group_stats = group_stats
-    )
+      group_stats = group_stats)
 
 
   }, error = function(err) {
