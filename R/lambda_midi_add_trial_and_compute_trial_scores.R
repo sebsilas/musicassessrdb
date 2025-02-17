@@ -160,12 +160,10 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     stim_length <- length(stimuli)
 
     # pYIN-style res
-    res <- tibble::tibble(
-      dur = as.numeric(dur),
-      onset = as.numeric(onset),
-      note = as.integer(note),
-      freq = hrep::midi_to_freq(note)
-    )  %>%
+    res <- tibble::tibble(note = as.numeric(note),
+                          dur = as.numeric(dur),
+                          onset = as.numeric(onset),
+                          freq = round(hrep::midi_to_freq(note)))  %>%
       itembankr::produce_extra_melodic_features()
 
     logging::loginfo("res: %s", res)
@@ -206,12 +204,6 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     # Get pYIN (or rhythm onset) results
 
     logging::loginfo("Score melodic production...")
-
-
-    res <- tibble::tibble(note = as.numeric(note),
-                          dur = as.numeric(dur),
-                          onset = as.numeric(onset),
-                          freq = round(hrep::midi_to_freq(note)))
 
     user_notes <- res$note
 
