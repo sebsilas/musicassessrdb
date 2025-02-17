@@ -163,8 +163,22 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     res <- tibble::tibble(note = as.numeric(note),
                           dur = as.numeric(dur),
                           onset = as.numeric(onset),
-                          freq = round(hrep::midi_to_freq(note)))  %>%
+                          freq = round(hrep::midi_to_freq(note)))
+
+    first_onset <- res$onset[1]
+
+    res <- res %>%
+      dplyr::mutate(onset = first_onset)
+
+
+    logging::loginfo("Check classes...")
+    res %>% lapply(class) %>% logging::loginfo()
+
+    res <- res %>%
       itembankr::produce_extra_melodic_features()
+
+    logging::loginfo("Check classes again...")
+    res %>% lapply(class) %>% logging::loginfo()
 
     logging::loginfo("res: %s", res)
 
