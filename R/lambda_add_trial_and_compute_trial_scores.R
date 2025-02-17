@@ -69,59 +69,11 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     # Return quick feedback, if need be
     feedback <- metadata$feedback
+    feedback_type <- metadata$feedback_type
     logging::loginfo("feedback: %s", feedback)
 
-
-    if(feedback) {
-
-      feedback_type <- metadata$feedback_type
-
-      logging::loginfo("feedback_type: %s", feedback_type)
-
-      if(feedback_type == "opti3") {
-
-        stim_length <- length(stimuli)
-        opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
-        logging::loginfo("opti3_res %s", opti3_res)
-        opti3 <- opti3_res$opti3
-
-        transposition <- opti3_res$transposition
-        logging::loginfo("transposition %s", transposition)
-        notes_with_best_transposition <- res$note + transposition
-
-        benovelent_opti3 <- benovelent_score(opti3, attempt)
-
-        result <- list(benovelent_opti3 = benovelent_opti3,
-                       opti3 = opti3_res$opti3,
-                       ngrukkon = opti3_res$ngrukkon,
-                       rhythfuzz = opti3_res$rhythfuzz,
-                       harmcore = opti3_res$harmcore,
-                       rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli,
-                                                                            stimuli_durations,
-                                                                            notes_with_best_transposition,
-                                                                            res$dur),
-                       transcribed_notes = paste0(res$note, collapse = ","),
-                       notes_with_best_transposition = paste0(notes_with_best_transposition, collapse = ","),
-                       stimulus = paste0(stimuli, collapse = ",")
-                       )
-      } else if(feedback_type == "produced_note") {
-        result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
-      } else {
-        stop("feedback_type not recognised")
-      }
-
-      logging::loginfo("result: %s", result)
-
-      job_id <- digest::digest(audio_file, algo = "md5", serialize = FALSE)
-
-      logging::loginfo("job_id to grab: %s", job_id)
-
-      dynamodb <- paws::dynamodb()
-
-      # Append selected items to DynamoDB
-      update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(feedback = result)), status = "FINISHED")
-
-    }
+    # Handle immediate feedback
+    handle_quick_feedback(feedback, feedback_type, feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file)
 
 
     # Append trial info
@@ -618,6 +570,58 @@ benovelent_score <- function(score, attempt) {
   return(scaledScore)
 }
 
+
+handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file) {
+
+  if(feedback) {
+
+    logging::loginfo("feedback_type: %s", feedback_type)
+
+    if(feedback_type == "opti3") {
+
+      stim_length <- length(stimuli)
+      opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
+      logging::loginfo("opti3_res %s", opti3_res)
+      opti3 <- opti3_res$opti3
+
+      transposition <- opti3_res$transposition
+      logging::loginfo("transposition %s", transposition)
+      notes_with_best_transposition <- res$note + transposition
+
+      benovelent_opti3 <- benovelent_score(opti3, attempt)
+
+      result <- list(benovelent_opti3 = benovelent_opti3,
+                     opti3 = opti3_res$opti3,
+                     ngrukkon = opti3_res$ngrukkon,
+                     rhythfuzz = opti3_res$rhythfuzz,
+                     harmcore = opti3_res$harmcore,
+                     rhythmic_weighted_edit_sim =  rhythmic_weighting_sim(stimuli,
+                                                                          stimuli_durations,
+                                                                          notes_with_best_transposition,
+                                                                          res$dur),
+                     transcribed_notes = paste0(res$note, collapse = ","),
+                     notes_with_best_transposition = paste0(notes_with_best_transposition, collapse = ","),
+                     stimulus = paste0(stimuli, collapse = ",")
+      )
+    } else if(feedback_type == "produced_note") {
+      result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
+    } else {
+      stop("feedback_type not recognised")
+    }
+
+    logging::loginfo("result: %s", result)
+
+    job_id <- digest::digest(audio_file, algo = "md5", serialize = FALSE)
+
+    logging::loginfo("job_id to grab: %s", job_id)
+
+    dynamodb <- paws::dynamodb()
+
+    # Append selected items to DynamoDB
+    update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(feedback = result)), status = "FINISHED")
+
+  }
+}
 
 
 # Full mel

@@ -114,7 +114,10 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                     additional,
                                                     melody_block_paradigm,
                                                     page_label,
-                                                    module = "NA") {
+                                                    module = "NA",
+                                                    feedback = FALSE,
+                                                    feedback_type = "opti3",
+                                                    audio_file = "") { # Note, we use audio file as an identifier for a jobID, in the case of feedback, even though we don't really produce an audio file for MIDI trials. This is purely for DynamoDB purposes.
 
 
   logging::loginfo("Inside midi_add_trial_and_compute_trial_scores function")
@@ -142,6 +145,9 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
   logging::loginfo("page_label: %s", page_label)
   logging::loginfo("module: %s", module)
+  logging::loginfo("feedback: %s", feedback)
+  logging::loginfo("feedback_type: %s", feedback_type)
+  logging::loginfo("audio_file: %s", audio_file)
 
   # Return response
 
@@ -151,22 +157,24 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     test_id <- as.integer(test_id)
     trial_time_completed <- lubridate::as_datetime(trial_time_completed)
     attempt <- as.integer(attempt)
+    stim_length <- length(stimuli)
+
+    # pYIN-style res
+    res <- tibble::tibble(
+      dur = as.numeric(dur),
+      onset = as.numeric(onset),
+      note = as.integer(note),
+      freq = hrep::midi_to_freq(note)
+    )  %>%
+      itembankr::produce_extra_melodic_features()
+
+    logging::loginfo("res: %s", res)
 
     if(length(item_id) == 0) {
       item_id <- NA
     }
 
-    # Return quick feedback, if need be
-    # feedback <- feedback
-    # if(feedback != 'none') {
-    #
-    #   if(feedback == "opti3") {
-    #     result <- get_opti3(stimuli, stimuli_durations, length(stimuli), user_input_as_pyin)
-    #   } else if(feedback == "produced_note") {
-    #     result <- round(mean(hrep::freq_to_midi(user_input_as_pyin$freq), na.rm = TRUE))
-    #   }
-    #
-    # }
+    handle_quick_feedback(feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file)
 
     # Append trial info
     trial_id <- db_append_trials(
