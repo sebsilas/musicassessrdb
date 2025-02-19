@@ -1,5 +1,6 @@
 
 
+
 store_db_session_api <- function(experiment_id = NA,
                                  experiment_condition_id = NA,
                                  user_id,
@@ -108,11 +109,64 @@ db_append_session <- function(db_con,
                                user_id = user_id,
                                psychTestR_session_id = psychTestR_session_id,
                                session_time_started = session_time_started,
-                               experiment_id = experiment_id,
-                               user_info = user_info)
+                               experiment_id = experiment_id)
 
   session_id <- db_append_to_table(db_con, table = "sessions", data = session_df, primary_key_col = "session_id")
+
+  if(is.scalar.character(user_info)) {
+
+    session_info_names <- dplyr::tbl(db_con, "session_info") %>%
+      colnames()
+
+    logging::loginfo("session_info_names: %s", session_info_names)
+
+    # Append to session_info table
+    user_info_parsed <- user_info %>%
+      rjson::fromJSON() %>%
+      purrr::pluck(1)
+
+    user_info_tbl <- user_info_parsed %>%
+      tibble::as_tibble() %>%
+      dplyr::select(dplyr::any_of(session_info_names)) %>%
+      dplyr::mutate(session_id = session_id) %>%
+      dplyr::relocate(session_id)
+
+    missing_names <- setdiff(session_info_names, names(user_info_tbl))
+
+    logging::loginfo("missing_names: %s", missing_names)
+
+    # Create a tibble with NAs for the missing values
+    na_tibble <- tibble::tibble(!!!setNames(rep(list(NA_character_), length(missing_names)), missing_names))
+
+    # Join to table
+    user_info_tbl <- cbind(user_info_tbl, na_tibble)
+
+    # Reorder names
+    user_info_tbl <- user_info_tbl %>%
+      dplyr::select(dplyr::all_of(session_info_names))
+
+    DBI::dbWriteTable(db_con, "session_info", user_info_tbl, row.names = FALSE, append = TRUE)
+
+  }
+
   session_id
 }
 
 
+
+# Create normalised session_info table
+
+# db_con <- musicassessr_con()
+# s <- tbl(db_con, "sessions") %>% collect()
+# user_info <- s$user_info[[3194]]
+
+# user_info_parsed <- user_info %>%
+#   rjson::fromJSON() %>%
+#   purrr::pluck(1)
+#
+# user_info_tbl <- user_info_parsed %>%
+#   tibble::as_tibble() %>%
+#   dplyr::mutate(session_id = 1L) %>%
+#   dplyr::relocate(session_id)
+
+# DBI::dbWriteTable(db_con, "session_info", user_info_tbl, row.names = FALSE, overwrite = TRUE)
