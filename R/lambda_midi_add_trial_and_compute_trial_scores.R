@@ -157,7 +157,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       stimuli <- itembankr::str_mel_to_vector(stimuli)
     }
 
-    if(is.scalar.character(stimuli)) {
+    if(is.scalar.character(stimuli_durations)) {
       stimuli_durations <- itembankr::str_mel_to_vector(stimuli_durations)
     }
 
