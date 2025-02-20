@@ -153,11 +153,21 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
 
   response <- tryCatch({
 
+    if(is.scalar.character(stimuli)) {
+      stimuli <- itembankr::str_mel_to_vector(stimuli)
+    }
+
+    if(is.scalar.character(stimuli)) {
+      stimuli_durations <- itembankr::str_mel_to_vector(stimuli_durations)
+    }
+
 
     test_id <- as.integer(test_id)
     trial_time_completed <- lubridate::as_datetime(trial_time_completed)
     attempt <- as.integer(attempt)
     stim_length <- length(stimuli)
+
+    logging::loginfo("stim_length: %s", stim_length)
 
     # pYIN-style res
     res <- tibble::tibble(note = as.numeric(note),
