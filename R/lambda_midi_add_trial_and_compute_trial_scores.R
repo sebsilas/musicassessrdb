@@ -125,7 +125,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("stimuli %s", stimuli)
   logging::loginfo("stimuli_durations: %s", stimuli_durations)
   logging::loginfo("test_id: %s", test_id)
-  logging::loginfo("item_id", item_id)
+  logging::loginfo("item_id: %s", item_id)
   logging::loginfo("user_id: %s", user_id)
   logging::loginfo("instrument: %s", instrument)
   logging::loginfo("trial_time_started: %s", trial_time_started)
