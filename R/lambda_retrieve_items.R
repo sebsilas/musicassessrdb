@@ -10,10 +10,13 @@ retrieve_items_api <- function(item_bank_name, num_items_per_page, page_number) 
 
 }
 
-
+#
 # t <- retrieve_items("DTL1000", 10, 1)$items
 # t2 <- retrieve_items("DTL1000", 10, 1, sort_direction = "desc", sort_key = "arrhythmic_difficulty_percentile")$items
 # t3 <- retrieve_items("DTL1000", 10, 1)$items
+
+
+
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -21,7 +24,8 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
                                             num_items_per_page,
                                             page_number,
                                             sort_key = NULL,
-                                            sort_direction = NULL) {
+                                            sort_direction = NULL,
+                                            user_id = NULL) {
 
   stopifnot(
     is.scalar.character(item_bank_name),
@@ -30,7 +34,8 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
     is.null.or(sort_key, is.scalar.character),
     is.null.or(sort_direction, function(x) {
       x %in% c('asc', 'desc')
-    })
+    }),
+    is.null.or(user_id, is.integerlike)
   )
 
   logging::loginfo("Inside retrieve_items function")
@@ -38,7 +43,9 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
   logging::loginfo("item_bank_name = %s", item_bank_name)
   logging::loginfo("num_items_per_page = %s", num_items_per_page)
   logging::loginfo("page_number = %s", page_number)
-
+  logging::loginfo("sort_key = %s", sort_key)
+  logging::loginfo("sort_direction = %s", sort_direction)
+  logging::loginfo("user_id = %s", user_id)
 
   response <- tryCatch({
 
@@ -67,6 +74,31 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
     items <- items %>%
       dplyr::slice(nos$start_number:nos$end_number)
 
+    if(is.null(user_id)) {
+      study_history <- NA
+    } else {
+
+      study_history <- compile_item_trials(db_con,
+                                           user_id = user_id,
+                                           join_item_banks_on = FALSE,
+                                           add_trial_scores = TRUE) %>%
+        dplyr::filter(item_id %in% !! items$item_id)
+
+      if(nrow(study_history) > 0L) {
+        # Aggregate
+        study_history <- study_history %>%
+          dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
+          dplyr::group_by(Date, item_id) %>%
+          dplyr::summarise(score = mean(na.rm = TRUE)) %>%
+          dplyr::ungroup()
+      } else {
+        study_history <- NA
+      }
+
+
+    }
+
+
     db_disconnect(db_con)
 
     # Return response
@@ -74,7 +106,8 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
     list(
       status = 200,
       message = paste0("You successfully got items from the following item bank: ", item_bank_name),
-      items = items
+      items = items,
+      study_history = study_history
     )
 
 
@@ -83,7 +116,8 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
     list(
       status = 400,
       message = "Something went wrong",
-      items = NA
+      items = NA,
+      study_history = study_history
     )
   })
 

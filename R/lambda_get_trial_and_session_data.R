@@ -4,15 +4,23 @@
 # db_con <- musicassessr_con()
 # t <- get_trial_and_session_data(111)
 
+# t <- get_trial_and_session_data(111)$scores_trial
+# t <- get_trial_and_session_data(111, app_name_filter = "songbird")$scores_trial
+
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
                                            trial_score_measure = "opti3",
                                            session_score_measure_arrhythmic = "mean_opti3_arrhythmic",
-                                           session_score_measure_rhythmic = "mean_opti3_rhythmic") {
+                                           session_score_measure_rhythmic = "mean_opti3_rhythmic",
+                                           app_name_filter = NULL) {
 
   # Define the request body as a list
   request_body <- list(user_id = user_id,
-                       group_id = group_id)
+                       group_id = group_id,
+                       trial_score_measure = trial_score_measure,
+                       session_score_measure_arrhythmic = session_score_measure_arrhythmic,
+                       session_score_measure_rhythmic = session_score_measure_rhythmic,
+                       app_name_filter = app_name_filter)
 
   endpoint_wrapper(function_name = "get-trial-and-session-data",
                    request_body = request_body)
@@ -28,7 +36,12 @@ get_trial_and_session_data <- function(user_id = NULL,
                                        trial_score_measure = "opti3",
                                        session_score_measure_arrhythmic = "mean_opti3_arrhythmic",
                                        session_score_measure_rhythmic = "mean_opti3_rhythmic",
-                                       filter_pseudo_anonymous_ids = FALSE) {
+                                       filter_pseudo_anonymous_ids = FALSE,
+                                       app_name_filter = NULL) {
+
+  stopifnot(
+    is.null.or(app_name_filter, is.character)
+  )
 
 
   logging::loginfo("Inside get_trial_and_session_data function")
@@ -47,6 +60,7 @@ get_trial_and_session_data <- function(user_id = NULL,
   logging::loginfo("trial_score_measure = %s", trial_score_measure)
   logging::loginfo("session_score_measure_arrhythmic = %s", session_score_measure_arrhythmic)
   logging::loginfo("session_score_measure_rhythmic = %s", session_score_measure_rhythmic)
+  logging::loginfo("app_name_filter = %s", app_name_filter)
 
   if(!is.null(group_id)) {
     user_id <- get_users_in_group(group_id)
@@ -62,6 +76,7 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
         dplyr::mutate(Date = lubridate::as_date(session_time_started))  %>%
         dplyr::left_join(get_table(db_con, "users"), by = "user_id") %>%
+        { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
         { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . }
 
     session_ids <- sessions$session_id
@@ -106,7 +121,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       # For phrases with names we  remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::group_by(Date, user_id, username, phrase_name, songbird_type) %>%
+        dplyr::group_by(Date, user_id, username, phrase_name, item_id, songbird_type) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score)) %>%
@@ -347,8 +362,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       scores_session = session_scores_agg,
       review_melodies = review_melodies_over_time,
       user_stats = user_stats,
-      group_stats = group_stats
-    )
+      group_stats = group_stats)
 
 
   }, error = function(err) {

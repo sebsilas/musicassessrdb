@@ -114,7 +114,10 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
                                                     additional,
                                                     melody_block_paradigm,
                                                     page_label,
-                                                    module = "NA") {
+                                                    module = "NA",
+                                                    feedback = FALSE,
+                                                    feedback_type = "opti3",
+                                                    audio_file = "") { # Note, we use audio file as an identifier for a jobID, in the case of feedback, even though we don't really produce an audio file for MIDI trials. This is purely for DynamoDB purposes.
 
 
   logging::loginfo("Inside midi_add_trial_and_compute_trial_scores function")
@@ -122,7 +125,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("stimuli %s", stimuli)
   logging::loginfo("stimuli_durations: %s", stimuli_durations)
   logging::loginfo("test_id: %s", test_id)
-  logging::loginfo("item_id", item_id)
+  logging::loginfo("item_id: %s", item_id)
   logging::loginfo("user_id: %s", user_id)
   logging::loginfo("instrument: %s", instrument)
   logging::loginfo("trial_time_started: %s", trial_time_started)
@@ -142,31 +145,58 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
   logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
   logging::loginfo("page_label: %s", page_label)
   logging::loginfo("module: %s", module)
+  logging::loginfo("feedback: %s", feedback)
+  logging::loginfo("feedback_type: %s", feedback_type)
+  logging::loginfo("audio_file: %s", audio_file)
 
   # Return response
 
   response <- tryCatch({
 
+    if(is.scalar.character(stimuli)) {
+      stimuli <- itembankr::str_mel_to_vector(stimuli)
+    }
+
+    if(is.scalar.character(stimuli_durations)) {
+      stimuli_durations <- itembankr::str_mel_to_vector(stimuli_durations)
+    }
+
 
     test_id <- as.integer(test_id)
     trial_time_completed <- lubridate::as_datetime(trial_time_completed)
     attempt <- as.integer(attempt)
+    stim_length <- length(stimuli)
+
+    logging::loginfo("stim_length: %s", stim_length)
+
+    # pYIN-style res
+    res <- tibble::tibble(note = as.numeric(note),
+                          dur = as.numeric(dur),
+                          onset = as.numeric(onset),
+                          freq = round(hrep::midi_to_freq(note)))
+
+    first_onset <- res$onset[1]
+
+    res <- res %>%
+      dplyr::mutate(onset = first_onset)
+
+
+    logging::loginfo("Check classes...")
+    res %>% lapply(class) %>% logging::loginfo()
+
+    res <- res %>%
+      itembankr::produce_extra_melodic_features()
+
+    logging::loginfo("Check classes again...")
+    res %>% lapply(class) %>% logging::loginfo()
+
+    logging::loginfo("res: %s", res)
 
     if(length(item_id) == 0) {
       item_id <- NA
     }
 
-    # Return quick feedback, if need be
-    # feedback <- feedback
-    # if(feedback != 'none') {
-    #
-    #   if(feedback == "opti3") {
-    #     result <- get_opti3(stimuli, stimuli_durations, length(stimuli), user_input_as_pyin)
-    #   } else if(feedback == "produced_note") {
-    #     result <- round(mean(hrep::freq_to_midi(user_input_as_pyin$freq), na.rm = TRUE))
-    #   }
-    #
-    # }
+    handle_quick_feedback(feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file)
 
     # Append trial info
     trial_id <- db_append_trials(
@@ -198,12 +228,6 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     # Get pYIN (or rhythm onset) results
 
     logging::loginfo("Score melodic production...")
-
-
-    res <- tibble::tibble(note = as.numeric(note),
-                          dur = as.numeric(dur),
-                          onset = as.numeric(onset),
-                          freq = round(hrep::midi_to_freq(note)))
 
     user_notes <- res$note
 
