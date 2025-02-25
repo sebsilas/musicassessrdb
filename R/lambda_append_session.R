@@ -128,7 +128,7 @@ db_append_session <- function(db_con,
 
     # Append to session_info table
     user_info_parsed <- user_info %>%
-      rjson::fromJSON() %>%
+      jsonlite::fromJSON() %>%
       purrr::pluck(1)
 
     user_info_tbl <- user_info_parsed %>%
@@ -167,7 +167,7 @@ db_append_session <- function(db_con,
 # user_info <- s$user_info[[3194]]
 
 # user_info_parsed <- user_info %>%
-#   rjson::fromJSON() %>%
+#   jsonlite::fromJSON() %>%
 #   purrr::pluck(1)
 #
 # user_info_tbl <- user_info_parsed %>%
