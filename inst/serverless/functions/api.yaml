@@ -252,3 +252,29 @@ set-user-preferences:
     - httpApi:
         method: POST
         path: /set-user-preferences
+
+
+append-singpause-survey-completion:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - append_singpause_survey_completion # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /append-singpause-survey-completion
+
+
+check-singpause-survey-completion:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - check_singpause_survey_completion # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /check-singpause-survey-completion

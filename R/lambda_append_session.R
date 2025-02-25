@@ -20,7 +20,117 @@ store_db_session_api <- function(experiment_id = NA,
 }
 
 
-#
+
+
+# t <- append_session(
+#   user_id = 1L,
+#   user_info = '{
+#     "locationInfo": {
+#         "ipVersion": 4,
+#         "ipAddress": "77.22.146.4",
+#         "latitude": 52.370834,
+#         "longitude": 9.733559,
+#         "countryName": "Germany",
+#         "countryCode": "DE",
+#         "timeZone": "+01:00",
+#         "zipCode": "30159",
+#         "cityName": "Hanover",
+#         "regionName": "Niedersachsen",
+#         "isProxy": false,
+#         "continent": "Europe",
+#         "continentCode": "EU",
+#         "currency": {
+#             "code": "EUR",
+#             "name": "Euro"
+#         },
+#         "language": "German",
+#         "timeZones": [
+#             "Europe/Berlin",
+#             "Europe/Busingen"
+#         ],
+#         "tlds": [
+#             ".de"
+#         ]
+#     },
+#     "hardwareInfo": {
+#         "vendorSub": "",
+#         "productSub": "20030107",
+#         "vendor": "Google Inc.",
+#         "maxTouchPoints": 0,
+#         "scheduling": {},
+#         "userActivation": {},
+#         "doNotTrack": null,
+#         "geolocation": {},
+#         "connection": {},
+#         "pdfViewerEnabled": true,
+#         "webkitTemporaryStorage": {},
+#         "webkitPersistentStorage": {},
+#         "windowControlsOverlay": {},
+#         "hardwareConcurrency": 8,
+#         "cookieEnabled": true,
+#         "appCodeName": "Mozilla",
+#         "appName": "Netscape",
+#         "appVersion": "5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+#         "platform": "MacIntel",
+#         "product": "Gecko",
+#         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
+#         "language": "en-GB",
+#         "languages": [
+#             "en-GB",
+#             "en-US",
+#             "en"
+#         ],
+#         "onLine": true,
+#         "webdriver": false,
+#         "deprecatedRunAdAuctionEnforcesKAnonymity": false,
+#         "protectedAudience": {},
+#         "bluetooth": {},
+#         "storageBuckets": {},
+#         "clipboard": {},
+#         "credentials": {},
+#         "keyboard": {},
+#         "managed": {},
+#         "mediaDevices": {},
+#         "storage": {},
+#         "serviceWorker": {},
+#         "virtualKeyboard": {},
+#         "wakeLock": {},
+#         "deviceMemory": 8,
+#         "userAgentData": {
+#             "brands": [
+#                 {
+#                     "brand": "Not(A:Brand",
+#                     "version": "99"
+#                 },
+#                 {
+#                     "brand": "Google Chrome",
+#                     "version": "133"
+#                 },
+#                 {
+#                     "brand": "Chromium",
+#                     "version": "133"
+#                 }
+#             ],
+#             "mobile": false,
+#             "platform": "macOS"
+#         },
+#         "login": {},
+#         "ink": {},
+#         "mediaCapabilities": {},
+#         "devicePosture": {},
+#         "hid": {},
+#         "locks": {},
+#         "gpu": {},
+#         "mediaSession": {},
+#         "permissions": {},
+#         "presentation": {},
+#         "usb": {},
+#         "xr": {},
+#         "serial": {}
+#     }
+# }'
+# )
+
 # This is the function that is called when the endpoint
 # is invoked
 append_session <- function(experiment_condition_id = NA,
@@ -103,7 +213,6 @@ db_append_session <- function(db_con,
 
   logging::loginfo("db_append_session")
 
-
   experiment_condition_id <- if(length(experiment_condition_id) == 0) NA_integer_ else experiment_condition_id
   experiment_id <- if(length(experiment_id) == 0) NA_integer_ else experiment_id
 
@@ -128,13 +237,26 @@ db_append_session <- function(db_con,
 
     # Append to session_info table
     user_info_parsed <- user_info %>%
-      jsonlite::fromJSON() %>%
-      purrr::pluck(1)
+      jsonlite::fromJSON(flatten = TRUE)
 
-    logging::loginfo("user_info_parsed: %s", user_info_parsed)
+    location_info <- user_info_parsed$locationInfo %>%
+      unlist() %>%
+      as.list() %>%
+      tibble::as_tibble()
 
-    user_info_tbl <- user_info_parsed %>%
-      tibble::as_tibble() %>%
+    hardware_info <- user_info_parsed$hardwareInfo %>%
+      unlist() %>%
+      as.list() %>%
+      tibble::as_tibble()
+
+    user_info_tbl <- cbind(location_info, hardware_info)
+
+    # First, to normalise all language names, collect and all name the same thing
+    lng_cols <- which(grepl("language", names(user_info_tbl)))
+    lng_names <- paste0("language", 1:length(lng_cols))
+    colnames(user_info_tbl)[lng_cols] <- lng_names
+
+    user_info_tbl <- user_info_tbl %>%
       dplyr::select(dplyr::any_of(session_info_names)) %>%
       dplyr::mutate(session_id = session_id) %>%
       dplyr::relocate(session_id)
