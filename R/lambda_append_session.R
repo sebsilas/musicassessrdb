@@ -113,6 +113,10 @@ db_append_session <- function(db_con,
 
   session_id <- db_append_to_table(db_con, table = "sessions", data = session_df, primary_key_col = "session_id")
 
+  logging::loginfo("is.scalar.character(user_info) %s", is.scalar.character(user_info))
+  logging::loginfo("class(user_info) %s", class(user_info))
+  logging::loginfo("length(user_info) %s", length(user_info))
+
   if(is.scalar.character(user_info)) {
 
     session_info_names <- dplyr::tbl(db_con, "session_info") %>%
