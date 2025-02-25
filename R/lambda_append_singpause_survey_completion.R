@@ -101,6 +101,10 @@ check_singpause_survey_completion <- function(user_id,
       logging::logerror("More than two completions!")
     }
 
+    if(length(complete) == 0) {
+      complete <- FALSE
+    }
+
     # Return response
 
     list(
