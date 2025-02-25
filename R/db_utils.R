@@ -234,7 +234,10 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
 
     # Get session info
     test_id <- psychTestR::get_global("test_id", state)
-    session_id <- psychTestR::get_global("session_id", state) # Created earlier
+    session_id <- musicassessr::get_promise_value(psychTestR::get_global("session_id", state))  # Created earlier
+    if(length(session_id) > 1L && "session_id" %in% names(session_id)) {
+      session_id <- session_id$session_id
+    }
     user_id <- psychTestR::get_global("user_id", state)
     session_info <- psychTestR::get_session_info(state, complete = FALSE)
     psychTestR_session_id <- session_info$p_id
