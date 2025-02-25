@@ -81,6 +81,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
     # Handle immediate feedback
     handle_quick_feedback(feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file)
 
+    logging::loginfo("handle_quick_feedback complete")
+    logging::loginfo("attempt: %s", attempt)
 
     # Append trial info
     trial_id <- db_append_trials(
