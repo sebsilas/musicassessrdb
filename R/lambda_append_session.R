@@ -131,11 +131,17 @@ db_append_session <- function(db_con,
       jsonlite::fromJSON() %>%
       purrr::pluck(1)
 
+    logging::loginfo("user_info_parsed: %s", user_info_parsed)
+
     user_info_tbl <- user_info_parsed %>%
       tibble::as_tibble() %>%
       dplyr::select(dplyr::any_of(session_info_names)) %>%
       dplyr::mutate(session_id = session_id) %>%
       dplyr::relocate(session_id)
+
+    logging::loginfo("user_info_tbl: %s", user_info_tbl)
+    logging::loginfo("nrow(user_info_tbl): %s", nrow(user_info_tbl))
+
 
     missing_names <- setdiff(session_info_names, names(user_info_tbl))
 
@@ -146,6 +152,8 @@ db_append_session <- function(db_con,
 
     # Join to table
     user_info_tbl <- cbind(user_info_tbl, na_tibble)
+
+    logging::loginfo("user_info_tbl updated: %s", user_info_tbl)
 
     # Reorder names
     user_info_tbl <- user_info_tbl %>%
