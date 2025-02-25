@@ -42,6 +42,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     melody_block_paradigm <- if(length(metadata$melody_block_paradigm) == 0) "" else metadata$melody_block_paradigm
     page_label <- if(length(metadata$page_label) == 0) "" else metadata$page_label
     module <- if(length(metadata$module) == 0) "" else metadata$module
+    stim_length <- length(stimuli)
 
     logging::loginfo("page_label: %s", page_label)
     logging::loginfo("module: %s", module)
@@ -49,6 +50,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("additional %s", additional)
     logging::loginfo("trial_paradigm: %s", trial_paradigm)
     logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
+    logging::loginfo("stim_length: %s", stim_length)
 
 
     # Get pYIN (or rhythm onset) results
@@ -583,7 +585,6 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
 
     if(feedback_type == "opti3") {
 
-      stim_length <- length(stimuli)
       opti3_res <- musicassessr::get_opti3(stimuli, stimuli_durations, stim_length, res)
       logging::loginfo("opti3_res %s", opti3_res)
       opti3 <- opti3_res$opti3
