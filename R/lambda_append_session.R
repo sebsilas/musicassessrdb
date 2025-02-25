@@ -101,6 +101,8 @@ db_append_session <- function(db_con,
                               experiment_id = NA,
                               user_info = NA) {
 
+  logging::loginfo("db_append_session")
+
 
   experiment_condition_id <- if(length(experiment_condition_id) == 0) NA_integer_ else experiment_condition_id
   experiment_id <- if(length(experiment_id) == 0) NA_integer_ else experiment_id
