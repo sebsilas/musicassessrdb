@@ -21,7 +21,7 @@ add_user_to_group_with_login_code_api <- function(user_id,
 add_user_to_group_with_login_code <- function(user_id,
                                               login_code) {
 
-  logging::loginfo("Inside append_session function")
+  logging::loginfo("Inside add_user_to_group_with_login_code function")
 
   logging::loginfo("user_id = %s", user_id)
 
