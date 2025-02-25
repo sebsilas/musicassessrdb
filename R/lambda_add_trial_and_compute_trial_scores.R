@@ -40,18 +40,14 @@ add_trial_and_compute_trial_scores <- function(Records) {
     additional <- metadata$additional
     session_id <- as.integer(metadata$session_id)
     melody_block_paradigm <- if(length(metadata$melody_block_paradigm) == 0) "" else metadata$melody_block_paradigm
-    page_label <- metadata$page_label
-    module <- metadata$module
+    page_label <- if(length(metadata$page_label) == 0) "" else metadata$page_label
+    module <- if(length(metadata$module) == 0) "" else metadata$module
 
     logging::loginfo("page_label: %s", page_label)
     logging::loginfo("module: %s", module)
-
     logging::loginfo("session_id %s", session_id)
-
     logging::loginfo("additional %s", additional)
-
     logging::loginfo("trial_paradigm: %s", trial_paradigm)
-
     logging::loginfo("melody_block_paradigm: %s", melody_block_paradigm)
 
 
