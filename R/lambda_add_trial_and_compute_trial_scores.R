@@ -66,10 +66,18 @@ add_trial_and_compute_trial_scores <- function(Records) {
     # Return quick feedback, if need be
     feedback <- metadata$feedback
     feedback_type <- metadata$feedback_type
+
     logging::loginfo("feedback: %s", feedback)
+    logging::loginfo("feedback_type: %s", feedback_type)
+    logging::loginfo("stimuli: %s", stimuli)
+    logging::loginfo("stimuli_durations: %s", stimuli_durations)
+    logging::loginfo("stim_length: %s", stim_length)
+    logging::loginfo("res: %s", res)
+    logging::loginfo("audio_file: %s", audio_file)
+
 
     # Handle immediate feedback
-    handle_quick_feedback(feedback, feedback_type, feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file)
+    handle_quick_feedback(feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file)
 
 
     # Append trial info
