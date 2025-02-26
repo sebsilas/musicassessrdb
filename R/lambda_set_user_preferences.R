@@ -47,7 +47,6 @@ set_user_preferences_lambda <- function(user_id,
 
     db_disconnect(db_con)
 
-    # ✅ Return a success response
     return(list(
       status = 200,
       message = "You have successfully changed user preferences!"
@@ -56,9 +55,8 @@ set_user_preferences_lambda <- function(user_id,
   }, error = function(err) {
 
     logging::logerror("Error: %s", err)
-
-    # ✅ Pass the error to handle_event_error
-    lambdr::handle_event_error(list())(err)  # Ensure Lambda registers the failure
+    event <- list()
+    lambdr::handle_event_error(event)(err)  # Ensure Lambda registers the failure
 
   })
 }
