@@ -43,6 +43,7 @@ set_user_preferences_lambda <- function(user_id, preferences) {
 
     db_disconnect(db_con)
 
+    # ✅ Return a success response
     list(
       statusCode = 200,
       body = jsonlite::toJSON(list(message = "You have successfully changed user preferences!"))
@@ -50,16 +51,20 @@ set_user_preferences_lambda <- function(user_id, preferences) {
 
   }, error = function(err) {
 
-    logging::logerror("Error: %s", err)
+    logging::logerror("Error: %s", err$message)
 
+    # ✅ AWS Lambda treats `stop()` as a failure if it's the final action
     stop(jsonlite::toJSON(list(
-      statusCode = 400,
-      body = list(message = "You did not manage to change user preferences.")
+      errorMessage = "You did not manage to change user preferences.",
+      errorType = "LambdaExecutionError",
+      requestId = Sys.getenv("_LAMBDA_REQUEST_ID"),
+      statusCode = 400
     )))
   })
 
   return(response)
 }
+
 
 
 
