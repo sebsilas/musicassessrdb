@@ -15,17 +15,18 @@ set_user_preferences_api <- function(user_id,
 
 
 
-
-
 set_user_preferences_lambda <- function(user_id,
                                         preferences) {
 
   logging::loginfo("Inside set_user_preferences lambda")
 
-  tryCatch({
+  logging::loginfo("user_id: %s", user_id)
+  logging::loginfo("preferences: %s", preferences)
 
-    logging::loginfo("user_id: %s", user_id)
-    logging::loginfo("preferences: %s", preferences)
+
+  # Return response
+
+  response <- tryCatch({
 
     preferences <- preferences %>%
       tibble::as_tibble()
@@ -34,40 +35,40 @@ set_user_preferences_lambda <- function(user_id,
 
     preferences <- preferences %>%
       dplyr::mutate(user_id = user_id,
-                    preference_change_date_time = Sys.time())
+                    preference_change_date_time = Sys.time() )
 
-    db_con <- musicassessr_con()
+      db_con <- musicassessr_con()
 
-    # Write to table
-    DBI::dbWriteTable(db_con,
-                      name = 'user_preferences',
-                      value = preferences,
-                      row.names = FALSE,
-                      append = TRUE)
+      # Write to table
+      DBI::dbWriteTable(db_con,
+                        name = 'user_preferences',
+                        value = preferences,
+                        row.names = FALSE,
+                        append = TRUE)
 
-    db_disconnect(db_con)
+      db_disconnect(db_con)
 
-    return(list(
+
+
+    list(
       status = 200,
       message = "You have successfully changed user preferences!"
-    ))
+    )
 
   }, error = function(err) {
 
-    logging::logerror("Error: %s", err)
-    event <- list()
-    lambdr::handle_event_error(event, config = lambdr::lambda_config())(err)  # Ensure Lambda registers the failure
+    logging::logerror(err)
+
+    list(
+      status = 400,
+      message = "You did not manage to change user preferences."
+    )
 
   })
+
+  return(response)
+
 }
 
 
-
-
-
-
-
 # t <- set_user_preferences_lambda(user_id = 1L, preferences = tibble::tibble(selected_instrument = "Trumpet"))
-
-
-# t <- set_user_preferences_api(0, "1") # Deliberate fail
