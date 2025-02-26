@@ -15,13 +15,17 @@ set_user_preferences_api <- function(user_id,
 
 
 
-set_user_preferences_lambda <- function(user_id, preferences) {
+
+
+set_user_preferences_lambda <- function(user_id,
+                                        preferences) {
 
   logging::loginfo("Inside set_user_preferences lambda")
-  logging::loginfo("user_id: %s", user_id)
-  logging::loginfo("preferences: %s", preferences)
 
-  response <- tryCatch({
+  tryCatch({
+
+    logging::loginfo("user_id: %s", user_id)
+    logging::loginfo("preferences: %s", preferences)
 
     preferences <- preferences %>%
       tibble::as_tibble()
@@ -45,21 +49,21 @@ set_user_preferences_lambda <- function(user_id, preferences) {
 
     # ✅ Return a success response
     return(list(
-      statusCode = 200,
-      body = jsonlite::toJSON(list(message = "You have successfully changed user preferences!"))
+      status = 200,
+      message = "You have successfully changed user preferences!"
     ))
 
   }, error = function(err) {
 
-    logging::logerror("Error: %s", err$message)
+    logging::logerror("Error: %s", err)
 
-    # ✅ Force AWS Lambda to register an execution failure
-    stop(paste("Lambda execution failed:", err$message))
+    # ✅ Pass the error to handle_event_error
+    lambdr::handle_event_error(list())(err)  # Ensure Lambda registers the failure
+
   })
-
-  # If the function gets here, it means the execution didn't stop as expected.
-  stop("Unexpected execution flow in Lambda function.")
 }
+
+
 
 
 
