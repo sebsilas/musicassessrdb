@@ -56,7 +56,7 @@ set_user_preferences_lambda <- function(user_id,
 
     logging::logerror("Error: %s", err)
     event <- list()
-    lambdr::handle_event_error(event)(err)  # Ensure Lambda registers the failure
+    lambdr::handle_event_error(event, config = lambdr::lambda_config())(err)  # Ensure Lambda registers the failure
 
   })
 }
@@ -68,3 +68,6 @@ set_user_preferences_lambda <- function(user_id,
 
 
 # t <- set_user_preferences_lambda(user_id = 1L, preferences = tibble::tibble(selected_instrument = "Trumpet"))
+
+
+# t <- set_user_preferences_api(0, "1") # Deliberate fail
