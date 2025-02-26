@@ -8,7 +8,7 @@ set_user_preferences_api <- function(user_id,
   request_body <- list(user_id = user_id,
                        preferences = preferences)
 
-  endpoint_wrapper(endpoint = "https://0xe6kj7po4.execute-api.eu-west-2.amazonaws.com/set-user-preferences",
+  endpoint_wrapper("set-user-preferences",
                    request_body = request_body)
 
 }
@@ -58,6 +58,7 @@ set_user_preferences_lambda <- function(user_id,
   }, error = function(err) {
 
     logging::logerror(err)
+    stop(err)
 
     list(
       status = 400,

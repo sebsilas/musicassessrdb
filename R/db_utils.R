@@ -52,6 +52,21 @@ musicassessr_con <- function(local = FALSE,
 }
 
 
+#' Compile item trials
+#'
+#' @param db_con
+#' @param current_test_id
+#' @param session_id
+#' @param user_id
+#' @param join_item_banks_on
+#' @param filter_item_banks
+#' @param add_trial_scores
+#' @param score_to_use
+#'
+#' @returns
+#' @export
+#'
+#' @examples
 compile_item_trials <- function(db_con = NULL,
                                 current_test_id = NULL,
                                 session_id = NULL,

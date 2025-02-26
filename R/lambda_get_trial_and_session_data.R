@@ -1,11 +1,14 @@
 
 
+
 # t <- get_trial_and_session_data_api(111)
 # db_con <- musicassessr_con()
 # t <- get_trial_and_session_data(111)
 
 # t <- get_trial_and_session_data(111)$scores_trial
 # t <- get_trial_and_session_data(111, app_name_filter = "songbird")$scores_trial
+# t <- get_trial_and_session_data(2)$scores_trial
+# t <- get_trial_and_session_data(2, app_name_filter = "songbird")$scores_trial
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
