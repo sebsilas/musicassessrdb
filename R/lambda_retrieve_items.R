@@ -79,8 +79,6 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
       study_history <- NA
     } else {
 
-      browser()
-
       study_history <- compile_item_trials(db_con,
                                            user_id = user_id,
                                            join_item_banks_on = FALSE,
