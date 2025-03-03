@@ -31,6 +31,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
     test_id <- as.integer(metadata$test_id)
     item_id <- metadata$item_id
     user_id <- metadata$user_id
+
+    logging::loginfo("user_id: %s", user_id)
+
     instrument <- metadata$instrument
     trial_paradigm <- metadata$trial_paradigm
     trial_time_completed <- lubridate::as_datetime(metadata$trial_time_completed)
