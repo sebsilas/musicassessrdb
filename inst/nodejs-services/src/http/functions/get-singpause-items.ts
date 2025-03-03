@@ -2,20 +2,29 @@ import { db } from '../../core/rds'
 
 export const handler = async (event) => {
   let result = {}
+
+  const phrase_bank_id = JSON.parse(event.body).phrase_bank_id ?? 9
+  const item_bank_id = JSON.parse(event.body).item_bank_id ?? 8
+
+  const phrase_table = await db`select item_bank_name  from item_banks where item_bank_id = ${phrase_bank_id} limit 1`
+  const item_table = await db`select item_bank_name  from item_banks where item_bank_id = ${item_bank_id} limit 1`
+
+  const phrase_table_name = `item_bank_${phrase_table[0].item_bank_name}`
+  const item_table_name = `item_bank_${item_table[0].item_bank_name}`
   const userId = JSON.parse(event.body).user_id
   try {
     result["songs"] = await db` SELECT DISTINCT
-    "item_bank_singpause_2024_phrase".song_name,
-    "item_bank_singpause_2024_phrase".item_type,
-    STRING_AGG("item_bank_singpause_2024_phrase".item_id, '#') AS phrases,
-    STRING_AGG(DISTINCT item_bank_singpause_2024_phrase.audio_file, '#') AS audio_file,
-    STRING_AGG(DISTINCT item_bank_singpause_2024_phrase.lyrics_file, '#') AS lyrics_file,
-    STRING_AGG(item_bank_singpause_2024_phrase.abs_melody, '#') AS abs_melody,
-    STRING_AGG(item_bank_singpause_2024_phrase.durations, '#') AS durations,
+    ${db(phrase_table_name)}.song_name,
+    ${db(phrase_table_name)}.item_type,
+    STRING_AGG(${db(phrase_table_name)}.item_id, '#') AS phrases,
+    STRING_AGG(DISTINCT ${db(phrase_table_name)}.audio_file, '#') AS audio_file,
+    STRING_AGG(DISTINCT ${db(phrase_table_name)}.lyrics_file, '#') AS lyrics_file,
+    STRING_AGG(${db(phrase_table_name)}.abs_melody, '#') AS abs_melody,
+    STRING_AGG(${db(phrase_table_name)}.durations, '#') AS durations,
     STRING_AGG(COALESCE(score::text, 'null'), '# ') AS scores,
-    "item_bank_singpause_2024_item".item_id,
+    ${db(item_table_name)}.item_id,
     NULL AS img
-  FROM "item_bank_singpause_2024_phrase"
+  FROM ${db(phrase_table_name)}
   LEFT JOIN (
     SELECT
       trials.*,
@@ -23,30 +32,30 @@ export const handler = async (event) => {
     FROM trials
     LEFT JOIN sessions ON trials.session_id = sessions.session_id
     WHERE user_id = ${userId} AND item_id IN (
-      SELECT item_id FROM item_bank_singpause_2024_phrase
+      SELECT item_id FROM ${db(phrase_table_name)}
     )
-  ) AS ranked_trials ON item_bank_singpause_2024_phrase.item_id = ranked_trials.item_id
-  LEFT JOIN item_bank_singpause_2024_item
-    ON item_bank_singpause_2024_phrase.song_name = item_bank_singpause_2024_item.song_name
+  ) AS ranked_trials ON ${db(phrase_table_name)}.item_id = ranked_trials.item_id
+  LEFT JOIN ${db(item_table_name)}
+    ON ${db(phrase_table_name)}.song_name = ${db(item_table_name)}.song_name
   LEFT JOIN (
     SELECT * FROM scores_trial WHERE measure = 'opti3'
   ) AS scores ON ranked_trials.trial_id = scores.trial_id
-  GROUP BY item_bank_singpause_2024_phrase.song_name, item_bank_singpause_2024_item.item_id, item_bank_singpause_2024_phrase.item_type
+  GROUP BY ${db(phrase_table_name)}.song_name, ${db(item_table_name)}.item_id, ${db(phrase_table_name)}.item_type
 
   UNION
 
   SELECT DISTINCT
-    item_bank_singpause_2024_item.song_name,
-    item_bank_singpause_2024_item.item_type,
+    ${db(item_table_name)}.song_name,
+    ${db(item_table_name)}.item_type,
     NULL AS phrases,
-    STRING_AGG(DISTINCT COALESCE(item_bank_singpause_2024_item.audio_file::text, 'null'), '#') AS audio_file,
-    STRING_AGG(DISTINCT COALESCE(item_bank_singpause_2024_item.lyrics_file::text, 'null'), '#') AS lyrics_file,
-    STRING_AGG(DISTINCT item_bank_singpause_2024_item.abs_melody, '#') AS abs_melody,
-    STRING_AGG(DISTINCT item_bank_singpause_2024_item.durations, '#') AS durations,
+    STRING_AGG(DISTINCT COALESCE(${db(item_table_name)}.audio_file::text, 'null'), '#') AS audio_file,
+    STRING_AGG(DISTINCT COALESCE(${db(item_table_name)}.lyrics_file::text, 'null'), '#') AS lyrics_file,
+    STRING_AGG(DISTINCT ${db(item_table_name)}.abs_melody, '#') AS abs_melody,
+    STRING_AGG(DISTINCT ${db(item_table_name)}.durations, '#') AS durations,
     STRING_AGG(COALESCE(score::text, 'null'), '#') AS scores,
-    item_bank_singpause_2024_item.item_id,
-    item_bank_singpause_2024_item.image
-  FROM item_bank_singpause_2024_item
+    ${db(item_table_name)}.item_id,
+    ${db(item_table_name)}.image
+  FROM ${db(item_table_name)}
   LEFT JOIN (
     SELECT
       trials.*,
@@ -54,15 +63,15 @@ export const handler = async (event) => {
     FROM trials
     LEFT JOIN sessions ON trials.session_id = sessions.session_id
     WHERE user_id = ${userId} AND item_id IN (
-      SELECT item_id FROM item_bank_singpause_2024_item
+      SELECT item_id FROM ${db(item_table_name)}
     )
-  ) AS ranked_trials ON item_bank_singpause_2024_item.item_id = ranked_trials.item_id
+  ) AS ranked_trials ON ${db(item_table_name)}.item_id = ranked_trials.item_id
   LEFT JOIN (
     SELECT * FROM scores_trial WHERE measure = 'opti3'
   ) AS scores ON ranked_trials.trial_id = scores.trial_id
-  LEFT JOIN item_bank_singpause_2024_phrase
-    ON item_bank_singpause_2024_item.song_name = item_bank_singpause_2024_phrase.song_name
-  GROUP BY item_bank_singpause_2024_item.item_type, item_bank_singpause_2024_item.item_id, item_bank_singpause_2024_item.song_name, item_bank_singpause_2024_item.image` ?? []
+  LEFT JOIN ${db(phrase_table_name)}
+    ON ${db(item_table_name)}.song_name = ${db(phrase_table_name)}.song_name
+  GROUP BY ${db(item_table_name)}.item_type, ${db(item_table_name)}.item_id, ${db(item_table_name)}.song_name, ${db(item_table_name)}.image` ?? []
 
 
     console.log(result["songs"])
