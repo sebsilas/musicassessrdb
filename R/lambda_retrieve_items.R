@@ -17,6 +17,7 @@ retrieve_items_api <- function(item_bank_name, num_items_per_page, page_number) 
 
 
 
+# t <- retrieve_items("DTL1000", num_items_per_page = 10, page_number = 1, user_id = 136)
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -77,6 +78,8 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
     if(is.null(user_id)) {
       study_history <- NA
     } else {
+
+      browser()
 
       study_history <- compile_item_trials(db_con,
                                            user_id = user_id,
