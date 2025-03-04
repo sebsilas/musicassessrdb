@@ -30,7 +30,7 @@ get_user_preferences_lambda <- function(user_id) {
       user_preferences <- dplyr::tbl(db_con, "user_preferences") %>%
         dplyr::filter(user_id == !! user_id) %>%
         dplyr::slice_max(user_preferences_id) %>%
-        dplyr::select(selected_instrument, allow_daily_email_reminders) %>% # At least for now, this is all we want.
+        dplyr::select(selected_instrument, allow_daily_email_reminders, music_input_device) %>% # At least for now, this is all we want.
         dplyr::collect()
 
       if(nrow(user_preferences) < 1L) {
