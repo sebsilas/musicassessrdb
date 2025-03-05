@@ -43,13 +43,13 @@ get_job_status_api <- function(job_id = NULL, filename = NULL) {
 }
 
 
+# t <- select_items(137)
+
 # This is the function that is called when the endpoint
 # is invoked
 select_items <- function(user_id) {
 
   logging::loginfo("Inside select_items function")
-
-  logging::loginfo("A lovely new log!")
 
   response <- tryCatch({
 
