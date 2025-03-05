@@ -17,7 +17,7 @@ retrieve_items_api <- function(item_bank_name, num_items_per_page, page_number) 
 
 
 
-# t <- retrieve_items("DTL1000", num_items_per_page = 10, page_number = 1, user_id = 136)
+# t <- retrieve_items("DTL1000", num_items_per_page = 10, page_number = 1, user_id = 136) # seb_slonim
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -90,7 +90,7 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
         study_history <- study_history %>%
           dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
           dplyr::group_by(Date, item_id) %>%
-          dplyr::summarise(score = mean(na.rm = TRUE)) %>%
+          dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
           dplyr::ungroup()
       } else {
         study_history <- NA

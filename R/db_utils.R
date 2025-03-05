@@ -91,6 +91,7 @@ compile_item_trials <- function(db_con = NULL,
   trials <- get_table(db_con, "trials", collect = TRUE)  %>%
     dplyr::left_join(sessions, by = "session_id")
 
+
   # Grab trials only for the given user on the given test
   user_trials <- trials %>%
     dplyr::filter(user_id %in% !! user_id)
