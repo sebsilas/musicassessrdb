@@ -12,9 +12,9 @@
 #'
 #' @examples
 append_singpause_survey_completion_api <- function(user_id,
-                                               singpause_id, # Same as username in users
-                                               psychTestR_id,
-                                               type = c("pretest", "posttest")) {
+                                                   singpause_id, # Same as username in users
+                                                   psychTestR_id,
+                                                   type = c("pretest", "posttest")) {
 
   type <- match.arg(type)
 
