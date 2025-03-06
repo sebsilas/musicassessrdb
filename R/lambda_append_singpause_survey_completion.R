@@ -1,5 +1,40 @@
 
 
+#' Append singpause survey completion API
+#'
+#' @param user_id
+#' @param singpause_id
+#' @param psychTestR_id
+#' @param type
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+append_singpause_survey_completion_api <- function(user_id,
+                                               singpause_id, # Same as username in users
+                                               psychTestR_id,
+                                               type = c("pretest", "posttest")) {
+
+  type <- match.arg(type)
+
+  # Define the request body as a list
+  request_body <- list(user_id = user_id,
+                       singpause_id = singpause_id,
+                       psychTestR_id = psychTestR_id,
+                       type = type)
+
+  res <- endpoint_wrapper(function_name = "append-singpause-survey-completion",
+                          request_body = request_body)
+
+  logging::loginfo(res$message)
+
+
+  return(res)
+
+}
+
+
 #' Append singpause survey completion
 #'
 #' @param user_id
@@ -15,6 +50,8 @@ append_singpause_survey_completion <- function(user_id,
                                                singpause_id, # Same as username in users
                                                psychTestR_id,
                                                type = c("pretest", "posttest")) {
+
+  type <- match.arg(type)
 
   stopifnot(
     type %in% c("pretest", "posttest")
