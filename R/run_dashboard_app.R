@@ -1,109 +1,109 @@
-
-# run_dashboard_app()
-
-#' Run dashboard app
-#'
-#' @returns
-#' @export
-#'
-#' @examples
 run_dashboard_app <- function() {
 
-  ui <- shiny::fluidPage(
-    shiny::titlePanel("musicassessr Dashboard"),
-    shiny::sidebarLayout(
-      shiny::sidebarPanel(
+  ui <- shinydashboard::dashboardPage(
+    shinydashboard::dashboardHeader(title = "musicassessr Dashboard"),
 
-        shiny::selectInput("app_name", "App:", choices = c("Songbird",
-                                                           "Slonimsky",
-                                                           "Both")),
+    shinydashboard::dashboardSidebar(
+      shinydashboard::sidebarMenu(
+        shinydashboard::menuItem("User Statistics", tabName = "user_stats", icon = shiny::icon("users")),
+        shinydashboard::menuItem("Scores", tabName = "scores", icon = shiny::icon("chart-line")),
+        shinydashboard::menuItem("Tables", tabName = "tables", icon = shiny::icon("table")),
 
+        shiny::selectInput("app_name", "App:", choices = c("Songbird", "Slonimsky", "Both")),
         shiny::selectInput("score_measure", "Score measure:", choices = NULL)
+      )
+    ),
 
-      ),
-      shiny::mainPanel(
-        shiny::plotOutput("scores_by_attempt") %>% shinycssloaders::withSpinner(),
-        shiny::plotOutput("scores_by_date") %>% shinycssloaders::withSpinner(),
-        shiny::plotOutput("scores_by_prediction_method") %>% shinycssloaders::withSpinner(),
-        shiny::plotOutput("no_practice_sessions_graph") %>% shinycssloaders::withSpinner(),
-        shiny::plotOutput("avg_minutes_graph") %>% shinycssloaders::withSpinner(),
-        DT::DTOutput("trials_table") %>% shinycssloaders::withSpinner(),
-        DT::DTOutput("sessions_table")  %>% shinycssloaders::withSpinner()
+    shinydashboard::dashboardBody(
+      shinydashboard::tabItems(
+        # User Statistics Tab
+        shinydashboard::tabItem(tabName = "user_stats",
+                                shiny::fluidRow(
+                                  shinydashboard::box(title = "Average Minutes Per Day", width = 6,
+                                                      shiny::plotOutput("avg_minutes_graph") %>% shinycssloaders::withSpinner()),
+                                  shinydashboard::box(title = "Number of Practice Sessions", width = 6,
+                                                      shiny::plotOutput("no_practice_sessions_graph") %>% shinycssloaders::withSpinner())
+                                )
+        ),
+
+        # Scores Tab
+        shinydashboard::tabItem(tabName = "scores",
+                                shiny::fluidRow(
+                                  shinydashboard::box(title = "Scores by Attempt", width = 6,
+                                                      shiny::plotOutput("scores_by_attempt") %>% shinycssloaders::withSpinner()),
+                                  shinydashboard::box(title = "Scores by Date", width = 6,
+                                                      shiny::plotOutput("scores_by_date") %>% shinycssloaders::withSpinner())
+                                ),
+                                shiny::fluidRow(
+                                  shinydashboard::box(title = "Scores by Prediction Method", width = 12,
+                                                      shiny::plotOutput("scores_by_prediction_method") %>% shinycssloaders::withSpinner())
+                                )
+        ),
+
+        # Tables Tab
+        shinydashboard::tabItem(tabName = "tables",
+                                shiny::fluidRow(
+                                  shinydashboard::box(title = "Select Table", width = 12,
+                                                      shiny::radioButtons("table_select", "Choose Table:",
+                                                                          choices = c("Sessions" = "sessions", "Trials" = "trials"),
+                                                                          inline = TRUE)
+                                  )
+                                ),
+                                shiny::fluidRow(
+                                  shinydashboard::box(title = "Data Table", width = 12,
+                                                      shiny::uiOutput("dynamic_table") %>% shinycssloaders::withSpinner())
+                                )
+        )
       )
     )
   )
 
   server <- function(input, output, session) {
-
-    # Connect to the database
     db_con <- musicassessr_con()
 
     session$onSessionEnded(function() {
       db_disconnect(db_con)
     })
 
-    # Fetch data from database
     session_data <- shiny::reactive({
-
       shiny::req(input$app_name)
-
       app_name <- tolower(input$app_name)
 
       sessions <- dplyr::tbl(db_con, "sessions") %>%
         dplyr::left_join(dplyr::tbl(db_con, "users"), by = "user_id") %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
-      if(app_name != "both") {
-        sessions <- sessions %>%
-          dplyr::filter(app_name == !! app_name)
+      if (app_name != "both") {
+        sessions <- sessions %>% dplyr::filter(app_name == !!app_name)
       }
 
-      sessions <- sessions %>%
-        dplyr::collect()
-
-      return(sessions)
-
+      sessions %>% dplyr::collect()
     })
 
     trial_scores <- shiny::reactive({
-
       dplyr::tbl(db_con, "scores_trial")
-
     })
 
-    score_measures <-  shiny::reactive({
-      trial_scores() %>%
-        dplyr::pull(measure) %>%
-        unique()
+    score_measures <- shiny::reactive({
+      trial_scores() %>% dplyr::pull(measure) %>% unique()
     })
 
     shiny::observe({
-
-      shiny::req( score_measures() )
-
-      shiny::updateSelectInput("score_measure",
-                               session = session,
-                               choices = score_measures(),
-                               selected = "opti3")
-
+      shiny::req(score_measures())
+      shiny::updateSelectInput(session, "score_measure", choices = score_measures(), selected = "opti3")
     })
 
-
-
     trials_data <- shiny::reactive({
-
-      session_ids <- session_data() %>%
-        dplyr::pull(session_id)
+      session_ids <- session_data() %>% dplyr::pull(session_id)
 
       trials <- dplyr::tbl(db_con, "trials") %>%
-        dplyr::filter(session_id %in% !! session_ids)
+        dplyr::filter(session_id %in% !!session_ids)
 
-      trial_ids <- trials %>%
-        dplyr::pull(trial_id)
+      trial_ids <- trials %>% dplyr::pull(trial_id)
 
       trial_scores <- trial_scores() %>%
         dplyr::filter(trial_id %in% trial_ids,
-                      measure == !! input$score_measure)
+                      measure == !!input$score_measure)
 
       new_items <- dplyr::tbl(db_con, "new_items")
       review_items <- dplyr::tbl(db_con, "review_items")
@@ -118,124 +118,74 @@ run_dashboard_app <- function() {
                            dplyr::rename(prediction_method_review_items = prediction_method), by = "review_items_id") %>%
         tidyr::pivot_longer(contains("prediction_method"), names_to = "item_selection_type", values_to = "prediction_method") %>%
         dplyr::mutate(item_selection_type = stringr::str_remove_all(item_selection_type, "prediction_method_")) %>%
-        dplyr::mutate(Date = lubridate::as_date(trial_time_started))
-
+        dplyr::mutate(Date = lubridate::as_date(trial_time_started)) %>%
+        dplyr::collect()
     })
 
-    output$sessions_table <- DT::renderDT({
-
-      session_data() %>%
-        DT::datatable()
-
+    user_stats <- shiny::reactive({
+      compute_user_stats(session_data())
     })
 
-    # Render table
-    output$trials_table <- DT::renderDT({
-
-      trials_data() %>%
-        dplyr::collect() %>%
-        DT::datatable()
-
+    output$avg_minutes_graph <- shiny::renderPlot({
+      user_stats() %>%
+        dplyr::group_by(Date) %>%
+        dplyr::summarise(avg_minutes_spent = mean(minutes_spent, na.rm = TRUE)) %>%
+        dplyr::ungroup() %>%
+        ggplot2::ggplot(ggplot2::aes(x = Date, y = avg_minutes_spent)) +
+        ggplot2::geom_point() + ggplot2::geom_line(group = 1)
     })
 
-    # Score by attempt
+    output$no_practice_sessions_graph <- shiny::renderPlot({
+      user_stats() %>%
+        dplyr::group_by(Date) %>%
+        dplyr::summarise(no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
+        dplyr::ungroup() %>%
+        ggplot2::ggplot(ggplot2::aes(x = Date, y = no_practice_sessions)) +
+        ggplot2::geom_point() + ggplot2::geom_line(group = 1)
+    })
+
+    output$dynamic_table <- shiny::renderUI({
+      if (input$table_select == "sessions") {
+        DT::DTOutput("sessions_table")
+      } else {
+        DT::DTOutput("trials_table")
+      }
+    })
+
 
     output$scores_by_attempt <- shiny::renderPlot({
-
       trials_data() %>%
         dplyr::group_by(attempt) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
         dplyr::ungroup() %>%
-          ggplot2::ggplot(ggplot2::aes(x = attempt, y = score)) +
-            ggplot2::geom_point() +
-            ggplot2::geom_line(group = 1)
+        ggplot2::ggplot(ggplot2::aes(x = attempt, y = score)) +
+        ggplot2::geom_point() + ggplot2::geom_line(group = 1)
     })
 
     output$scores_by_date <- shiny::renderPlot({
-
       trials_data() %>%
         dplyr::group_by(Date) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
         dplyr::ungroup() %>%
         ggplot2::ggplot(ggplot2::aes(x = Date, y = score)) +
-        ggplot2::geom_point() +
-        ggplot2::geom_line(group = 1)
+        ggplot2::geom_point() + ggplot2::geom_line(group = 1)
     })
 
     output$scores_by_prediction_method <- shiny::renderPlot({
-
       trials_data() %>%
-        dplyr::collect() %>%
-        ggplot2::ggplot(ggplot2::aes(x = prediction_method, y = score, group = item_selection_type, color = prediction_method)) +
-          ggplot2::geom_bar(stat = "summary", fun = "mean")
-
+        ggplot2::ggplot(ggplot2::aes(x = prediction_method, y = score, fill = prediction_method)) +
+        ggplot2::geom_bar(stat = "summary", fun = "mean")
     })
 
 
-    # User stats
-
-    user_stats <- shiny::reactive({
-      compute_user_stats( session_data() )
+    output$sessions_table <- DT::renderDT({
+      session_data() %>% DT::datatable()
     })
 
-    # Average minutes per day
-
-    avg_minutes_data <- shiny::reactive({
-      print('avg')
-      print(user_stats())
-      user_stats() %>%
-        dplyr::group_by(Date) %>%
-        dplyr::summarise(avg_minutes_spent = mean(minutes_spent, na.rm = TRUE) ) %>%
-        dplyr::ungroup()
-
+    output$trials_table <- DT::renderDT({
+      trials_data() %>% DT::datatable()
     })
-
-    # No. practice sessions
-
-    no_practice_sessions_data <- shiny::reactive({
-      print('no_practice_sessions_data')
-      print(user_stats())
-      user_stats() %>%
-        dplyr::group_by(Date) %>%
-        dplyr::summarise(no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE) ) %>%
-        dplyr::ungroup()
-    })
-
-    # Avg minutes graph
-    output$avg_minutes_graph <- shiny::renderPlot({
-
-      print('avg_graph')
-      print(avg_minutes_data())
-
-      avg_minutes_data() %>%
-        ggplot2::ggplot(ggplot2::aes(x = Date, y = avg_minutes_spent)) +
-            ggplot2::geom_point() +
-            ggplot2::geom_line(group = 1)
-    })
-
-    # No. practice sessions graph
-    output$no_practice_sessions_graph <- shiny::renderPlot({
-
-      print('no_practice_sessions_data_graph')
-      print(no_practice_sessions_data())
-
-      no_practice_sessions_data() %>%
-        ggplot2::ggplot(ggplot2::aes(x = Date, y = no_practice_sessions)) +
-          ggplot2::geom_point() +
-          ggplot2::geom_line(group = 1)
-    })
-
-
-
-
-
-
   }
 
-  # Run the app
   shiny::shinyApp(ui, server)
 }
-
-
-
-
