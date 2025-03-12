@@ -10,6 +10,8 @@
 # t <- get_trial_and_session_data(2)$scores_trial
 # t <- get_trial_and_session_data(2, app_name_filter = "songbird")$scores_trial
 
+# t <- get_trial_and_session_data(group_id = 5, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
                                            trial_score_measure = "opti3",
@@ -104,6 +106,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
 
+
     if("phrase_name" %in% names(trials)) {
 
       # We assume this is a SongBird app
@@ -134,7 +137,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       scores_trial <- trials %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
         dplyr::select(Date, user_id, username, trial_id, trial_time_started, trial_time_completed, instrument,
-                      attempt, item_id, display_modality, phase,
+                      attempt, item_id, display_modality, phase, trial_paradigm,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, new_items_id, review_items_id)
 
 
@@ -181,16 +184,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     # - Time using app: i) overall, ii) in last month; iii) in last week
     # - Average scores of song; number of times students practised each song;
 
-
-    user_stats <- sessions %>%
-      dplyr::mutate(seconds_spent = as.numeric(session_time_completed - session_time_started),
-                    seconds_spent = dplyr::case_when(seconds_spent < 0 ~ 0, TRUE ~ seconds_spent),
-                    minutes_spent = seconds_spent / 60) %>%
-      dplyr::group_by(user_id, username, Date) %>%
-      dplyr::summarise(minutes_spent = sum(minutes_spent, na.rm = TRUE),
-                       no_practice_sessions = dplyr::n() ) %>%
-      dplyr::ungroup()
-
+    user_stats <- compute_user_stats(sessions)
 
     # If group, then do some extra aggregation
     if(is.null(group_id)) {
@@ -199,132 +193,27 @@ get_trial_and_session_data <- function(user_id = NULL,
 
     } else {
 
-      # Average minutes practice per day
+      # Average minutes per day
+      overall_avg_minutes_per_day <- compute_overall_avg_minutes_per_day(user_stats)
+      last_month_avg_minutes_per_day <- compute_avg_minutes_per_day(user_stats, last_month)
+      last_week_avg_minutes_per_day <- compute_avg_minutes_per_day(user_stats, last_week)
 
-      overall_avg_minutes_per_day <- user_stats %>%
-        dplyr::group_by(Date) %>%
-        dplyr::summarise(AvgMinutesSpent = mean(minutes_spent, na.rm = TRUE) ) %>%
-        dplyr::ungroup() %>%
-        dplyr::summarise(AvgMinutesSpentPerDay = mean(AvgMinutesSpent, na.rm = TRUE)) %>%
-        dplyr::pull()
-
-      last_month_avg_minutes_per_day <- user_stats %>%
-        last_month() %>%
-        dplyr::group_by(Date) %>%
-        dplyr::summarise(AvgMinutesSpent = mean(minutes_spent, na.rm = TRUE) ) %>%
-        dplyr::ungroup() %>%
-        dplyr::summarise(AvgMinutesSpentPerDay = mean(AvgMinutesSpent, na.rm = TRUE)) %>%
-        dplyr::pull()
-
-      last_week_avg_minutes_per_day <- user_stats %>%
-        last_week() %>%
-        dplyr::group_by(Date) %>%
-        dplyr::summarise(AvgMinutesSpent = mean(minutes_spent, na.rm = TRUE) ) %>%
-        dplyr::ungroup() %>%
-        dplyr::summarise(AvgMinutesSpentPerDay = mean(AvgMinutesSpent, na.rm = TRUE)) %>%
-        dplyr::pull()
-
-      # Average number practice sessions per user
-
-      overall_avg_no_practice_session_per_user <- user_stats %>%
-        dplyr::group_by(user_id, username) %>%
-        dplyr::summarise(overall_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
-        dplyr::ungroup()
-
-      last_month_avg_no_practice_session_per_user <- user_stats %>%
-        last_month() %>%
-        dplyr::group_by(user_id, username, month) %>%
-        dplyr::summarise(last_month_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
-        dplyr::ungroup()
-
-
-      last_week_avg_no_practice_session_per_user <- user_stats %>%
-        last_week() %>%
-        dplyr::group_by(user_id, username, week) %>%
-        dplyr::summarise(last_week_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
-        dplyr::ungroup()
-
+      # Average number of practice sessions per user
+      overall_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats)
+      last_month_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, last_month)
+      last_week_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, last_week)
 
       # Average number of practice sessions
-
-      overall_avg_no_practice_sessions <- overall_avg_no_practice_session_per_user %>%
-        dplyr::summarise(avg_no_practice_session = mean(overall_no_practice_sessions, na.rm = TRUE) ) %>%
-        dplyr::pull() %>%
-        round()
-
-      last_month_avg_no_practice_sessions <- last_month_avg_no_practice_session_per_user %>%
-        dplyr::summarise(avg_no_practice_session_in_last_month = mean(last_month_no_practice_sessions, na.rm = TRUE) ) %>%
-        dplyr::pull() %>%
-        round()
-
-      last_week_avg_no_practice_sessions <- last_week_avg_no_practice_session_per_user %>%
-        dplyr::summarise(avg_no_practice_session_in_last_week = mean(last_week_no_practice_sessions, na.rm = TRUE) ) %>%
-        dplyr::pull() %>%
-        round()
-
-      # Song scores
-
-      overall_song_scores <- scores_trial %>%
-        dplyr::group_by(user_id, username, phrase_name, songbird_type) %>%
-        dplyr::slice_max(Date) %>%  # Get latest score
-        dplyr::group_by(phrase_name, songbird_type) %>%
-        dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(Score = dplyr::case_when(is.nan(Score) ~ NA, TRUE ~ Score))
-
-      overall_song_stats <- scores_trial %>%
-        dplyr::count(user_id, phrase_name, songbird_type, name = "NoTimesPractised") %>%
-        dplyr::group_by(phrase_name, songbird_type) %>%
-        dplyr::summarise(NoTimesPractised = sum(NoTimesPractised, na.rm = TRUE)) %>%
-        dplyr::ungroup()
-
-      overall_song_stats <- overall_song_stats %>%
-        dplyr::select(-songbird_type) %>%
-        dplyr::left_join(overall_song_scores, by = "phrase_name") %>%
-        dplyr::filter(!is.na(phrase_name))
-
-      ## Last month
-
-      last_month_song_scores <- scores_trial %>%
-        last_month() %>%
-        dplyr::group_by(user_id, username, phrase_name) %>%
-        dplyr::slice_max(Date) %>%  # Get latest score
-        dplyr::group_by(phrase_name) %>%
-        dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(Score = dplyr::case_when(is.nan(Score) ~ NA, TRUE ~ Score))
-
-      last_month_song_stats <- scores_trial %>%
-        last_month() %>%
-        dplyr::count(user_id, phrase_name, name = "NoTimesPractised") %>%
-        dplyr::group_by(phrase_name) %>%
-        dplyr::summarise(NoTimesPractised = sum(NoTimesPractised, na.rm = TRUE)) %>%
-        dplyr::ungroup()
-
-      last_month_song_stats <- last_month_song_stats %>%
-        dplyr::left_join(last_month_song_scores, by = "phrase_name")
+      overall_avg_no_practice_sessions <- compute_avg_no_practice_sessions(overall_avg_no_practice_session_per_user)
+      last_month_avg_no_practice_sessions <- compute_avg_no_practice_sessions(last_month_avg_no_practice_session_per_user)
+      last_week_avg_no_practice_sessions <- compute_avg_no_practice_sessions(last_week_avg_no_practice_session_per_user)
 
 
-      ## Last week
+      # Song statistics (scores and practice counts combined)
+      overall_song_stats <- compute_song_stats(scores_trial)
+      last_month_song_stats <- compute_song_stats(scores_trial, last_month)
+      last_week_song_stats <- compute_song_stats(scores_trial, last_week)
 
-      last_week_song_scores <- scores_trial %>%
-        last_week() %>%
-        dplyr::group_by(user_id, username, phrase_name) %>%
-        dplyr::slice_max(Date) %>%  # Get latest score
-        dplyr::group_by(phrase_name) %>%
-        dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100) ) %>%
-        dplyr::ungroup() %>%
-        dplyr::mutate(Score = dplyr::case_when(is.nan(Score) ~ NA, TRUE ~ Score))
-
-      last_week_song_stats <- scores_trial %>%
-        last_week() %>%
-        dplyr::count(user_id, phrase_name, name = "NoTimesPractised") %>%
-        dplyr::group_by(phrase_name) %>%
-        dplyr::summarise(NoTimesPractised = sum(NoTimesPractised, na.rm = TRUE)) %>%
-        dplyr::ungroup()
-
-      last_week_song_stats <- last_week_song_stats %>%
-        dplyr::left_join(last_week_song_scores, by = "phrase_name")
 
       group_stats <- list(
         overall_avg_minutes_per_day = overall_avg_minutes_per_day,
@@ -389,6 +278,112 @@ get_trial_and_session_data <- function(user_id = NULL,
 
 }
 
+
+
+compute_user_stats <- function(sessions) {
+
+  res <- sessions %>%
+    dplyr::mutate(seconds_spent = as.numeric(session_time_completed - session_time_started),
+                  seconds_spent = dplyr::case_when(seconds_spent < 0 ~ 0, TRUE ~ seconds_spent),
+                  minutes_spent = seconds_spent / 60) %>%
+    dplyr::group_by(user_id, username, Date) %>%
+    dplyr::summarise(minutes_spent = sum(minutes_spent, na.rm = TRUE),
+                     no_practice_sessions = dplyr::n() ) %>%
+    dplyr::ungroup()
+
+  return(res)
+}
+
+compute_overall_avg_minutes_per_day <- function(user_stats) {
+  res <- user_stats %>%
+    dplyr::group_by(Date) %>%
+    dplyr::summarise(AvgMinutesSpent = mean(minutes_spent, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(AvgMinutesSpentPerDay = mean(AvgMinutesSpent, na.rm = TRUE)) %>%
+    dplyr::pull()
+  return(res)
+}
+
+compute_avg_minutes_per_day <- function(user_stats, filter_function) {
+  res <- user_stats %>%
+    filter_function() %>%
+    dplyr::group_by(Date) %>%
+    dplyr::summarise(AvgMinutesSpent = mean(minutes_spent, na.rm = TRUE)) %>%
+    dplyr::ungroup() %>%
+    dplyr::summarise(AvgMinutesSpentPerDay = mean(AvgMinutesSpent, na.rm = TRUE)) %>%
+    dplyr::pull()
+  return(res)
+}
+
+compute_avg_no_practice_session_per_user <- function(user_stats, filter_function = NULL) {
+  data <- if (!is.null(filter_function)) user_stats %>% filter_function() else user_stats
+  res <- data %>%
+    dplyr::group_by(user_id, username) %>%
+    dplyr::summarise(overall_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
+    dplyr::ungroup()
+  return(res)
+}
+
+# t <- get_trial_and_session_data(group_id = 5, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+
+compute_avg_no_practice_sessions <- function(practice_sessions_data) {
+
+  res <- practice_sessions_data %>%
+    dplyr::summarise(avg_no_practice_session = mean(overall_no_practice_sessions, na.rm = TRUE)) %>%
+    dplyr::pull() %>%
+    round()
+
+  return(res)
+}
+
+compute_song_scores <- function(scores_data, filter_function = NULL) {
+
+  scores_data <- if (!is.null(filter_function)) scores_data %>% filter_function() else scores_data
+
+  item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
+  item_identifier <- rlang::sym(item_identifier)
+
+  trial_type_identifier <- if("songbird_type" %in% names(scores_data)) "songbird_type" else "trial_paradigm"
+  trial_type_identifier <- rlang::sym(trial_type_identifier)
+
+  res <- scores_data %>%
+    dplyr::group_by(user_id, username, !! item_identifier, !!trial_type_identifier) %>%
+    dplyr::slice_max(Date)
+
+  res <- res %>%
+    dplyr::group_by(!!item_identifier, !!trial_type_identifier) %>%
+    dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100)) %>%
+    dplyr::ungroup() %>%
+    dplyr::mutate(Score = dplyr::case_when(is.nan(Score) ~ NA, TRUE ~ Score))
+
+  return(res)
+}
+
+compute_song_stats <- function(scores_data, filter_function = NULL) {
+
+  data <- if (!is.null(filter_function)) scores_data %>% filter_function() else scores_data
+
+  item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
+  item_identifier <- rlang::sym(item_identifier)
+
+  stats <- data %>%
+    dplyr::count(user_id, !! item_identifier, name = "NoTimesPractised") %>%
+    dplyr::group_by(!! item_identifier) %>%
+    dplyr::summarise(NoTimesPractised = sum(NoTimesPractised, na.rm = TRUE)) %>%
+    dplyr::ungroup()
+
+  scores <- compute_song_scores(scores_data, filter_function)
+
+  res <- stats %>%
+    dplyr::left_join(scores, by = as.character(item_identifier)) %>%
+    dplyr::filter(!is.na(!!item_identifier))
+
+  return(res)
+
+}
+
+# t <- get_trial_and_session_data(group_id = 5, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+
 get_users_in_group <- function(group_id) {
   dplyr::tbl(db_con, "users_groups") %>%
     dplyr::filter(group_id == !! group_id) %>%
@@ -409,6 +404,4 @@ last_month <- function(df) {
 }
 
 
-# db_con <- musicassessr_con()
-# dat_filt <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE)
-# tt2 <- dat_filt$group_stats$overall_song_stats
+

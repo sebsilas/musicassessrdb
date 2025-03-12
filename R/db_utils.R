@@ -576,8 +576,6 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
 
   })
 
-  #browser()
-
 
   df_with_item_ids %>%
     dplyr::collect() %>%
