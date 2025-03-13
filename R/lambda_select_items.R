@@ -47,20 +47,18 @@ get_job_status_api <- function(job_id = NULL, filename = NULL) {
 
 # This is the function that is called when the endpoint
 # is invoked
-select_items <- function(user_id) {
+select_items <- function(user_id,
+                         fallback_item_bank = "Berkowitz_songbird",
+                         num_items_review = 3L,
+                         num_items_new = 3L,
+                         approach_name = "new_and_review_randomly_chosen_approaches",
+                         only_use_items_from_fallback_item_banks = TRUE) {
 
   logging::loginfo("Inside select_items function")
 
   response <- tryCatch({
 
     # Instantiate vars
-    num_items_review <- 3L
-    num_items_new <- 3L
-    approach_name <- "new_and_review_randomly_chosen_approaches"
-    fallback_item_bank <- "Berkowitz_songbird"
-    only_use_items_from_fallback_item_banks <- TRUE
-
-
     logging::loginfo("user_id %s", user_id)
     logging::loginfo("num_items_review = %s", num_items_review)
     logging::loginfo("num_items_new = %s", num_items_new)
