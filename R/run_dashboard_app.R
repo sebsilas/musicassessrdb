@@ -1,3 +1,4 @@
+
 run_dashboard_app <- function() {
 
   ui <- shinydashboard::dashboardPage(
@@ -23,6 +24,11 @@ run_dashboard_app <- function() {
                                                       shiny::plotOutput("avg_minutes_graph") %>% shinycssloaders::withSpinner()),
                                   shinydashboard::box(title = "Number of Practice Sessions", width = 6,
                                                       shiny::plotOutput("no_practice_sessions_graph") %>% shinycssloaders::withSpinner())
+                                ),
+                                shiny::fluidRow(
+                                  shinydashboard::box(title = "Trial Type Counts", width = 6,
+                                                      shiny::plotOutput("trial_type_counts") %>% shinycssloaders::withSpinner()
+                                )
                                 )
         ),
 
@@ -35,8 +41,10 @@ run_dashboard_app <- function() {
                                                       shiny::plotOutput("scores_by_date") %>% shinycssloaders::withSpinner())
                                 ),
                                 shiny::fluidRow(
-                                  shinydashboard::box(title = "Scores by Prediction Method", width = 12,
-                                                      shiny::plotOutput("scores_by_prediction_method") %>% shinycssloaders::withSpinner())
+                                  shinydashboard::box(title = "Scores by Prediction Method", width = 6,
+                                                      shiny::plotOutput("scores_by_prediction_method") %>% shinycssloaders::withSpinner()),
+                                  shinydashboard::box(title = "Scores by Trial Type", width = 6,
+                                                      shiny::plotOutput("scores_by_trial_type") %>% shinycssloaders::withSpinner())
                                 )
         ),
 
@@ -94,6 +102,7 @@ run_dashboard_app <- function() {
     })
 
     trials_data <- shiny::reactive({
+
       session_ids <- session_data() %>% dplyr::pull(session_id)
 
       trials <- dplyr::tbl(db_con, "trials") %>%
@@ -124,6 +133,12 @@ run_dashboard_app <- function() {
 
     user_stats <- shiny::reactive({
       compute_user_stats(session_data())
+    })
+
+    output$trial_type_counts <- shiny::renderPlot({
+      trials_data() %>%
+        ggplot2::ggplot(ggplot2::aes(x = trial_paradigm, fill = trial_paradigm)) +
+        ggplot2::geom_bar(stat = "count")
     })
 
     output$avg_minutes_graph <- shiny::renderPlot({
@@ -174,6 +189,12 @@ run_dashboard_app <- function() {
     output$scores_by_prediction_method <- shiny::renderPlot({
       trials_data() %>%
         ggplot2::ggplot(ggplot2::aes(x = prediction_method, y = score, fill = prediction_method)) +
+        ggplot2::geom_bar(stat = "summary", fun = "mean")
+    })
+
+    output$scores_by_trial_type <- shiny::renderPlot({
+      trials_data() %>%
+        ggplot2::ggplot(ggplot2::aes(x = trial_paradigm, y = score, fill = trial_paradigm)) +
         ggplot2::geom_bar(stat = "summary", fun = "mean")
     })
 

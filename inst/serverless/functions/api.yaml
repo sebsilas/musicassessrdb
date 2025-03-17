@@ -278,3 +278,16 @@ check-singpause-survey-completion:
     - httpApi:
         method: POST
         path: /check-singpause-survey-completion
+
+
+append-slonimsky-questionnaire-data:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - append_slonimsky_questionnaire_data # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /append-slonimsky-questionnaire-data
