@@ -12,7 +12,8 @@ append_slonimsky_questionnaire_data <- function(user_id,
     logging::loginfo('questionnaire_data: %s', questionnaire_data)
 
     # Append session
-    questionnaire_data <- jsonlite::fromJSON() %>%
+    questionnaire_data <- questionnaire_data %>%
+      jsonlite::fromJSON() %>%
       tibble::as_tibble() %>%
       dplyr::mutate(user_id = user_id,
                     session_id = session_id,
