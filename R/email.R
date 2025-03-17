@@ -1,4 +1,55 @@
 
+
+# email_slonimsky_lambda("Bug Report", "sebsilas@gmail.com", "test")
+
+email_slonimsky_lambda <- function(type, email, message) {
+
+  response <- tryCatch({
+
+    logging::loginfo('type: %s', type)
+    logging::loginfo('email: %s', email)
+    logging::loginfo('message: %s', message)
+
+    # Authenticate Gmail API using OAuth 2.0
+    options(gargle_oauth_email = "slonimskyapp@gmail.com")
+    gmailr::gm_auth_configure(path = system.file("client_secret_438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com.json", package = "musicassessrdb") )
+    gmailr::gm_auth()
+
+    # Create Email Content
+    email_content <- gmailr::gm_mime() %>%
+      gmailr::gm_to("slonimskyapp@gmail.com") %>%
+      gmailr::gm_from("Slonimsky App <slonimskyapp@gmail.com>") %>%
+      gmailr::gm_subject("New Slonimsky Email!") %>%
+      gmailr::gm_html_body(
+        paste0(
+          "<p>You have received a new email via Slonimsky</p>",
+          "<p><strong>Type:</strong> ", type, "</p>",
+          "<p><strong>Email:</strong> ", email, "</p>",
+          "<p><strong>Message:</strong> ", message, "</p>"
+        )
+      )
+
+    # Send email
+    gmailr::gm_send_message(email_content)
+
+    # Return response
+    list(
+      status = 200,
+      message = "You have successfully sent an email via Slonimsky!"
+    )
+
+  }, error = function(err) {
+    logging::logerror(err)
+    list(
+      status = 400,
+      message = "Something went wrong"
+    )
+  })
+
+  return(response)
+}
+
+
 youve_got_melodies_email_cron_script <- function() {
 
   db_con <- musicassessr_con()
