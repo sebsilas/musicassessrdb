@@ -7,4 +7,4 @@ STAGE: ${sls:stage}
 SOURCE_BUCKET: ${ssm:/${sls:stage}/musicassessr/SOURCE_BUCKET}
 DESTINATION_BUCKET: ${ssm:/${sls:stage}/musicassessr/DESTINATION_BUCKET}
 TZ: "UTC"
-OAUTH_SLONIMSKY: ${ssm:/SLONIMSKY/EMAIL_API_KEY~true}
+OAUTH_SLONIMSKY: "\"${ssm:/SLONIMSKY/EMAIL_API_KEY}\""

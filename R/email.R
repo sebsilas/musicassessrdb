@@ -10,6 +10,7 @@ email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
     logging::loginfo('email: %s', email)
     logging::loginfo('message: %s', message)
     logging::loginfo('user_id: %s', user_id)
+    logging::loginfo('Sys.getenv("OAUTH_SLONIMSKY") %s', Sys.getenv("OAUTH_SLONIMSKY"))
 
     # Authenticate Gmail API using OAuth 2.0
     options(gargle_oauth_email = "slonimskyapp@gmail.com")
