@@ -157,7 +157,7 @@ send_youve_got_melodies_email <- function(email_address, username, env = c("dev"
 
     # Create email message using emayili::envelope
     email <- emayili::envelope() %>%
-      emayili::from("slonimskyapp@gmail.com") %>%
+      emayili::from('"Slonimsky App" <slonimskyapp@gmail.com>') %>%
       emayili::to(email_address) %>%
       emayili::subject("You've got melodies!") %>%
       emayili::html(email_html)
