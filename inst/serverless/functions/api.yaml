@@ -291,3 +291,16 @@ append-slonimsky-questionnaire-data:
     - httpApi:
         method: POST
         path: /append-slonimsky-questionnaire-data
+
+
+email-slonimsky:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - email_slonimsky_lambda # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /email-slonimsky
