@@ -2,13 +2,14 @@
 
 # email_slonimsky_lambda("Bug Report", "sebsilas@gmail.com", "test")
 
-email_slonimsky_lambda <- function(type, email, message) {
+email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
 
   response <- tryCatch({
 
     logging::loginfo('type: %s', type)
     logging::loginfo('email: %s', email)
     logging::loginfo('message: %s', message)
+    logging::loginfo('user_id: %s', user_id)
 
     # Authenticate Gmail API using OAuth 2.0
     options(gargle_oauth_email = "slonimskyapp@gmail.com")
@@ -25,7 +26,8 @@ email_slonimsky_lambda <- function(type, email, message) {
           "<p>You have received a new email via Slonimsky</p>",
           "<p><strong>Type:</strong> ", type, "</p>",
           "<p><strong>Email:</strong> ", email, "</p>",
-          "<p><strong>Message:</strong> ", message, "</p>"
+          "<p><strong>Message:</strong> ", message, "</p>",
+          "<p><strong>User ID:</strong> ", user_id, "</p>"
         )
       )
 
@@ -134,6 +136,18 @@ send_youve_got_melodies_email <- function(email_address,
     # Send Email
     gmailr::gm_send_message(email_content)
 
+    email_data <- tibble::tibble(type = type,
+                                 email = email,
+                                 message = message,
+                                 date_sent = Sys.time(),
+                                 user_id = user_id)
+
+    db_con <- musicassessr_con()
+
+    DBI::dbWriteTable(db_con, "slonimsky_contact_form", email_data, row.names = FALSE, append = TRUE)
+
+    db_disconnect(db_con)
+
     # Return response
     list(
       status = 200,
@@ -150,4 +164,17 @@ send_youve_got_melodies_email <- function(email_address,
 
   return(response)
 }
+
+
+# Init DB
+
+email_init <- tibble::tibble(type = "Bug Report",
+                             email = "test@test.com",
+                             message = "test",
+                             date_sent = Sys.time(),
+                             user_id = 1L)
+
+# db_con <- musicassessr_con()
+
+# DBI::dbWriteTable(db_con, "slonimsky_contact_form", email_init, row.names = FALSE, overwrite = TRUE)
 
