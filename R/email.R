@@ -1,75 +1,81 @@
 
 
+
 # email_slonimsky_lambda("Bug Report", "sebsilas@gmail.com", "test")
 
 email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
-
   response <- tryCatch({
-
     logging::loginfo('type: %s', type)
     logging::loginfo('email: %s', email)
     logging::loginfo('message: %s', message)
     logging::loginfo('user_id: %s', user_id)
-    logging::loginfo('Sys.getenv("OAUTH_SLONIMSKY") %s', Sys.getenv("OAUTH_SLONIMSKY"))
 
-    key <- Sys.getenv("OAUTH_SLONIMSKY")
+    # Retrieve SMTP password securely
+    smtp_password <- Sys.getenv("SLONIMSKY_EMAIL_PW")
 
-    oauth <- paste0('{"installed":{"client_id":"438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com","project_id":"slonimsky-email","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"', key, '","redirect_uris":["http://localhost"]}}')
+    if (smtp_password == "") {
+      stop("SLONIMSKY_EMAIL_PW environment variable is not set or empty.")
+    }
 
-    logging::loginfo("oauth: %s", oauth)
-
-    # Authenticate Gmail API using OAuth 2.0
-    options(gargle_oauth_email = "slonimskyapp@gmail.com")
-    gmailr::gm_auth_configure(path = oauth)
-    gmailr::gm_auth()
+    # Set up SMTP server connection using emayili::server
+    smtp <- emayili::server(
+      host = "smtp.gmail.com",
+      port = 465,  # Using SSL (not TLS)
+      username = "slonimskyapp@gmail.com",
+      password = smtp_password
+    )
 
     # Create Email Content
-    email_content <- gmailr::gm_mime() %>%
-      gmailr::gm_to("slonimskyapp@gmail.com") %>%
-      gmailr::gm_from("Slonimsky App <slonimskyapp@gmail.com>") %>%
-      gmailr::gm_subject("New Slonimsky Email!") %>%
-      gmailr::gm_html_body(
-        paste0(
-          "<p>You have received a new email via Slonimsky</p>",
-          "<p><strong>Type:</strong> ", type, "</p>",
-          "<p><strong>Email:</strong> ", email, "</p>",
-          "<p><strong>Message:</strong> ", message, "</p>",
-          "<p><strong>User ID:</strong> ", user_id, "</p>"
-        )
-      )
+    email_html <- paste0(
+      "<p>You have received a new email via Slonimsky</p>",
+      "<p><strong>Type:</strong> ", type, "</p>",
+      "<p><strong>Email:</strong> ", email, "</p>",
+      "<p><strong>Message:</strong> ", message, "</p>",
+      "<p><strong>User ID:</strong> ", user_id, "</p>"
+    )
+
+    # Create the email message using emayili::envelope
+    email_content <- emayili::envelope() %>%
+      emayili::from("slonimskyapp@gmail.com") %>%
+      emayili::to("slonimskyapp@gmail.com") %>%
+      emayili::subject("New Slonimsky Email!") %>%
+      emayili::html(email_html)
 
     # Send email
-    gmailr::gm_send_message(email_content)
+    smtp(email_content)
 
-
-    email_data <- tibble::tibble(type = type,
-                                 email = email,
-                                 message = message,
-                                 date_sent = Sys.time(),
-                                 user_id = user_id)
+    # Store email record in the database
+    email_data <- tibble::tibble(
+      type = type,
+      email = email,
+      message = message,
+      date_sent = Sys.time(),
+      user_id = user_id
+    )
 
     db_con <- musicassessr_con()
 
-    DBI::dbWriteTable(db_con, "slonimsky_contact_form", email_data, row.names = FALSE, append = TRUE)
+    DBI::dbWriteTable(
+      db_con,
+      "slonimsky_contact_form",
+      email_data,
+      row.names = FALSE,
+      append = TRUE
+    )
 
     db_disconnect(db_con)
 
     # Return response
-    list(
-      status = 200,
-      message = "You have successfully sent an email via Slonimsky!"
-    )
+    list(status = 200, message = "You have successfully sent an email via Slonimsky!")
 
   }, error = function(err) {
     logging::logerror(err)
-    list(
-      status = 400,
-      message = "Something went wrong"
-    )
+    list(status = 400, message = "Something went wrong")
   })
 
   return(response)
 }
+
 
 
 youve_got_melodies_email_cron_script <- function() {
@@ -87,16 +93,13 @@ youve_got_melodies_email_cron_script <- function() {
     dplyr::filter(!is.na(email)) %>%
     dplyr::collect()
 
-    db_disconnect(db_con)
+  db_disconnect(db_con)
 
-    user_ids_to_email %>%
-      purrr::pwalk(function(email, username) {
+  user_ids_to_email %>%
+    purrr::pwalk(function(email, username) {
+      send_youve_got_melodies_email(email, username, env =  c("dev", "prod"))
 
-        send_youve_got_melodies_email(email,
-                                      username,
-                                      env =  c("dev", "prod"))
-
-      })
+    })
 
 
 
@@ -106,10 +109,7 @@ youve_got_melodies_email_cron_script <- function() {
 
 # send_youve_got_melodies_email("sebsilas@gmail.com", "seb_slonim")
 
-send_youve_got_melodies_email <- function(email_address,
-                                          username,
-                                          env = c("dev", "prod")) {
-
+send_youve_got_melodies_email <- function(email_address, username, env = c("dev", "prod")) {
   env <- match.arg(env)
 
   # Define the site URL based on environment
@@ -120,17 +120,22 @@ send_youve_got_melodies_email <- function(email_address,
   }
 
   response <- tryCatch({
-
     logging::loginfo('Sending "You\'ve Got Melodies" email to: %s', email_address)
 
-    key <- Sys.getenv("OAUTH_SLONIMSKY")
+    # Retrieve SMTP password from environment variable
+    smtp_password <- Sys.getenv("SLONIMSKY_EMAIL_PW")
 
-    oauth <- paste0('{"installed":{"client_id":"438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com","project_id":"slonimsky-email","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"', key, '","redirect_uris":["http://localhost"]}}')
+    if (smtp_password == "") {
+      stop("SLONIMSKY_EMAIL_PW environment variable is not set or empty.")
+    }
 
-    # Authenticate Gmail API using OAuth 2.0
-    options(gargle_oauth_email = "slonimskyapp@gmail.com")
-    gmailr::gm_auth_configure(path = oauth)
-    gmailr::gm_auth()
+    # Set up SMTP server connection using emayili::server
+    smtp <- emayili::server(
+      host = "smtp.gmail.com",
+      port = 465,  # Secure SSL connection
+      username = "slonimskyapp@gmail.com",
+      password = smtp_password
+    )
 
     # Generate Email HTML Content
     email_html <- paste0(
@@ -150,15 +155,15 @@ send_youve_got_melodies_email <- function(email_address,
       "</div>"
     )
 
-    # Create Email Content
-    email_content <- gmailr::gm_mime() %>%
-      gmailr::gm_to(email_address) %>%
-      gmailr::gm_from("Slonimsky App <slonimskyapp@gmail.com>") %>%
-      gmailr::gm_subject("You've got melodies!") %>%
-      gmailr::gm_html_body(email_html)
+    # Create email message using emayili::envelope
+    email <- emayili::envelope() %>%
+      emayili::from("slonimskyapp@gmail.com") %>%
+      emayili::to(email_address) %>%
+      emayili::subject("You've got melodies!") %>%
+      emayili::html(email_html)
 
-    # Send Email
-    gmailr::gm_send_message(email_content)
+    # Send email using SMTP server
+    smtp(email, verbose = TRUE)
 
     # Return response
     list(
@@ -168,14 +173,12 @@ send_youve_got_melodies_email <- function(email_address,
 
   }, error = function(err) {
     logging::logerror(err)
-    list(
-      status = 400,
-      message = "Something went wrong while sending the email."
-    )
+    list(status = 400, message = "Something went wrong while sending the email.")
   })
 
   return(response)
 }
+
 
 
 # Init DB
@@ -189,4 +192,3 @@ send_youve_got_melodies_email <- function(email_address,
 # db_con <- musicassessr_con()
 
 # DBI::dbWriteTable(db_con, "slonimsky_contact_form", email_init, row.names = FALSE, overwrite = TRUE)
-
