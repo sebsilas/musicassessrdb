@@ -56,7 +56,7 @@ send_daily_summary <- function() {
   # Retrieve per-app statistics
   app_session_stats <- db_con %>%
     dplyr::tbl("sessions") %>%
-    dplyr::left_join(dplyr::tbl(db_con, "users", by = "user_id")) %>%
+    dplyr::left_join(dplyr::tbl(db_con, "users"), by = "user_id") %>%
     dplyr::mutate(app_name = dplyr::case_when(is.na(app_name) | !app_name %in% c("slonimsky", "songbird") ~ "Other", TRUE ~ app_name)) %>%
     dplyr::filter(lubridate::as_date(session_time_started) == yesterday) %>%
     dplyr::group_by(app_name) %>%
@@ -69,8 +69,8 @@ send_daily_summary <- function() {
 
   app_trial_stats <- db_con %>%
     dplyr::tbl("trials") %>%
-    dplyr::left_join(dplyr::tbl(db_con, "sessions", by = "session_id")) %>%
-    dplyr::left_join(dplyr::tbl(db_con, "users", by = "user_id")) %>%
+    dplyr::left_join(dplyr::tbl(db_con, "sessions"), by = "session_id") %>%
+    dplyr::left_join(dplyr::tbl(db_con, "users"), by = "user_id") %>%
     dplyr::mutate(app_name = dplyr::case_when(is.na(app_name) | !app_name %in% c("slonimsky", "songbird") ~ "Other", TRUE ~ app_name)) %>%
     dplyr::filter(lubridate::as_date(trial_time_started) == yesterday) %>%
     dplyr::group_by(app_name) %>%
