@@ -24,3 +24,4 @@ test_apps
 .quarto
 app_configs
 data-raw/create_SAA_benchmark_data.Rmd
+inst/client_secret_438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com.json
