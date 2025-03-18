@@ -12,7 +12,7 @@ email_slonimsky_lambda <- function(type, email, message) {
 
     # Authenticate Gmail API using OAuth 2.0
     options(gargle_oauth_email = "slonimskyapp@gmail.com")
-    gmailr::gm_auth_configure(path = Sys.getenv("OAUTH_SLONIMSKY_LOCATION") )
+    gmailr::gm_auth_configure(path = Sys.getenv("OAUTH_SLONIMSKY") )
     gmailr::gm_auth()
 
     # Create Email Content
