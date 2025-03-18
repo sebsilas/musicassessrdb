@@ -19,6 +19,7 @@ Imports:
     dplyr,
     DT,
     ggplot2,
+    gmailr,
     htmltools,
     httr,
     jose,
