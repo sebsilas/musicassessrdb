@@ -1,4 +1,124 @@
 
+# send_daily_summary()
+
+send_email <- function(subject, body) {
+  smtp_password <- Sys.getenv("SLONIMSKY_EMAIL_PW")
+  if (smtp_password == "") {
+    stop("SLONIMSKY_EMAIL_PW environment variable is not set or empty.")
+  }
+
+  smtp <- emayili::server(
+    host = "smtp.gmail.com",
+    port = 465,
+    username = "slonimskyapp@gmail.com",
+    password = smtp_password
+  )
+
+  email_content <- emayili::envelope() %>%
+    emayili::from('"musicassessr" <slonimskyapp@gmail.com>') %>%
+    emayili::to("sebsilas@gmail.com") %>%
+    emayili::subject(subject) %>%
+    emayili::html(body)
+
+  smtp(email_content, verbose = TRUE)
+}
+
+send_daily_summary <- function() {
+
+  db_con <- musicassessr_con()
+
+  # Get yesterday's date
+  today <- Sys.Date()
+  yesterday <- today - 1
+
+  # Retrieve overall session statistics
+  session_stats <- db_con %>%
+    dplyr::tbl("sessions") %>%
+    dplyr::filter(lubridate::as_date(session_time_started) == yesterday) %>%
+    dplyr::summarise(
+      total_sessions = dplyr::n(),
+      unique_users = dplyr::n_distinct(user_id),
+      .groups = "drop"
+    ) %>%
+    dplyr::collect()
+
+  # Retrieve overall trial statistics
+  trial_stats <- db_con %>%
+    dplyr::tbl("trials") %>%
+    dplyr::filter(lubridate::as_date(trial_time_started) == yesterday) %>%
+    dplyr::summarise(
+      total_trials = dplyr::n(),
+      unique_trial_types = dplyr::n_distinct(trial_paradigm),
+      .groups = "drop"
+    ) %>%
+    dplyr::collect()
+
+  # Retrieve per-app statistics
+  app_session_stats <- db_con %>%
+    dplyr::tbl("sessions") %>%
+    dplyr::left_join(dplyr::tbl(db_con, "users", by = "user_id")) %>%
+    dplyr::mutate(app_name = dplyr::case_when(is.na(app_name) | !app_name %in% c("slonimsky", "songbird") ~ "Other", TRUE ~ app_name)) %>%
+    dplyr::filter(lubridate::as_date(session_time_started) == yesterday) %>%
+    dplyr::group_by(app_name) %>%
+    dplyr::summarise(
+      total_sessions = dplyr::n(),
+      unique_users = dplyr::n_distinct(user_id),
+      .groups = "drop"
+    ) %>%
+    dplyr::collect()
+
+  app_trial_stats <- db_con %>%
+    dplyr::tbl("trials") %>%
+    dplyr::left_join(dplyr::tbl(db_con, "sessions", by = "session_id")) %>%
+    dplyr::left_join(dplyr::tbl(db_con, "users", by = "user_id")) %>%
+    dplyr::mutate(app_name = dplyr::case_when(is.na(app_name) | !app_name %in% c("slonimsky", "songbird") ~ "Other", TRUE ~ app_name)) %>%
+    dplyr::filter(lubridate::as_date(trial_time_started) == yesterday) %>%
+    dplyr::group_by(app_name) %>%
+    dplyr::summarise(
+      total_trials = dplyr::n(),
+      unique_trial_types = dplyr::n_distinct(trial_paradigm),
+      .groups = "drop"
+    ) %>%
+    dplyr::collect()
+
+  # Create HTML for overall stats
+  overall_table <- paste0(
+    "<h2>Overall Summary</h2>",
+    "<table border='1'><tr><th>Metric</th><th>Value</th></tr>",
+    "<tr><td>Total Sessions</td><td>", session_stats$total_sessions, "</td></tr>",
+    "<tr><td>Unique Users</td><td>", session_stats$unique_users, "</td></tr>",
+    "<tr><td>Total Trials</td><td>", trial_stats$total_trials, "</td></tr>",
+    "<tr><td>Unique Trial Types</td><td>", trial_stats$unique_trial_types, "</td></tr>",
+    "</table><br><hr><br>"
+  )
+
+  # Create per-app tables
+  app_tables <- lapply(unique(app_session_stats$app_name), function(app) {
+    app_sessions <- app_session_stats %>% dplyr::filter(app_name == app)
+    app_trials <- app_trial_stats %>% dplyr::filter(app_name == app)
+
+    paste0(
+      "<h3>App: ", app, "</h3>",
+      "<table border='1'><tr><th>Metric</th><th>Value</th></tr>",
+      "<tr><td>Total Sessions</td><td>", app_sessions$total_sessions, "</td></tr>",
+      "<tr><td>Unique Users</td><td>", app_sessions$unique_users, "</td></tr>",
+      "<tr><td>Total Trials</td><td>", app_trials$total_trials, "</td></tr>",
+      "<tr><td>Unique Trial Types</td><td>", app_trials$unique_trial_types, "</td></tr>",
+      "</table><br>"
+    )
+  })
+
+  # Combine all tables into the email body
+  email_body <- paste0("<h2>Daily MusicAssessr Report - ", today, "</h2>", overall_table, paste0(app_tables, collapse = ""))
+
+  # Send email with the stats table
+  send_email(subject = paste("Daily MusicAssessr Report -", today), body = email_body)
+
+  # Close DB connection
+  db_disconnect(db_con)
+}
+
+
 
 
 # email_slonimsky_lambda("Bug Report", "sebsilas@gmail.com", "test")

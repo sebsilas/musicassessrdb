@@ -10,7 +10,7 @@ run_dashboard_app <- function() {
         shinydashboard::menuItem("Scores", tabName = "scores", icon = shiny::icon("chart-line")),
         shinydashboard::menuItem("Tables", tabName = "tables", icon = shiny::icon("table")),
 
-        shiny::selectInput("app_name", "App:", choices = c("Songbird", "Slonimsky", "Both")),
+        shiny::selectInput("app_name", "App:", choices = c("Songbird", "Slonimsky", "All (including psychTestR etc. apps)")),
         shiny::selectInput("score_measure", "Score measure:", choices = NULL)
       )
     ),
@@ -79,9 +79,10 @@ run_dashboard_app <- function() {
 
       sessions <- dplyr::tbl(db_con, "sessions") %>%
         dplyr::left_join(dplyr::tbl(db_con, "users"), by = "user_id") %>%
+        dplyr::mutate(app_name = dplyr::case_when(is.na(app_name) | !app_name %in% c("slonimsky", "songbird") ~ "Other", TRUE ~ app_name)) %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))
 
-      if (app_name != "both") {
+      if (app_name != "all (including psychtestr etc. apps)") {
         sessions <- sessions %>% dplyr::filter(app_name == !!app_name)
       }
 
