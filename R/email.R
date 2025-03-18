@@ -12,9 +12,15 @@ email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
     logging::loginfo('user_id: %s', user_id)
     logging::loginfo('Sys.getenv("OAUTH_SLONIMSKY") %s', Sys.getenv("OAUTH_SLONIMSKY"))
 
+    key <- Sys.getenv("OAUTH_SLONIMSKY")
+
+    oauth <- paste0('{"installed":{"client_id":"438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com","project_id":"slonimsky-email","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"', key, '","redirect_uris":["http://localhost"]}}')
+
+    logging::loginfo("oauth: %s", oauth)
+
     # Authenticate Gmail API using OAuth 2.0
     options(gargle_oauth_email = "slonimskyapp@gmail.com")
-    gmailr::gm_auth_configure(path = Sys.getenv("OAUTH_SLONIMSKY") )
+    gmailr::gm_auth_configure(path = oauth)
     gmailr::gm_auth()
 
     # Create Email Content
@@ -34,6 +40,19 @@ email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
 
     # Send email
     gmailr::gm_send_message(email_content)
+
+
+    email_data <- tibble::tibble(type = type,
+                                 email = email,
+                                 message = message,
+                                 date_sent = Sys.time(),
+                                 user_id = user_id)
+
+    db_con <- musicassessr_con()
+
+    DBI::dbWriteTable(db_con, "slonimsky_contact_form", email_data, row.names = FALSE, append = TRUE)
+
+    db_disconnect(db_con)
 
     # Return response
     list(
@@ -104,9 +123,13 @@ send_youve_got_melodies_email <- function(email_address,
 
     logging::loginfo('Sending "You\'ve Got Melodies" email to: %s', email_address)
 
+    key <- Sys.getenv("OAUTH_SLONIMSKY")
+
+    oauth <- paste0('{"installed":{"client_id":"438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com","project_id":"slonimsky-email","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"', key, '","redirect_uris":["http://localhost"]}}')
+
     # Authenticate Gmail API using OAuth 2.0
     options(gargle_oauth_email = "slonimskyapp@gmail.com")
-    gmailr::gm_auth_configure(path = system.file("client_secret_438502282297-kfq471tjn2bpqjonkgelnrgf0mqj6c67.apps.googleusercontent.com.json", package = "musicassessrdb"))
+    gmailr::gm_auth_configure(path = oauth)
     gmailr::gm_auth()
 
     # Generate Email HTML Content
@@ -116,7 +139,7 @@ send_youve_got_melodies_email <- function(email_address,
       "<img src='https://musicassessr.com/assets/img/slonim.png' alt='Company Logo' width='80'>",
       "</div>",
       "<div style='padding: 20px;'>",
-      "<p>Hi <strong>", username, ",</strong></p>",
+      "<p>Hey <strong>", username, ",</strong></p>",
       "<p>We just wanted to let you know that you've got some new melodies to learn as well as some previous melodies to review.</p>",
       "<p>Click <a href='", site_url, "' style='color: #1a82e2;'>here</a> to login.</p>",
       "<p>Best Regards,<br>The Slonimsky Team</p>",
@@ -136,18 +159,6 @@ send_youve_got_melodies_email <- function(email_address,
 
     # Send Email
     gmailr::gm_send_message(email_content)
-
-    email_data <- tibble::tibble(type = type,
-                                 email = email,
-                                 message = message,
-                                 date_sent = Sys.time(),
-                                 user_id = user_id)
-
-    db_con <- musicassessr_con()
-
-    DBI::dbWriteTable(db_con, "slonimsky_contact_form", email_data, row.names = FALSE, append = TRUE)
-
-    db_disconnect(db_con)
 
     # Return response
     list(
@@ -169,11 +180,11 @@ send_youve_got_melodies_email <- function(email_address,
 
 # Init DB
 
-email_init <- tibble::tibble(type = "Bug Report",
-                             email = "test@test.com",
-                             message = "test",
-                             date_sent = Sys.time(),
-                             user_id = 1L)
+# email_init <- tibble::tibble(type = "Bug Report",
+#                              email = "test@test.com",
+#                              message = "test",
+#                              date_sent = Sys.time(),
+#                              user_id = 1L)
 
 # db_con <- musicassessr_con()
 
