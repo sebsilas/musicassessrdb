@@ -304,3 +304,15 @@ email-slonimsky:
     - httpApi:
         method: POST
         path: /email-slonimsky
+
+update-user-id-after-signup:
+  memorySize: 1500
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - lambda_update_user_id_after_signup # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /update-user-id-after-signup
