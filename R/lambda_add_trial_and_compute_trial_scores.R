@@ -95,7 +95,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
       # Otherwise, create a new item for it
 
       additional_obj <- additional %>%
-        rjson::fromJSON()
+        jsonlite::fromJSON()
 
       logging::loginfo("additional_obj: %s", additional_obj)
 
