@@ -22,12 +22,14 @@ Imports:
     ggplot2,
     htmltools,
     httr,
+    itembankr (>= 0.5.2),
     jose,
     jsonlite,
     logging,
     lubridate,
     magrittr,
     pool,
+    ppm (>= 0.3.0),
     promises,
     psychTestR (>= 2.25.0),
     psychTestRCATME (>= 1.6.2),
@@ -40,9 +42,11 @@ Depends:
     R (>= 3.5)
 URL: https://github.com/sebsilas/musicassessrdb
 BugReports: https://github.com/sebsilas/musicassessrdb/issues
-Remotes: 
+Remotes:  
     pmcharrison/psychTestR,
     pmcharrison/psychTestRCAT,
     sebsilas/psychTestRCATME,
     sebsilas/awslambdafuns,
-    klausfrieler/psyquest
+    sebsilas/itembankr,
+    klausfrieler/psyquest,
+    pmcharrison/ppm
