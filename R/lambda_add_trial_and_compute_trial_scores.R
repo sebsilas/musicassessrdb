@@ -119,8 +119,10 @@ add_trial_and_compute_trial_scores <- function(Records) {
       rhythmic = as.logical(metadata$rhythmic),
       session_id = session_id,
       test_id = test_id,
-      stimulus_abs_melody = if(test_id == 3L) NULL else stimuli, # RTT (test_id == 3), doesn't have a melody
-      stimulus_durations = stimuli_durations,
+      # Note, leave them as metadata$stimuli and metadata$stimuli rather than the assigned vars (stimuli, stimuli_durations)
+      # Because we want them to stay strings here
+      stimulus_abs_melody = if(test_id == 3L) NULL else metadata$stimuli, # RTT (test_id == 3), doesn't have a melody
+      stimulus_durations = metadata$stimuli_durations,
       review_items_id = if(length(metadata$review_items_id) == 0) NA else as.integer(metadata$review_items_id),
       new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
       trial_type = 'audio',
