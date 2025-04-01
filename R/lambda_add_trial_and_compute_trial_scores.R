@@ -87,6 +87,24 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("handle_quick_feedback complete")
     logging::loginfo("attempt: %s", attempt)
 
+    if(item_id == "CUSTOM_ITEM") {
+
+      logging::loginfo("Custom item...")
+
+      # If item_id is custom, see if the N-gram is already contained in the original item bank
+      # Otherwise, create a new item for it
+      original_item_id <- additional$original_item_id
+      original_item_bank <- extract_item_bank_name_from_item_id(db_con, original_item_id)
+
+      logging::loginfo("original_item_id: %s", original_item_id)
+      logging::loginfo("original_item_bank: %s", original_item_bank)
+
+      add_custom_melody_to_db(stimuli,
+                              stimuli_durations,
+                              original_item_bank,
+                              original_item_id)
+    }
+
     # Append trial info
     trial_id <- db_append_trials(
       db_con,
@@ -101,8 +119,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       rhythmic = as.logical(metadata$rhythmic),
       session_id = session_id,
       test_id = test_id,
-      stimulus_abs_melody = if(test_id == 3L) NULL else metadata$stimuli, # RTT (test_id == 3), doesn't have a melody
-      stimulus_durations = metadata$stimuli_durations,
+      stimulus_abs_melody = if(test_id == 3L) NULL else stimuli, # RTT (test_id == 3), doesn't have a melody
+      stimulus_durations = stimuli_durations,
       review_items_id = if(length(metadata$review_items_id) == 0) NA else as.integer(metadata$review_items_id),
       new_items_id = if(length(metadata$new_items_id) == 0) NA else as.integer(metadata$new_items_id),
       trial_type = 'audio',

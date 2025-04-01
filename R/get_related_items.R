@@ -1,5 +1,9 @@
 
+
+
 # A simple get related items helper based on parent melodies
+# Note that this only works with itembankr N-Gram databases
+# Because it relies on parent_abs_melody and ngrukkon
 get_related_items <- function(item_bank,
                               item_id,
                               no_to_return = 3) {
@@ -33,7 +37,9 @@ sample_and_test <- function(item_bank) {
   smp <- item_bank %>%
     dplyr::slice_sample(n = 1)
 
-  items <- get_related_items(item_bank, smp$item_id)
+  smp_id <- smp %>% dplyr::pull(item_id)
+
+  items <- get_related_items(item_bank, smp_id)
 
   return(items)
 
@@ -43,3 +49,9 @@ sample_and_test <- function(item_bank) {
 #   tibble::as_tibble()
 # t <- sample_and_test(pbet_hmtm_2024_item_bank)
 
+
+# db_con <- musicassessr_con()
+#
+# dplyr::tbl(db_con, "item_bank_Slonimsky_phrase") %>%
+#   sample_and_test()
+# db_disconnect(db_con)
