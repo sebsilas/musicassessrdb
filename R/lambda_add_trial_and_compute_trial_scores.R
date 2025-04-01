@@ -93,10 +93,18 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       # If item_id is custom, see if the N-gram is already contained in the original item bank
       # Otherwise, create a new item for it
-      original_item_id <- additional$original_item_id
-      original_item_bank <- extract_item_bank_name_from_item_id(db_con, original_item_id)
+
+      additional_obj <- additional %>%
+        rjson::fromJSON()
+
+      logging::loginfo("additional_obj: %s", additional_obj)
+
+      original_item_id <- additional_obj$original_item_id
 
       logging::loginfo("original_item_id: %s", original_item_id)
+
+      original_item_bank <- extract_item_bank_name_from_item_id(db_con, original_item_id)
+
       logging::loginfo("original_item_bank: %s", original_item_bank)
 
       add_custom_melody_to_db(stimuli,
