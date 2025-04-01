@@ -28,7 +28,7 @@ add_custom_melody_to_db <- function(abs_melody,
 
   # Then check if the item_bank exists in the custom items item bank as an N-gram
   check_item_exists_in_db(db_con,
-                          "item_banks_custom_items",
+                          "item_bank_custom_items",
                           abs_melody,
                           durations,
                           original_item_id)
@@ -50,13 +50,13 @@ add_custom_melody_to_db <- function(abs_melody,
   logging::loginfo("melody.. %s", melody)
 
 
-  nrows <- get_nrows(dplyr::tbl(db_con, "item_banks_custom_items"))
+  nrows <- get_nrows(dplyr::tbl(db_con, "item_bank_custom_items"))
 
   melody <- melody %>%
     dplyr::mutate(item_id = paste0("custom_items_", nrows + 1)) %>%
     dplyr::relocate(item_id)
 
-  DBI::dbAppendTable(db_con, "item_banks_custom_items", melody)
+  DBI::dbAppendTable(db_con, "item_bank_custom_items", melody)
 
   db_disconnect(db_con)
 
@@ -73,11 +73,11 @@ check_item_exists_in_db <- function(db_con,
                                     durations,
                                     original_item_id) {
 
-  if(!grepl("item_banks_", item_bank_name)) {
-    item_bank_name <- paste0("item_banks_", item_bank_name)
+  if(!grepl("item_bank_", item_bank_name)) {
+    item_bank_name <- paste0("item_bank_", item_bank_name)
   }
 
-  if(item_bank_name == "item_banks_custom_items") {
+  if(item_bank_name == "item_bank_custom_items") {
     item_check <- dplyr::tbl(db_con, item_bank_name) %>%
       dplyr::filter(abs_melody == !! abs_melody,
                     durations == !! durations,
