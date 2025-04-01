@@ -94,6 +94,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
       # If item_id is custom, see if the N-gram is already contained in the original item bank
       # Otherwise, create a new item for it
 
+      logging::loginfo("additional: %s", additional)
+
       additional_obj <- additional %>%
         jsonlite::fromJSON()
 
