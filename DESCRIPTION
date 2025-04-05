@@ -29,7 +29,6 @@ Imports:
     lubridate,
     magrittr,
     pool,
-    ppm (>= 0.3.0),
     promises,
     psychTestR (>= 2.25.0),
     psychTestRCATME (>= 1.6.2),
@@ -40,6 +39,8 @@ Imports:
     tibble
 Depends:
     R (>= 3.5)
+Suggests:
+    ppm (>= 0.3.0)
 URL: https://github.com/sebsilas/musicassessrdb
 BugReports: https://github.com/sebsilas/musicassessrdb/issues
 Remotes:  
