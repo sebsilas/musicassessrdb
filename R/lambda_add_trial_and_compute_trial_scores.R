@@ -175,6 +175,16 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       melodic_production_ids <- NA
 
+    } else if(melody_block_paradigm == "long_note") {
+
+      logging::loginfo("Score long note production...")
+      logging::loginfo("stimuli: %s", stimuli)
+      logging::loginfo("res$freq: %s", res$freq)
+
+      scores <- musicassessr::long_note_pitch_metrics(stimuli, res$freq)
+
+      logging::loginfo("scores: %s", scores)
+
     } else {
 
       logging::loginfo("Score melodic production...")
@@ -254,10 +264,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
 
     logging::loginfo("study_history_stats: %s", study_history_stats)
-
-    print(names(trial_scores))
-
-    print(names(study_history_stats))
 
     trial_scores <- rbind(trial_scores, study_history_stats)
 
@@ -645,6 +651,15 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
       )
     } else if(feedback_type == "produced_note") {
       result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
+    } else if(feedback_type == "onset_tempo") {
+
+      user_onsets <- if(is.scalar.na.or.null(res)) NA else res$onset
+      user_durations <- if(is.scalar.na.or.null(user_onsets)) NA else diff(user_onsets)
+      user_durations <- user_durations[!is.na(user_durations)]
+
+      mean_dur <- mean(user_durations, na.rm = TRUE)
+      result <- round(60/mean_dur) # This is a proxy but not particularly sophisticated..
+
     } else {
       stop("feedback_type not recognised")
     }
