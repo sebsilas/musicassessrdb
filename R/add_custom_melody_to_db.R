@@ -58,8 +58,6 @@ add_custom_melody_to_db <- function(abs_melody,
 
   DBI::dbAppendTable(db_con, "item_bank_custom_items", melody)
 
-  db_disconnect(db_con)
-
   list(
     message = "You have successfully added a new item",
     item_id = melody$item_id
@@ -93,8 +91,6 @@ check_item_exists_in_db <- function(db_con,
   }
 
   if(nrow(item_check) == 1L) {
-
-    db_disconnect(db_con)
 
     return(item_check$item_id)
   }
