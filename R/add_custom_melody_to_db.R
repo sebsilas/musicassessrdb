@@ -1,6 +1,7 @@
 
 
-add_custom_melody_to_db <- function(abs_melody,
+add_custom_melody_to_db <- function(db_con = NULL,
+                                    abs_melody,
                                     durations,
                                     original_item_bank,
                                     original_item_id) {
@@ -15,54 +16,71 @@ add_custom_melody_to_db <- function(abs_melody,
     durations <- paste0(durations, collapse = ",")
   }
 
-  db_con <- musicassessr_con()
+  if(!is.null(db_con)) {
+    db_con <- musicassessr_con()
+    local_db_con <- TRUE
+  } else {
+    local_db_con <- FALSE
+  }
 
   # First check if item exists in the original item_bank as an N-gram
-  check_item_exists_in_db(db_con,
-                          original_item_bank,
-                          abs_melody,
-                          durations,
-                          original_item_id)
+  item_exists <- check_item_exists_in_db(db_con,
+                                          original_item_bank,
+                                          abs_melody,
+                                          durations,
+                                          original_item_id)
 
-  logging::loginfo("Item does not exist in the original item bank, %s, as an ngram", original_item_bank)
+  if(!is.scalar.character(item_exists)) {
 
-  # Then check if the item_bank exists in the custom items item bank as an N-gram
-  check_item_exists_in_db(db_con,
-                          "item_bank_custom_items",
-                          abs_melody,
-                          durations,
-                          original_item_id)
+    logging::loginfo("Item does not exist in the original item bank, %s, as an ngram", original_item_bank)
 
-  logging::loginfo("Item does not exist in the custom_items item bank as an ngram")
+    item_exists <- # Then check if the item_bank exists in the custom items item bank as an N-gram
+      check_item_exists_in_db(db_con,
+                              "item_bank_custom_items",
+                              abs_melody,
+                              durations,
+                              original_item_id)
 
-  logging::loginfo("Append it to custom_items...")
+    if(!is.scalar.character(item_exists)) {
 
-  # If it exists in neither, append it to the custom_items item bank:
+      logging::loginfo("Item does not exist in the custom_items item bank as an ngram")
 
-  melody <- tibble::tibble(
-    original_item_bank = original_item_bank,
-    original_item_id = original_item_id,
-    abs_melody = abs_melody,
-    durations = durations
-    ) %>%
-    itembankr::get_melody_features()
+      logging::loginfo("Append it to custom_items...")
 
-  logging::loginfo("melody.. %s", melody)
+      # If it exists in neither, append it to the custom_items item bank:
+
+      melody <- tibble::tibble(
+        original_item_bank = original_item_bank,
+        original_item_id = original_item_id,
+        abs_melody = abs_melody,
+        durations = durations
+      ) %>%
+        itembankr::get_melody_features()
+
+      logging::loginfo("melody.. %s", melody)
 
 
-  nrows <- get_nrows(dplyr::tbl(db_con, "item_bank_custom_items"))
+      nrows <- get_nrows(dplyr::tbl(db_con, "item_bank_custom_items"))
 
-  melody <- melody %>%
-    dplyr::mutate(item_id = paste0("custom_items_", nrows + 1)) %>%
-    dplyr::relocate(item_id)
+      melody <- melody %>%
+        dplyr::mutate(item_id = paste0("custom_items_", nrows + 1)) %>%
+        dplyr::relocate(item_id)
 
-  DBI::dbAppendTable(db_con, "item_bank_custom_items", melody)
+      DBI::dbAppendTable(db_con, "item_bank_custom_items", melody)
 
-  list(
-    message = "You have successfully added a new item",
-    item_id = melody$item_id
-  )
+      if(local_db_con) {
+        db_disconnect(db_con)
+      }
+    }
 
+    return(
+      list(
+        message = "You have successfully added a new item",
+        item_id = melody$item_id
+      )
+    )
+
+  }
 }
 
 check_item_exists_in_db <- function(db_con,
@@ -76,7 +94,7 @@ check_item_exists_in_db <- function(db_con,
   }
 
   if(item_bank_name == "item_bank_custom_items") {
-    item_check <- dplyr::tbl(db_con, item_bank_name) %>%
+    item_check <- dplyr::tbl(db_con, "item_bank_custom_items") %>%
       dplyr::filter(abs_melody == !! abs_melody,
                     durations == !! durations,
                     original_item_id == !! original_item_id) %>%
@@ -90,9 +108,11 @@ check_item_exists_in_db <- function(db_con,
       dplyr::collect()
   }
 
-  if(nrow(item_check) == 1L) {
+  if(nrow(item_check) > 0L) {
 
     return(item_check$item_id)
+  } else {
+    return(FALSE)
   }
 
 }

@@ -277,8 +277,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     # logging::loginfo("scores_trial_id: %s", scores_trial_id)
 
-    db_disconnect(db_con)
-
     list(
       status = 200,
       message = "You have successfully added a trial and scores for the trial!",
