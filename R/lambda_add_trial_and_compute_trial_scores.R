@@ -275,6 +275,10 @@ add_trial_and_compute_trial_scores <- function(Records) {
                                                score = trial_scores$score)
     logging::loginfo("...appended.")
 
+    if(DBI::dbIsValid(db_con)) {
+      musicassessrdb::db_disconnect(db_con)
+    }
+
     # logging::loginfo("scores_trial_id: %s", scores_trial_id)
 
     list(
