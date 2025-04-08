@@ -60,9 +60,18 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
 
-    logging::loginfo("metadata$onset: %s", metadata$onset)
+    onset <- metadata$onset %>%
+      as.logical()
 
-    if(!metadata$onset) {
+    logging::loginfo("onset: %s", onset)
+
+    if(length(onset) == 0) {
+      onset <- FALSE
+    }
+
+    logging::loginfo("onset again: %s", onset)
+
+    if(!onset) {
       res <- res %>%
         dplyr::mutate(freq = as.numeric(freq),
                       dur = as.numeric(dur),
@@ -70,7 +79,6 @@ add_trial_and_compute_trial_scores <- function(Records) {
                       note = round(hrep::freq_to_midi(freq))) %>%
         itembankr::produce_extra_melodic_features()
     }
-
 
 
     logging::loginfo("res: %s", res)
