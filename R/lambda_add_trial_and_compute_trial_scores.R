@@ -72,13 +72,13 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("onset again: %s", onset)
 
     if(onset) {
+
       res <- res %>%
         dplyr::mutate(onset = as.numeric(onset),
                       dur = c(diff(onset), 0.5),
                       freq = NA,
                       note = NA) %>%
-        dplyr::relocate(freq, dur, onset, note) %>%
-        itembankr::produce_extra_melodic_features()
+        dplyr::relocate(freq, dur, onset, note)
 
     } else {
       res <- res %>%
