@@ -16,7 +16,7 @@ add_custom_melody_to_db <- function(db_con = NULL,
     durations <- paste0(durations, collapse = ",")
   }
 
-  if(!is.null(db_con)) {
+  if(is.null(db_con)) {
     db_con <- musicassessr_con()
     local_db_con <- TRUE
   } else {

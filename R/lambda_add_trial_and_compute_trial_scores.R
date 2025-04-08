@@ -677,7 +677,9 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
                      stimulus = paste0(stimuli, collapse = ",")
       )
     } else if(feedback_type == "produced_note") {
+
       result <- round(mean(hrep::freq_to_midi(res$freq), na.rm = TRUE))
+
     } else if(feedback_type == "onset_tempo") {
 
       user_onsets <- if(is.scalar.na.or.null(res)) NA else res$onset
