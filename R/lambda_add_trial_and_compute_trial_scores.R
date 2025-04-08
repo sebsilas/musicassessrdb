@@ -58,12 +58,19 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     # Get pYIN (or rhythm onset) results
 
-    res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET")) %>%
-      dplyr::mutate(freq = as.numeric(freq),
-                    dur = as.numeric(dur),
-                    onset = as.numeric(onset),
-                    note = round(hrep::freq_to_midi(freq))) %>%
-      itembankr::produce_extra_melodic_features()
+    res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
+
+    logging::loginfo("metadata$onset: %s", metadata$onset)
+
+    if(!metadata$onset) {
+      res <- res %>%
+        dplyr::mutate(freq = as.numeric(freq),
+                      dur = as.numeric(dur),
+                      onset = as.numeric(onset),
+                      note = round(hrep::freq_to_midi(freq))) %>%
+        itembankr::produce_extra_melodic_features()
+    }
+
 
 
     logging::loginfo("res: %s", res)
@@ -495,7 +502,6 @@ db_append_trials <- function(db_con,
 
   return(trial_id)
 }
-
 
 
 
