@@ -228,6 +228,15 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("scores: %s", scores)
 
+      ogging::loginfo("res$note: %s", res$note)
+
+      sung_midis <- res$note
+      correct_boolean <- sung_midis == stimuli
+      stimuli_diff_octaves <- stimuli + (-4:4 * 12)
+      correct_boolean_octaves_allowed <- sung_midis %in% stimuli_diff_octaves
+
+      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
+
     } else {
 
       logging::loginfo("Score melodic production...")
