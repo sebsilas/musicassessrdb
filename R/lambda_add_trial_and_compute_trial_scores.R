@@ -133,7 +133,8 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("original_item_bank: %s", original_item_bank)
 
-      add_custom_melody_to_db(stimuli,
+      add_custom_melody_to_db(db_con,
+                              stimuli,
                               stimuli_durations,
                               original_item_bank,
                               original_item_id)
