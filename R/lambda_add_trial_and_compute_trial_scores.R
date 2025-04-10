@@ -228,7 +228,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("scores: %s", scores)
 
-      ogging::loginfo("res$note: %s", res$note)
+      logging::loginfo("res$note: %s", res$note)
 
       sung_midis <- res$note
       correct_boolean <- sung_midis == stimuli
