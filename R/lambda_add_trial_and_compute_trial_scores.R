@@ -5,6 +5,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   logging::loginfo("Inside add_trial_and_compute_trial_scores function")
 
+  logging::loginfo("class(db_con): %s", class(db_con))
+  logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
+
   logging::loginfo('jsonlite::fromJSON(Records$body) %s', jsonlite::fromJSON(Records$body))
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]] %s', jsonlite::fromJSON(Records$body)[[1]])
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]])
@@ -105,11 +108,17 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("audio_file: %s", audio_file)
 
 
+    logging::loginfo("class(db_con): %s", class(db_con))
+    logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
+
     # Handle immediate feedback
     handle_quick_feedback(feedback, feedback_type, stimuli, stimuli_durations, stim_length, res, audio_file, attempt)
 
     logging::loginfo("handle_quick_feedback complete")
     logging::loginfo("attempt: %s", attempt)
+
+    logging::loginfo("class(db_con): %s", class(db_con))
+    logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
 
     if(item_id == "CUSTOM_ITEM") {
 
