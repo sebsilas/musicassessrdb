@@ -140,6 +140,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
                               original_item_id)
     }
 
+    logging::loginfo("class(db_con): %s", class(db_con))
+    logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
+
     # Append trial info
     trial_id <- db_append_trials(
       db_con,
