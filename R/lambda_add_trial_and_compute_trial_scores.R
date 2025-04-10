@@ -8,6 +8,12 @@ add_trial_and_compute_trial_scores <- function(Records) {
   logging::loginfo("class(db_con): %s", class(db_con))
   logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
 
+  if(!DBI::dbIsValid(db_con)) {
+    logging::loginfo("Try create a new db_con...")
+    db_con <- musicassessr_con()
+    logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
+  }
+
   logging::loginfo('jsonlite::fromJSON(Records$body) %s', jsonlite::fromJSON(Records$body))
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]] %s', jsonlite::fromJSON(Records$body)[[1]])
   logging::loginfo('jsonlite::fromJSON(Records$body)[[1]][[9]] %s', jsonlite::fromJSON(Records$body)[[1]][[9]])
