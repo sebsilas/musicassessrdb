@@ -180,7 +180,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     if(get_nrows(trial_table) > 0L) {
 
-      scores_trial <- get_table(db_con, "scores_trial") %>%
+      scores_trial <- get_table(db_con, "scores_trial", collect = FALSE) %>%
+        dplyr::filter(trial_id %in% !! trial_table$trial_id) %>%
         dplyr::filter(!is.na(score)) %>%
         dplyr::select(-scores_trial_id) %>%
         # Handle duplicates... but this shouldn't really happen
