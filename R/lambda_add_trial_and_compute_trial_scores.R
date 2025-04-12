@@ -69,11 +69,11 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     if(metadata$pyin_type == "smoothedpitchtrack") {
       res <- readFromS3(filename = processed_file,
+                        col_names = c("onset", "freq"),
                         bucket = Sys.getenv("DESTINATION_BUCKET")) %>%
                         dplyr::mutate(dur = c(diff(onset), 0.01)) # This doesn't matter, we don't use it
     } else {
       res <- readFromS3(filename = processed_file,
-                        col_names = c("onset", "freq"),
                         bucket = Sys.getenv("DESTINATION_BUCKET"))
     }
 
