@@ -67,7 +67,15 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     # Get pYIN (or rhythm onset) results
 
-    res <- readFromS3(filename = processed_file, bucket = Sys.getenv("DESTINATION_BUCKET"))
+    if(metadata$pyin_type == "smoothedpitchtrack") {
+      res <- readFromS3(filename = processed_file,
+                        bucket = Sys.getenv("DESTINATION_BUCKET")) %>%
+                        dplyr::mutate(dur = c(diff(onset), 0.01)) # This doesn't matter, we don't use it
+    } else {
+      res <- readFromS3(filename = processed_file,
+                        col_names = c("onset", "freq"),
+                        bucket = Sys.getenv("DESTINATION_BUCKET"))
+    }
 
     onset <- metadata$onset %>%
       as.logical()
@@ -551,13 +559,15 @@ db_append_trials <- function(db_con,
 
 
 
-readFromS3 <- function(filename, bucket) {
+readFromS3 <- function(filename,
+                       bucket,
+                       col_names = c("onset", "dur", "freq")) {
   # https://medium.com/@som028/how-to-read-and-write-data-from-and-to-s3-bucket-using-r-3fed7e686844
 
   logging::loginfo("readFromS3 function")
 
   return(aws.s3::s3read_using(FUN=readr::read_csv,
-                              col_names = c("onset", "dur", "freq"),
+                              col_names = col_names,
                               bucket = bucket,
                               object = filename))
 }
@@ -578,7 +588,7 @@ get_metadata <- function(file,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
           trial_time_started, onset, feedback, feedback_type, trial_paradigm,
-         melody_block_paradigm, additional, page_label, module, user_id)
+         melody_block_paradigm, additional, page_label, module, user_id, pyin_type)
 
 }
 
