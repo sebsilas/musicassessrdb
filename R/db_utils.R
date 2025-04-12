@@ -62,6 +62,7 @@ musicassessr_con <- function(local = FALSE,
 #' @param filter_item_banks
 #' @param add_trial_scores
 #' @param score_to_use
+#' @param trial_filter_fun
 #'
 #' @returns
 #' @export
@@ -74,7 +75,8 @@ compile_item_trials <- function(db_con = NULL,
                                 join_item_banks_on = FALSE,
                                 filter_item_banks = NULL,
                                 add_trial_scores = FALSE,
-                                score_to_use = "opti3") {
+                                score_to_use = "opti3",
+                                trial_filter_fun = NULL) {
 
   if(is.null(db_con)) {
     connected_to_db_locally <- TRUE
@@ -91,6 +93,10 @@ compile_item_trials <- function(db_con = NULL,
   trials <- get_table(db_con, "trials", collect = TRUE)  %>%
     dplyr::left_join(sessions, by = "session_id")
 
+  if(is.function(trial_filter_fun)) {
+    trials <- trials %>%
+      trial_filter_fun()
+  }
 
   # Grab trials only for the given user on the given test
   user_trials <- trials %>%
@@ -142,8 +148,18 @@ compile_item_trials <- function(db_con = NULL,
   if(add_trial_scores) {
 
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
-      dplyr::filter(measure %in% !! score_to_use) %>%
-      dplyr::collect()
+      dplyr::filter(trial_id %in% !! trials$trial_id)
+
+    if(is.character(score_to_use)) {
+      trial_scores <- trial_scores %>%
+        dplyr::filter(measure %in% !! score_to_use)
+    }
+
+    trial_scores <- trial_scores %>%
+      dplyr::collect() %>%
+      tidyr::pivot_wider(-scores_trial_id,
+                         names_from = "measure",
+                         values_from = "score")
 
     user_trials <- user_trials %>%
       dplyr::left_join(trial_scores, by = "trial_id")

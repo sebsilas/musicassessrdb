@@ -138,7 +138,43 @@ compute_session_scores_and_end_session <- function(test_id = NA,
 
     # Get trials
 
-    trial_table <- compile_item_trials(db_con, test_id, session_id, user_id, join_item_banks_on = TRUE) # Here we give a session ID, because we only want to assess trials in this session
+    trial_table <- compile_item_trials(db_con,
+                                       test_id,
+                                       session_id, # Here we give a session ID, because we only want to assess trials in this session
+                                       user_id,
+                                       join_item_banks_on = TRUE,
+                                       trial_filter_fun = function(df) {
+                                         df %>% dplyr::filter(melody_block_paradigm != "long_note")
+                                       })
+
+    # Long note trials too
+
+    long_note_trials <- compile_item_trials(db_con,
+                                             test_id,
+                                             session_id, # Here we give a session ID, because we only want to assess trials in this session
+                                             user_id,
+                                             join_item_banks_on = FALSE,
+                                              score_to_use = NULL,
+                                              add_trial_scores = TRUE,
+                                             trial_filter_fun = function(df) {
+                                               df %>% dplyr::filter(melody_block_paradigm == "long_note")
+                                             })
+
+    if(nrow(long_note_trials) > 0L) {
+
+      long_note_scores <- long_note_trials %>%
+        dplyr::select(long_note_accuracy:long_note_freq_min)
+
+      long_note_pca_scores <- long_note_scores %>%
+        dplyr::select(long_note_accuracy, long_note_dtw_distance, long_note_autocorrelation_mean,
+                      long_note_run_test, long_note_no_cpts, long_note_beginning_of_second_cpt) %>%
+        musicassessr::get_long_note_pcas()
+
+    } else {
+      long_note_pca_scores <- NA
+    }
+
+
 
     logging::loginfo("Number of trials found: %s", nrow(trial_table))
 
@@ -296,6 +332,9 @@ compute_session_scores_and_end_session <- function(test_id = NA,
         ability_estimate_rhythmic_first_attempt = ability_estimate_rhythmic_first_attempt,
         ability_estimate_rhythmic_last_attempt = ability_estimate_rhythmic_last_attempt)
 
+      if(is.data.frame(long_note_pca_scores)) {
+        scores <- cbind(scores, long_note_pca_scores)
+      }
 
       scores <- scores %>%
         scores_to_long_format() %>%

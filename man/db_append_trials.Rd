@@ -24,7 +24,7 @@ db_append_trials(
   trial_type = c("audio", "midi"),
   trial_paradigm = c("call_and_response", "simultaneous_recall",
     "long_note_call_and_response", "long_note_simultaneous_recall",
-    "setup_sing_range_note"),
+    "setup_sing_range_note", "free_recall"),
   additional = NA,
   melody_block_paradigm,
   page_label,

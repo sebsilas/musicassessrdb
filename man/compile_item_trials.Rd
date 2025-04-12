@@ -12,11 +12,12 @@ compile_item_trials(
   join_item_banks_on = FALSE,
   filter_item_banks = NULL,
   add_trial_scores = FALSE,
-  score_to_use = "opti3"
+  score_to_use = "opti3",
+  trial_filter_fun = NULL
 )
 }
 \arguments{
-\item{score_to_use}{}
+\item{trial_filter_fun}{}
 }
 \description{
 Compile item trials
