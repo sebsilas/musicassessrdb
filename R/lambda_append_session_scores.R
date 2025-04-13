@@ -190,8 +190,8 @@ compute_session_scores_and_end_session <- function(test_id = NA,
         dplyr::group_by(trial_id, measure) %>%
         dplyr::slice_max(score) %>%
         dplyr::ungroup() %>%
-        unique() %>%
         dplyr::collect() %>%
+        unique() %>%
         tidyr::pivot_wider(names_from = "measure", values_from = "score")
 
       # Join on scores
