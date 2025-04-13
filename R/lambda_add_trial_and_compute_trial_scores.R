@@ -210,6 +210,21 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("...appended.")
 
+
+      if(DBI::dbIsValid(db_con)) {
+        musicassessrdb::db_disconnect(db_con)
+      }
+
+      # logging::loginfo("scores_trial_id: %s", scores_trial_id)
+
+      return(list(
+        status = 200,
+        message = "You have successfully added a trial and scores for the trial!",
+        trial_id = trial_id,
+        scores_trial_ids = NA,
+        melodic_production_ids = melodic_production_ids
+      ))
+
     } else if(trial_paradigm == "setup_sing_range_note") {
 
       # Return early, we don't need to do any scoring for this
@@ -225,6 +240,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
       return(ret)
 
     }
+
+
+    # Scoring
 
     if(test_id == 3) { # i.e., the RTT
 
