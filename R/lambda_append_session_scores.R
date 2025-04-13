@@ -144,7 +144,9 @@ compute_session_scores_and_end_session <- function(test_id = NA,
                                        user_id,
                                        join_item_banks_on = TRUE,
                                        trial_filter_fun = function(df) {
-                                         df %>% dplyr::filter(melody_block_paradigm != "long_note")
+                                         df %>%
+                                           dplyr::filter(melody_block_paradigm != "long_note",
+                                                         ! grepl("CUSTOM_ITEM", item_id) )
                                        })
 
     # Long note trials too
@@ -189,6 +191,7 @@ compute_session_scores_and_end_session <- function(test_id = NA,
         dplyr::slice_max(score) %>%
         dplyr::ungroup() %>%
         unique() %>%
+        dplyr::collect() %>%
         tidyr::pivot_wider(names_from = "measure", values_from = "score")
 
       # Join on scores
