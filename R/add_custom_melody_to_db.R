@@ -23,12 +23,17 @@ add_custom_melody_to_db <- function(db_con = NULL,
     local_db_con <- FALSE
   }
 
-  # First check if item exists in the original item_bank as an N-gram
-  item_exists <- check_item_exists_in_db(db_con,
-                                          original_item_bank,
-                                          abs_melody,
-                                          durations,
-                                          original_item_id)
+  if(original_item_id == "NONE") {
+    item_exists <- FALSE
+  } else {
+    # First check if item exists in the original item_bank as an N-gram
+    item_exists <- check_item_exists_in_db(db_con,
+                                           original_item_bank,
+                                           abs_melody,
+                                           durations,
+                                           original_item_id)
+  }
+
 
   if(!is.scalar.character(item_exists)) {
 

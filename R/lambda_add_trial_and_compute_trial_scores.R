@@ -133,7 +133,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("class(db_con): %s", class(db_con))
     logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
 
-    if(item_id == "CUSTOM_ITEM") {
+    if(grepl("CUSTOM_ITEM", item_id)) {
 
       logging::loginfo("Custom item...")
 
@@ -151,7 +151,11 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       logging::loginfo("original_item_id: %s", original_item_id)
 
-      original_item_bank <- extract_item_bank_name_from_item_id(db_con, original_item_id)
+      if(original_item_id == "NONE") {
+        original_item_bank <- "NONE"
+      } else {
+        original_item_bank <- extract_item_bank_name_from_item_id(db_con, original_item_id)
+      }
 
       logging::loginfo("original_item_bank: %s", original_item_bank)
 
@@ -195,7 +199,18 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
     logging::loginfo("Got trial_id: %s", trial_id)
 
-    if(trial_paradigm == "setup_sing_range_note") {
+    if(item_id == "CUSTOM_ITEM_NO_SCORING") {
+
+      logging::loginfo("Append melodic production...")
+
+      correct_boolean <- rep(NA, nrow(res))
+      correct_boolean_octaves_allowed <- rep(NA, nrow(res))
+      # Add melodic production
+      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
+
+      logging::loginfo("...appended.")
+
+    } else if(trial_paradigm == "setup_sing_range_note") {
 
       # Return early, we don't need to do any scoring for this
 
