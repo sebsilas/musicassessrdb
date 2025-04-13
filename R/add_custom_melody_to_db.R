@@ -24,7 +24,9 @@ add_custom_melody_to_db <- function(db_con = NULL,
   }
 
   if(original_item_id == "NONE") {
+
     item_exists <- FALSE
+
   } else {
     # First check if item exists in the original item_bank as an N-gram
     item_exists <- check_item_exists_in_db(db_con,
@@ -32,12 +34,21 @@ add_custom_melody_to_db <- function(db_con = NULL,
                                            abs_melody,
                                            durations,
                                            original_item_id)
+
+    if(!is.scalar.character(item_exists)) {
+      logging::loginfo("Item does not exist in the original item bank, %s, as an ngram", original_item_bank)
+    }
   }
 
 
-  if(!is.scalar.character(item_exists)) {
-
-    logging::loginfo("Item does not exist in the original item bank, %s, as an ngram", original_item_bank)
+  if(is.scalar.character(item_exists)) {
+    return(
+      list(
+        message = "You have successfully added a new item",
+        item_id = item_exists
+      )
+    )
+  } else {
 
     item_exists <- # Then check if the item_bank exists in the custom items item bank as an N-gram
       check_item_exists_in_db(db_con,
@@ -76,14 +87,14 @@ add_custom_melody_to_db <- function(db_con = NULL,
       if(local_db_con) {
         db_disconnect(db_con)
       }
-    }
 
-    return(
-      list(
-        message = "You have successfully added a new item",
-        item_id = melody$item_id
+      return(
+        list(
+          message = "You have successfully added a new item",
+          item_id = melody$item_id
+        )
       )
-    )
+    }
 
   }
 }
