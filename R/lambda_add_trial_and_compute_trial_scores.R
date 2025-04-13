@@ -133,7 +133,7 @@ add_trial_and_compute_trial_scores <- function(Records) {
     logging::loginfo("class(db_con): %s", class(db_con))
     logging::loginfo("DBI::dbIsValid(db_con): %s", DBI::dbIsValid(db_con))
 
-    if(grepl("CUSTOM_ITEM", item_id)) {
+    if(grepl("CUSTOM_ITEM", item_id) && ! grepl("NO_SCORING", item_id)) {
 
       logging::loginfo("Custom item...")
 
