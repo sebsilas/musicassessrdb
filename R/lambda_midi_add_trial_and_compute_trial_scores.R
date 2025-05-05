@@ -161,7 +161,6 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       stimuli_durations <- itembankr::str_mel_to_vector(stimuli_durations)
     }
 
-
     test_id <- as.integer(test_id)
     trial_time_completed <- lubridate::as_datetime(trial_time_completed)
     attempt <- as.integer(attempt)
@@ -226,58 +225,74 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     logging::loginfo("Got trial_id: %s", trial_id)
 
     # Get pYIN (or rhythm onset) results
+    if(test_id == 3) { # i.e., the RTT
 
-    logging::loginfo("Score melodic production...")
+      logging::loginfo("Score rhythm production...")
 
-    user_notes <- res$note
+      logging::loginfo("names(res)")
+      logging::loginfo(names(res))
 
-    logging::loginfo("res$freq %s", res$freq)
-    logging::loginfo("user_notes %s", user_notes)
-    logging::loginfo("res$dur %s", res$dur)
-    logging::loginfo("res$onset %s", res$onset)
-    logging::loginfo("stimuli %s", stimuli)
-    logging::loginfo("stimuli_durations %s", stimuli_durations)
+      logging::loginfo("res")
+      logging::loginfo(res)
 
-    logging::loginfo("is.numeric(res$freq) %s", is.numeric(res$freq))
-    logging::loginfo("is.numeric(user_notes) %s", is.numeric(user_notes))
-    logging::loginfo("is.numeric(res$dur) %s", is.numeric(res$dur))
-    logging::loginfo("is.numeric(res$onset) %s", is.numeric(res$onset))
-    logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
-    logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
+      scores <- get_rhythm_scores(res, stimuli_durations)
 
-    if(nrow(res) < 1L) {
-
-      logging::loginfo("Invalid input, no scores possible")
-
-      scores_trial_ids <- NA
       melodic_production_ids <- NA
-
 
     } else {
 
-      # Store MIDI results in in DB
-      scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
-                                                       user_melody_input = user_notes,
-                                                       user_duration_input = res$dur,
-                                                       user_onset_input = res$onset,
-                                                       stimuli = stimuli,
-                                                       stimuli_durations = stimuli_durations,
-                                                       as_tb = FALSE)
+      logging::loginfo("Score melodic production...")
 
-      correct_boolean <- scores$correct_boolean
-      correct_boolean_octaves_allowed <- scores$correct_boolean_octaves_allowed
+      user_notes <- res$note
 
-      logging::loginfo("length(correct_boolean) %s", length(correct_boolean))
-      logging::loginfo("correct_boolean: %s", correct_boolean)
-      logging::loginfo("correct_boolean_octaves_allowed: %s", correct_boolean_octaves_allowed)
+      logging::loginfo("res$freq %s", res$freq)
+      logging::loginfo("user_notes %s", user_notes)
+      logging::loginfo("res$dur %s", res$dur)
+      logging::loginfo("res$onset %s", res$onset)
+      logging::loginfo("stimuli %s", stimuli)
+      logging::loginfo("stimuli_durations %s", stimuli_durations)
 
-      logging::loginfo("Append melodic production...")
+      logging::loginfo("is.numeric(res$freq) %s", is.numeric(res$freq))
+      logging::loginfo("is.numeric(user_notes) %s", is.numeric(user_notes))
+      logging::loginfo("is.numeric(res$dur) %s", is.numeric(res$dur))
+      logging::loginfo("is.numeric(res$onset) %s", is.numeric(res$onset))
+      logging::loginfo("is.numeric(stimuli) %s", is.numeric(stimuli))
+      logging::loginfo("is.numeric(stimuli_durations) %s", is.numeric(stimuli_durations))
 
-      # Add melodic production
-      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
+      if(nrow(res) < 1L) {
 
-      logging::loginfo("...appended.")
+        logging::loginfo("Invalid input, no scores possible")
 
+        scores_trial_ids <- NA
+        melodic_production_ids <- NA
+
+
+      } else {
+
+        # Store MIDI results in in DB
+        scores <- musicassessr::score_melodic_production(user_melody_freq = res$freq,
+                                                         user_melody_input = user_notes,
+                                                         user_duration_input = res$dur,
+                                                         user_onset_input = res$onset,
+                                                         stimuli = stimuli,
+                                                         stimuli_durations = stimuli_durations,
+                                                         as_tb = FALSE)
+
+        correct_boolean <- scores$correct_boolean
+        correct_boolean_octaves_allowed <- scores$correct_boolean_octaves_allowed
+
+        logging::loginfo("length(correct_boolean) %s", length(correct_boolean))
+        logging::loginfo("correct_boolean: %s", correct_boolean)
+        logging::loginfo("correct_boolean_octaves_allowed: %s", correct_boolean_octaves_allowed)
+
+        logging::loginfo("Append melodic production...")
+
+        # Add melodic production
+        melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
+
+        logging::loginfo("...appended.")
+
+      }
 
       logging::loginfo("...scored.")
       logging::loginfo("scores: %s", scores)

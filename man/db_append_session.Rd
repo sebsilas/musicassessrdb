@@ -11,11 +11,12 @@ db_append_session(
   psychTestR_session_id = NA,
   session_time_started = Sys.time(),
   experiment_id = NA,
-  user_info = NA
+  user_info = NA,
+  shiny_app_name = ""
 )
 }
 \arguments{
-\item{user_info}{}
+\item{shiny_app_name}{}
 }
 \description{
 Store session information in sessions table
