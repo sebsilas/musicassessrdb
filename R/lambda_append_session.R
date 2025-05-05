@@ -119,7 +119,7 @@ db_append_session <- function(db_con,
                                psychTestR_session_id = psychTestR_session_id,
                                session_time_started = session_time_started,
                                experiment_id = experiment_id,
-                               shiny_app_name = shiny_app_name)
+                               shiny_app_name = if(length(shiny_app_name) == 0) NA else "")
 
   session_id <- db_append_to_table(db_con, table = "sessions", data = session_df, primary_key_col = "session_id")
 
