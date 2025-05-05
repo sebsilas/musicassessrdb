@@ -292,54 +292,53 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
 
         logging::loginfo("...appended.")
 
+        }
       }
 
-      logging::loginfo("...scored.")
-      logging::loginfo("scores: %s", scores)
+    logging::loginfo("...scored.")
+    logging::loginfo("scores: %s", scores)
 
-      # Grab trial scores, which are actually numeric scores and don't have NA-like values
-      trial_scores <- scores %>%
-        scores_to_long_format() %>%
-        dplyr::mutate(trial_id = trial_id)
+    # Grab trial scores, which are actually numeric scores and don't have NA-like values
+    trial_scores <- scores %>%
+      scores_to_long_format() %>%
+      dplyr::mutate(trial_id = trial_id)
 
-      logging::loginfo("trial_scores: %s", trial_scores)
+    logging::loginfo("trial_scores: %s", trial_scores)
 
-      logging::loginfo("Append to scores_trial")
+    logging::loginfo("Append to scores_trial")
 
-      # Compute a few "change in score/review" vars
+    # Compute a few "change in score/review" vars
 
-      study_history_stats <- get_study_history_stats(db_con,
-                                                     user_id = user_id,
-                                                     test_id = test_id,
-                                                     inst = instrument,
-                                                     item_id = item_id,
-                                                     measure = score_to_use,
-                                                     current_trial_scores = trial_scores,
-                                                     current_trial_time_completed = trial_time_completed)
+    study_history_stats <- get_study_history_stats(db_con,
+                                                   user_id = user_id,
+                                                   test_id = test_id,
+                                                   inst = instrument,
+                                                   item_id = item_id,
+                                                   measure = score_to_use,
+                                                   current_trial_scores = trial_scores,
+                                                   current_trial_time_completed = trial_time_completed)
 
-      study_history_stats <- study_history_stats %>%
-        dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
-        tidyr::pivot_longer(dplyr::everything(),
-                            names_to = "measure",
-                            values_to = "score") %>%
-        dplyr::mutate(trial_id = trial_id)
+    study_history_stats <- study_history_stats %>%
+      dplyr::mutate(dplyr::across(dplyr::everything(), as.numeric)) %>%
+      tidyr::pivot_longer(dplyr::everything(),
+                          names_to = "measure",
+                          values_to = "score") %>%
+      dplyr::mutate(trial_id = trial_id)
 
 
-      logging::loginfo("study_history_stats: %s", study_history_stats)
+    logging::loginfo("study_history_stats: %s", study_history_stats)
 
-      print(names(trial_scores))
+    print(names(trial_scores))
 
-      print(names(study_history_stats))
+    print(names(study_history_stats))
 
-      trial_scores <- rbind(trial_scores, study_history_stats)
+    trial_scores <- rbind(trial_scores, study_history_stats)
 
-      scores_trial_ids <- db_append_scores_trial(db_con,
-                                                 trial_id,
-                                                 measure = trial_scores$measure,
-                                                 score = trial_scores$score)
-      logging::loginfo("...appended.")
-
-    }
+    scores_trial_ids <- db_append_scores_trial(db_con,
+                                               trial_id,
+                                               measure = trial_scores$measure,
+                                               score = trial_scores$score)
+    logging::loginfo("...appended.")
 
 
     list(
