@@ -23,9 +23,13 @@ send_email <- function(subject, body) {
   smtp(email_content, verbose = TRUE)
 }
 
-send_daily_summary <- function() {
+send_daily_summary <- function(prod = TRUE) {
 
-  db_con <- musicassessr_con()
+  if(prod) {
+    db_con <- musicassessr_con(db_name = "melody_prod")
+  } else {
+    db_con <- musicassessr_con(db_name = "melody_dev")
+  }
 
   # Get yesterday's date
   today <- Sys.Date()
@@ -108,8 +112,14 @@ send_daily_summary <- function() {
     )
   })
 
+  if(prod) {
+    heading <- paste0("<h2>Daily MusicAssessr Report Prod DB - ", today, "</h2>")
+  } else {
+    heading <- paste0("<h2>Daily MusicAssessr Report Dev DB - ", today, "</h2>")
+  }
+
   # Combine all tables into the email body
-  email_body <- paste0("<h2>Daily MusicAssessr Report - ", today, "</h2>", overall_table, paste0(app_tables, collapse = ""))
+  email_body <- paste0(heading, overall_table, paste0(app_tables, collapse = ""))
 
   # Send email with the stats table
   send_email(subject = paste("Daily MusicAssessr Report -", today), body = email_body)
