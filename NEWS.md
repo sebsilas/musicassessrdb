@@ -1,3 +1,7 @@
+# musicassessrdb 0.4.3
+
+- Fix bug around computing MIDI onsets
+
 # musicassessrdb 0.4.2
 
 - Add `module` argument

@@ -808,7 +808,7 @@ db_disconnect <- function(db_con) {
   if(is(db_con, "Pool"))   {
     pool::poolClose(db_con)
   } else {
-    db_disconnect(db_con)
+    DBI::dbDisconnect(db_con)
   }
 }
 

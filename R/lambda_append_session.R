@@ -4,14 +4,16 @@
 store_db_session_api <- function(experiment_id = NA,
                                  experiment_condition_id = NA,
                                  user_id,
-                                 session_time_started = Sys.time()) {
+                                 session_time_started = Sys.time(),
+                                 shiny_app_name = "") {
 
   # Define the request body as a list
   request_body <- list(
     experiment_id = experiment_id,
     experiment_condition_id = experiment_condition_id,
     user_id = user_id,
-    session_time_started = session_time_started
+    session_time_started = session_time_started,
+    shiny_app_name = shiny_app_name
   )
 
   endpoint_wrapper(function_name = "append-session",
@@ -21,123 +23,14 @@ store_db_session_api <- function(experiment_id = NA,
 
 
 
-
-# t <- append_session(
-#   user_id = 1L,
-#   user_info = '{
-#     "locationInfo": {
-#         "ipVersion": 4,
-#         "ipAddress": "77.22.146.4",
-#         "latitude": 52.370834,
-#         "longitude": 9.733559,
-#         "countryName": "Germany",
-#         "countryCode": "DE",
-#         "timeZone": "+01:00",
-#         "zipCode": "30159",
-#         "cityName": "Hanover",
-#         "regionName": "Niedersachsen",
-#         "isProxy": false,
-#         "continent": "Europe",
-#         "continentCode": "EU",
-#         "currency": {
-#             "code": "EUR",
-#             "name": "Euro"
-#         },
-#         "language": "German",
-#         "timeZones": [
-#             "Europe/Berlin",
-#             "Europe/Busingen"
-#         ],
-#         "tlds": [
-#             ".de"
-#         ]
-#     },
-#     "hardwareInfo": {
-#         "vendorSub": "",
-#         "productSub": "20030107",
-#         "vendor": "Google Inc.",
-#         "maxTouchPoints": 0,
-#         "scheduling": {},
-#         "userActivation": {},
-#         "doNotTrack": null,
-#         "geolocation": {},
-#         "connection": {},
-#         "pdfViewerEnabled": true,
-#         "webkitTemporaryStorage": {},
-#         "webkitPersistentStorage": {},
-#         "windowControlsOverlay": {},
-#         "hardwareConcurrency": 8,
-#         "cookieEnabled": true,
-#         "appCodeName": "Mozilla",
-#         "appName": "Netscape",
-#         "appVersion": "5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-#         "platform": "MacIntel",
-#         "product": "Gecko",
-#         "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/133.0.0.0 Safari/537.36",
-#         "language": "en-GB",
-#         "languages": [
-#             "en-GB",
-#             "en-US",
-#             "en"
-#         ],
-#         "onLine": true,
-#         "webdriver": false,
-#         "deprecatedRunAdAuctionEnforcesKAnonymity": false,
-#         "protectedAudience": {},
-#         "bluetooth": {},
-#         "storageBuckets": {},
-#         "clipboard": {},
-#         "credentials": {},
-#         "keyboard": {},
-#         "managed": {},
-#         "mediaDevices": {},
-#         "storage": {},
-#         "serviceWorker": {},
-#         "virtualKeyboard": {},
-#         "wakeLock": {},
-#         "deviceMemory": 8,
-#         "userAgentData": {
-#             "brands": [
-#                 {
-#                     "brand": "Not(A:Brand",
-#                     "version": "99"
-#                 },
-#                 {
-#                     "brand": "Google Chrome",
-#                     "version": "133"
-#                 },
-#                 {
-#                     "brand": "Chromium",
-#                     "version": "133"
-#                 }
-#             ],
-#             "mobile": false,
-#             "platform": "macOS"
-#         },
-#         "login": {},
-#         "ink": {},
-#         "mediaCapabilities": {},
-#         "devicePosture": {},
-#         "hid": {},
-#         "locks": {},
-#         "gpu": {},
-#         "mediaSession": {},
-#         "permissions": {},
-#         "presentation": {},
-#         "usb": {},
-#         "xr": {},
-#         "serial": {}
-#     }
-# }'
-# )
-
 # This is the function that is called when the endpoint
 # is invoked
 append_session <- function(experiment_condition_id = NA,
                            user_id,
                            session_time_started = Sys.time(),
                            experiment_id = NA,
-                           user_info = NA) {
+                           user_info = NA,
+                           shiny_app_name = "") {
 
   logging::loginfo("Inside append_session function")
 
@@ -151,6 +44,8 @@ append_session <- function(experiment_condition_id = NA,
 
   logging::loginfo("user_info: %s", user_info)
 
+  logging::loginfo("shiny_app_name: %s", shiny_app_name)
+
   experiment_condition_id <- if(length(experiment_condition_id) == 0) NA_integer_ else experiment_condition_id
   experiment_id <- if(length(experiment_id) == 0) NA_integer_ else experiment_id
 
@@ -163,7 +58,8 @@ append_session <- function(experiment_condition_id = NA,
                                     user_id = as.integer(user_id),
                                     session_time_started = session_time_started,
                                     experiment_id = as.integer(experiment_id),
-                                    user_info = user_info) # In psychTestR, this will be NA and updated at the end
+                                    user_info = user_info,# In psychTestR, this will be NA and updated at the end
+                                    shiny_app_name = shiny_app_name)
     # Return response
 
    list(
@@ -198,6 +94,7 @@ append_session <- function(experiment_condition_id = NA,
 #' @param session_time_started
 #' @param experiment_id
 #' @param user_info
+#' @param shiny_app_name
 #'
 #' @return
 #' @export
@@ -209,7 +106,8 @@ db_append_session <- function(db_con,
                               psychTestR_session_id = NA,
                               session_time_started = Sys.time(),
                               experiment_id = NA,
-                              user_info = NA) {
+                              user_info = NA,
+                              shiny_app_name = "") {
 
   logging::loginfo("db_append_session")
 
@@ -220,7 +118,8 @@ db_append_session <- function(db_con,
                                user_id = user_id,
                                psychTestR_session_id = psychTestR_session_id,
                                session_time_started = session_time_started,
-                               experiment_id = experiment_id)
+                               experiment_id = experiment_id,
+                               shiny_app_name = if(length(shiny_app_name) == 0) NA else "")
 
   session_id <- db_append_to_table(db_con, table = "sessions", data = session_df, primary_key_col = "session_id")
 
