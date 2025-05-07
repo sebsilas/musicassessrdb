@@ -235,9 +235,11 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
       logging::loginfo("res")
       logging::loginfo(res)
 
-      scores <- get_rhythm_scores(res, stimuli_durations)
+      correct_boolean <- rep(NA, nrow(res))
+      correct_boolean_octaves_allowed <- rep(NA, nrow(res))
+      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
 
-      melodic_production_ids <- NA
+      scores <- get_rhythm_scores(res, stimuli_durations)
 
     } else {
 
