@@ -1,3 +1,5 @@
+# musicassessrdb 0.4.3
+
 # musicassessrdb 0.4.2
 
 - Add `module` argument

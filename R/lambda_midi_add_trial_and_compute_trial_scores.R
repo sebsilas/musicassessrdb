@@ -177,7 +177,7 @@ midi_add_trial_and_compute_trial_scores <- function(stimuli,
     first_onset <- res$onset[1]
 
     res <- res %>%
-      dplyr::mutate(onset = first_onset)
+      dplyr::mutate(onset = onset - first_onset)
 
 
     logging::loginfo("Check classes...")
