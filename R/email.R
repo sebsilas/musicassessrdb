@@ -173,7 +173,8 @@ email_slonimsky_lambda <- function(type, email, message, user_id = NA, app_versi
       email = email,
       message = message,
       date_sent = Sys.time(),
-      user_id = user_id
+      user_id = user_id,
+      app_version = app_version
     )
 
     db_con <- musicassessr_con()
