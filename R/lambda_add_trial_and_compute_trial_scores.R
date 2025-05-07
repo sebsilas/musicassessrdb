@@ -633,6 +633,8 @@ get_rhythm_scores <- function(onset_res, stimuli_durations) {
 
   logging::loginfo("user_onsets: %s", paste0(round(user_onsets, 2), collapse = " | "))
 
+  stimuli_durations[length(stimuli_durations)] <- last_dur
+
   scores <- musicassessr::score_rhythm_production(stimuli_durations, user_durations)
 
 }
