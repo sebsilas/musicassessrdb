@@ -123,11 +123,13 @@ send_daily_summary <- function() {
 
 # email_slonimsky_lambda("Bug Report", "sebsilas@gmail.com", "test")
 
-email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
+email_slonimsky_lambda <- function(type, email, message, user_id = NA, app_version = NA) {
   response <- tryCatch({
+
     logging::loginfo('type: %s', type)
     logging::loginfo('email: %s', email)
     logging::loginfo('message: %s', message)
+    logging::loginfo('app_version: %s', app_version)
     logging::loginfo('user_id: %s', user_id)
 
     # Retrieve SMTP password securely
@@ -151,7 +153,8 @@ email_slonimsky_lambda <- function(type, email, message, user_id = NA) {
       "<p><strong>Type:</strong> ", type, "</p>",
       "<p><strong>Email:</strong> ", email, "</p>",
       "<p><strong>Message:</strong> ", message, "</p>",
-      "<p><strong>User ID:</strong> ", user_id, "</p>"
+      "<p><strong>User ID:</strong> ", user_id, "</p>",
+      "<p><strong>App Version:</strong> ", app_version, "</p>"
     )
 
     # Create the email message using emayili::envelope
