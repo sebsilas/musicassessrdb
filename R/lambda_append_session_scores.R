@@ -382,13 +382,21 @@ session_scores_helper <- function(db_con,
 
 
     if(update) {
+
+      update <- dbplyr::copy_inline(db_con, scores)
+
+      # Work out which ids will be updated before hand
+      scores_session_id <- dplyr::left_join(update,
+                                             dplyr::tbl(db_con, "scores_session"),
+                                             by = c("session_id", "measure") ) %>%
+        dplyr::pull(scores_session_id)
+
+      dplyr::rows_update(dplyr::tbl(db_con, "scores_session"), update, in_place = TRUE, by = c("session_id", "measure"), unmatched = "ignore")
+
+    } else {
       # Append scores
       scores_session_id <- db_append_scores_session(db_con, scores)
-    } else {
-
     }
-
-
 
 
   } else {
