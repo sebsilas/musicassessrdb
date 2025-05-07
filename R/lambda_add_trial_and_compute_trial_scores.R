@@ -256,7 +256,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
       scores <- get_rhythm_scores(res, stimuli_durations)
 
-      melodic_production_ids <- NA
+      correct_boolean <- rep(NA, nrow(res))
+      correct_boolean_octaves_allowed <- rep(NA, nrow(res))
+      melodic_production_ids <- db_append_melodic_production(db_con, trial_id, res, correct_boolean, correct_boolean_octaves_allowed)
 
     } else if(melody_block_paradigm == "long_note") {
 
