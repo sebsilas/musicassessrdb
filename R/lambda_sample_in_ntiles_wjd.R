@@ -10,7 +10,7 @@
 
 # t <- sample_in_ntiles_wjd()
 
-sample_in_ntiles_wjd <- function(num_item_arrhythmic = 8L,
+sample_in_ntiles_wjd <- function(num_items_arrhythmic = 8L,
                                  num_items_rhythmic = 8L) {
 
   tryCatch({
