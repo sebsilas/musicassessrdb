@@ -18,7 +18,7 @@ sample_in_ntiles_wjd <- function(num_items_arrhythmic = 8L,
 
 
     sample_arrhythmic <- musicassessr::sample_in_ntiles_wrapper(musicassessr::pbet_hmtm_2024_item_bank,
-                                                                num_items = num_item_arrhythmic,
+                                                                num_items = num_items_arrhythmic,
                                                                 ntile_sampling_upper_bound = 4L,
                                                                 col_name = "arrhythmic_difficulty_percentile",
                                                                 n = 4) %>%
