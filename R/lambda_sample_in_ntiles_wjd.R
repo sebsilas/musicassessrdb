@@ -1,6 +1,5 @@
 
 
-
 # curl -X POST 'https://api.songbird.training/sample-in-ntiles-wjd' \
 # -H 'Content-Type: application/json' \
 # -d '{
@@ -8,7 +7,6 @@
 # }'
 
 
-# t <- sample_in_ntiles_wjd()
 
 sample_in_ntiles_wjd <- function(num_items_arrhythmic = 8L,
                                  num_items_rhythmic = 8L) {

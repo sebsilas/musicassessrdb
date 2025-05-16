@@ -99,6 +99,20 @@ select_items <- function(user_id,
     # update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
     #                                                                    new_items = new_items_df)), status = "FINISHED")
 
+    if(!"rhythmic" %in% names(new_items_df)) {
+      new_items_df <- new_items_df %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(rhythmic = is_rhythmic(durations)) %>%
+        dplyr::ungroup()
+    }
+
+    if(!"rhythmic" %in% names(review_items_df)) {
+      review_items_df <- review_items_df %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(rhythmic = is_rhythmic(durations)) %>%
+        dplyr::ungroup()
+    }
+
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
          new_items = new_items_df,
@@ -123,6 +137,16 @@ select_items <- function(user_id,
 
 
 
+
+}
+
+is_rhythmic <- function(melody_durations) {
+
+  if(is.scalar.character(melody_durations)) {
+    melody_durations <- itembankr::str_mel_to_vector(melody_durations)
+  }
+
+  return(!var(melody_durations) == 0)
 
 }
 
