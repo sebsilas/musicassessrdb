@@ -31,7 +31,7 @@ get_singpause_items_v2 <- function(user_id = NULL) {
 
   # Now group by item_id
   grouped <- item_bank %>%
-    dplyr::group_by(song_name) %>%
+    dplyr::group_by(song_name, image) %>%
     dplyr::summarise(
       phrases = list(phrase_name),
       audio_file = list(audio_file),
