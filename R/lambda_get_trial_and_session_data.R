@@ -1,16 +1,9 @@
 
-
-
-# t <- get_trial_and_session_data_api(111)
 # db_con <- musicassessr_con()
-# t <- get_trial_and_session_data(111)
+# user_data <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
 
-# t <- get_trial_and_session_data(111)$scores_trial
-# t <- get_trial_and_session_data(111, app_name_filter = "songbird")$scores_trial
-# t <- get_trial_and_session_data(2)$scores_trial
-# t <- get_trial_and_session_data(2, app_name_filter = "songbird")$scores_trial
 
-# t <- get_trial_and_session_data(group_id = 5, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
@@ -86,12 +79,6 @@ get_trial_and_session_data <- function(user_id = NULL,
 
     session_ids <- sessions$session_id
 
-    session_scores <- get_table(db_con, "scores_session", collect = TRUE) %>%
-        dplyr::filter(!is.na(measure) & !is.na(score)) %>%
-        dplyr::filter(measure %in% c(session_score_measure_arrhythmic, session_score_measure_rhythmic)) %>%
-        dplyr::filter(session_id %in% !! session_ids) %>%
-        dplyr::select(-scores_session_id) %>%
-        dplyr::left_join(sessions, by = "session_id")
 
     trials <- compile_item_trials(db_con,
                                   session_id = session_ids,
@@ -105,7 +92,6 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
-
 
     if("phrase_name" %in% names(trials)) {
 
@@ -124,7 +110,7 @@ get_trial_and_session_data <- function(user_id = NULL,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id)
 
 
-      # For phrases with names we  remove the constraint that a phrase must have been played more than once to be returned
+      # For phrases with names we remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
         dplyr::group_by(Date, user_id, username, phrase_name, item_id, songbird_type) %>%
@@ -158,23 +144,23 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
     }
 
+    # Compute session scores post-hoc just using trials..
+
     # But session scores we aggregate over the day
     # Aggregate across rhythmic and arrhythmic
-    session_scores_agg <- session_scores %>%
+    session_scores_agg <- scores_trial %>%
       dplyr::group_by(user_id, username, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
       dplyr::ungroup()
 
-    session_scores_rhythmic <- session_scores %>%
-      dplyr::filter(grepl("_rhythmic", measure)) %>%
-      dplyr::select(user_id, username, Date, session_id, session_time_started, session_time_completed, score) %>%
+    session_scores_rhythmic <- scores_trial %>%
+      dplyr::filter(rhythmic) %>%
       dplyr::group_by(user_id, username, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
       dplyr::ungroup()
 
-    session_scores_arrhythmic <- session_scores %>%
-      dplyr::filter(grepl("_arrhythmic", measure)) %>%
-      dplyr::select(user_id, username, Date, session_id, session_time_started, session_time_completed, score) %>%
+    session_scores_arrhythmic <- scores_trial %>%
+      dplyr::filter(!rhythmic) %>%
       dplyr::group_by(user_id, username, Date) %>%
       dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
       dplyr::ungroup()

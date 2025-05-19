@@ -86,11 +86,14 @@ compile_item_trials <- function(db_con = NULL,
   }
 
   # Grab session info
-  sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
-    dplyr::filter(user_id %in% !! user_id)
+  sessions <- get_table(db_con, "sessions") %>%
+    dplyr::filter(user_id %in% !! user_id) %>%
+    dplyr::collect()
 
   # Grab trial info
-  trials <- get_table(db_con, "trials", collect = TRUE)  %>%
+  user_trials <- get_table(db_con, "trials")  %>%
+    dplyr::filter(session_id %in% !! sessions$session_id) %>%
+    dplyr::collect() %>%
     dplyr::left_join(sessions, by = "session_id")
 
   if(is.function(trial_filter_fun)) {
@@ -98,9 +101,6 @@ compile_item_trials <- function(db_con = NULL,
       trial_filter_fun()
   }
 
-  # Grab trials only for the given user on the given test
-  user_trials <- trials %>%
-    dplyr::filter(user_id %in% !! user_id)
 
   # Return early if nothing there
 
@@ -134,7 +134,6 @@ compile_item_trials <- function(db_con = NULL,
   if(join_item_banks_on) {
 
     # Join items on
-
     user_trials <- left_join_on_items(db_con, df_with_item_ids = user_trials)
 
   }
@@ -368,13 +367,16 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 item_bank_name_to_id <- Vectorize(function(item_banks_table, ib_name) {
 
     id <- item_banks_table %>%
-      dplyr::filter(item_bank_name == ib_name) %>%
+      dplyr::filter(item_bank_name == !! ib_name) %>%
       dplyr::collect() %>%
       dplyr::pull(item_bank_id)
 
     if(length(id) == 0) {
       id <- NA
     }
+
+    id <- as.integer(id)
+
     return(id)
   }, vectorize.args = "ib_name")
 

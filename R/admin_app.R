@@ -80,3 +80,9 @@ run_admin_app <- function() {
 # user_data <- get_trial_and_session_data_api(user_id = 60)
 # user_stats <- user_data$user_stats %>% dplyr::bind_rows()
 # db_disconnect(db_con)
+
+
+# user_data <- get_trial_and_session_data_api(user_id = 138, app_name_filter = "songbird")
+
+
+# r <- user_data$review_melodies
