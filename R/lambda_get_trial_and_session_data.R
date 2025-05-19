@@ -210,10 +210,14 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::ungroup()
 
     # Aggregate session scores by songbird_type
-    session_scores_by_songbird_type <- scores_trial %>%
-      dplyr::filter(!is.na(songbird_type)) %>%
-      dplyr::group_by(user_id, username, Date, songbird_type) %>%
-      dplyr::summarise(score = mean(score, na.rm = TRUE), .groups = "drop")
+    if ("songbird_type" %in% names(scores_trial)) {
+      session_scores_by_songbird_type <- scores_trial %>%
+        dplyr::filter(!is.na(songbird_type)) %>%
+        dplyr::group_by(user_id, username, Date, songbird_type) %>%
+        dplyr::summarise(score = mean(score, na.rm = TRUE), .groups = "drop")
+    } else {
+      session_scores_by_songbird_type <- NA
+    }
 
 
 
@@ -245,12 +249,10 @@ get_trial_and_session_data <- function(user_id = NULL,
       last_month_avg_no_practice_sessions <- compute_avg_no_practice_sessions(last_month_avg_no_practice_session_per_user)
       last_week_avg_no_practice_sessions <- compute_avg_no_practice_sessions(last_week_avg_no_practice_session_per_user)
 
-
       # Song statistics (scores and practice counts combined)
       overall_song_stats <- compute_song_stats(scores_trial)
       last_month_song_stats <- compute_song_stats(scores_trial, last_month)
       last_week_song_stats <- compute_song_stats(scores_trial, last_week)
-
 
       group_stats <- list(
         overall_avg_minutes_per_day = overall_avg_minutes_per_day,
@@ -267,15 +269,20 @@ get_trial_and_session_data <- function(user_id = NULL,
 
         overall_song_stats = overall_song_stats,
         last_month_song_stats = last_month_song_stats,
-        last_week_song_stats = last_week_song_stats)
+        last_week_song_stats = last_week_song_stats
+      )
 
       # By class too
       # Class-level group_stats
-      group_stats_by_class <- user_stats %>%
-        dplyr::left_join(scores_trial %>% dplyr::select(user_id, class_id) %>% dplyr::distinct(), by = "user_id") %>%
-        dplyr::filter(!is.na(class_id))
+      if ("class_id" %in% names(scores_trial)) {
+        group_stats_by_class <- user_stats %>%
+          dplyr::left_join(scores_trial %>% dplyr::select(user_id, class_id) %>% dplyr::distinct(), by = "user_id") %>%
+          dplyr::filter(!is.na(class_id))
+      } else {
+        group_stats_by_class <- NA
+      }
 
-      if(nrow(group_stats_by_class) > 0) {
+      if (is.data.frame(group_stats_by_class) && nrow(group_stats_by_class) > 0) {
 
         class_stats <- group_stats_by_class %>%
           dplyr::group_by(class_id) %>%
@@ -296,8 +303,8 @@ get_trial_and_session_data <- function(user_id = NULL,
           dplyr::filter(!is.na(item_id))
 
       } else {
-        class_stats <- NULL
-        class_song_stats <- NULL
+        class_stats <- NA
+        class_song_stats <- NA
       }
 
       group_stats$class_stats <- class_stats
