@@ -29,9 +29,22 @@ get_singpause_items_v2 <- function(user_id = NULL) {
 
   item_bank <- item_bank %>% dplyr::left_join(trials, by = "item_id")
 
+  # Now group by item_id
+  grouped <- item_bank %>%
+    dplyr::group_by(song_name) %>%
+    dplyr::summarise(
+      phrases = list(phrase_name),
+      audio_file = list(audio_file),
+      lyrics_file = list(lyrics_file),
+      abs_melody = list(abs_melody),
+      durations = list(durations),
+      scores = list(score),
+      .groups = "drop"
+    )
 
-  return(item_bank)
+  return(grouped)
 }
 
 
 # t <- get_singpause_items_v2(138L)
+
