@@ -27,8 +27,6 @@ get_singpause_items_v2 <- function(user_id = NULL) {
     dplyr::slice_max(Date) %>% # Get latest score
     dplyr::ungroup()
 
-  browser()
-
   item_bank <- item_bank %>% dplyr::left_join(trials, by = "item_id")
 
   # Now group by song_name
