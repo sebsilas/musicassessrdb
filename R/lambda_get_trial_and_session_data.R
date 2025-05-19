@@ -209,6 +209,13 @@ get_trial_and_session_data <- function(user_id = NULL,
       dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
       dplyr::ungroup()
 
+    # Aggregate session scores by songbird_type
+    session_scores_by_songbird_type <- scores_trial %>%
+      dplyr::filter(!is.na(songbird_type)) %>%
+      dplyr::group_by(user_id, username, Date, songbird_type) %>%
+      dplyr::summarise(score = mean(score, na.rm = TRUE), .groups = "drop")
+
+
 
     # Compute engagement with app measures:
     # - Time using app: i) overall, ii) in last month; iii) in last week
@@ -317,6 +324,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       session_scores_rhythmic = session_scores_rhythmic,
       session_scores_arrhythmic = session_scores_arrhythmic,
       scores_session = session_scores_agg,
+      session_scores_by_songbird_type = session_scores_by_songbird_type,
       class_scores_session = session_scores_agg_class,
       class_scores_rhythmic = session_scores_rhythmic_class,
       class_scores_arrhythmic = session_scores_arrhythmic_class,
