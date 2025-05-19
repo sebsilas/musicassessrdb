@@ -319,7 +319,7 @@ update-user-id-after-signup:
 
 
 get-singpause-items-v2:
-  memorySize: 2000
+  memorySize: 5000
   timeout: 28
   image:
     name: appimage

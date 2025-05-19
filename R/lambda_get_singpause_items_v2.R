@@ -27,12 +27,15 @@ get_singpause_items_v2 <- function(user_id = NULL) {
     dplyr::slice_max(Date) %>% # Get latest score
     dplyr::ungroup()
 
+  browser()
+
   item_bank <- item_bank %>% dplyr::left_join(trials, by = "item_id")
 
-  # Now group by item_id
+  # Now group by song_name
   grouped <- item_bank %>%
     dplyr::group_by(song_name, image) %>%
     dplyr::summarise(
+      item_id = list(item_id),
       phrases = list(phrase_name),
       audio_file = list(audio_file),
       lyrics_file = list(lyrics_file),
