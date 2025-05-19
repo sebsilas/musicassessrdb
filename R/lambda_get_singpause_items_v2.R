@@ -20,7 +20,7 @@ get_singpause_items_v2 <- function(user_id = NULL) {
 
   trials <- compile_item_trials(db_con, user_id = user_id, add_trial_scores = TRUE) %>%
     dplyr::filter(grepl("singpause_2025", item_id)) %>%
-    dplyr::mutate(Date = lubridate::as_date(trial_time_completed)) %>%
+    dplyr::mutate(Date = lubridate::as_datetime(trial_time_completed)) %>%
     dplyr::rename(score = opti3) %>%
     dplyr::select(Date, item_id, score) %>%
     dplyr::group_by(item_id) %>%
