@@ -97,7 +97,7 @@ compile_item_trials <- function(db_con = NULL,
     dplyr::left_join(sessions, by = "session_id")
 
   if(is.function(trial_filter_fun)) {
-    trials <- trials %>%
+    user_trials <- user_trials %>%
       trial_filter_fun()
   }
 
@@ -147,7 +147,7 @@ compile_item_trials <- function(db_con = NULL,
   if(add_trial_scores) {
 
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
-      dplyr::filter(trial_id %in% !! trials$trial_id)
+      dplyr::filter(trial_id %in% !! user_trials$trial_id)
 
     if(is.character(score_to_use)) {
       trial_scores <- trial_scores %>%

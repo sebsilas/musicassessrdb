@@ -2,7 +2,9 @@
 # db_con <- musicassessr_con()
 # user_data <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
 
+# t <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE)
 
+# nothing returning with app_name_filter atm
 
 
 get_trial_and_session_data_api <- function(user_id = NULL,
@@ -107,8 +109,11 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::left_join(scores_trial, by = "trial_id") %>%
         dplyr::select(Date, user_id, username, trial_id, trial_time_started,
                       trial_time_completed, instrument, attempt, item_id, display_modality, phase,
-                      rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id)
-
+                      rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id) %>%
+        dplyr::mutate(singleiter_id = substr(username, 1, 2),
+                      school_id = substr(username, 3, 4),
+                      class_id = substr(username, 5, 6),
+                      student_id = substr(username, 7, 8) )
 
       # For phrases with names we remove the constraint that a phrase must have been played more than once to be returned
 
