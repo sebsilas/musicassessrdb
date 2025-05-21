@@ -139,7 +139,7 @@ get-items-from-ids: # Serverless framework logical name of the function
 
 
 select-items: # Serverless framework logical name of the function
-  memorySize: 1500
+  memorySize: 10000
   timeout: 28
   image:
     name: appimage
