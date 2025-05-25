@@ -1,10 +1,7 @@
 
 # db_con <- musicassessr_con()
-# user_data <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
 
-# t <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
-
-# nothing returning with app_name_filter atm
+# user_data <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
 
 
 get_trial_and_session_data_api <- function(user_id = NULL,
@@ -101,7 +98,7 @@ get_trial_and_session_data <- function(user_id = NULL,
       # We assume this is a SongBird app
 
       scores_trial <- trials %>%
-        { if(is.null(group_id)) . else dplyr::filter(., !email %in% c("sebsilas@gmail.com")) } %>%
+        # { if(is.null(group_id)) . else dplyr::filter(., !email %in% c("sebsilas@gmail.com")) } %>%
         dplyr::mutate(phrase_name = dplyr::case_when(grepl("singpause", item_id) & is.na(phrase_name) ~ as.character(song_name), TRUE ~ as.character(phrase_name)),
                       songbird_type = dplyr::case_when(grepl("Berkowitz", item_id) ~ "Sing-Training",
                                                        grepl("singpause", item_id) & trial_paradigm == "simultaneous_recall" ~ "SingPause Singalong",
@@ -113,6 +110,7 @@ get_trial_and_session_data <- function(user_id = NULL,
                       trial_time_completed, instrument, attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id) %>%
         compute_ids_from_singpause_username()
+
 
       # Compute class-level aggregates
       if ("class_id" %in% names(scores_trial)) {
@@ -318,7 +316,6 @@ get_trial_and_session_data <- function(user_id = NULL,
       review_melodies_over_time <- review_melodies_over_time %>%
         dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ 0, TRUE ~ score))
     }
-
 
 
     # Return response
