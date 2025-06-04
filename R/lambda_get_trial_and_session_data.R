@@ -3,6 +3,7 @@
 
 # user_data <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
 
+#
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
@@ -79,7 +80,6 @@ get_trial_and_session_data <- function(user_id = NULL,
 
     session_ids <- sessions$session_id
 
-
     trials <- compile_item_trials(db_con,
                                   session_id = session_ids,
                                   user_id = user_id,
@@ -118,19 +118,22 @@ get_trial_and_session_data <- function(user_id = NULL,
         session_scores_agg_class <- scores_trial %>%
           dplyr::group_by(class_id, Date) %>%
           dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
-          dplyr::ungroup()
+          dplyr::ungroup() %>%
+          dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
 
         session_scores_rhythmic_class <- scores_trial %>%
           dplyr::filter(rhythmic) %>%
           dplyr::group_by(class_id, Date) %>%
           dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
-          dplyr::ungroup()
+          dplyr::ungroup() %>%
+          dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
 
         session_scores_arrhythmic_class <- scores_trial %>%
           dplyr::filter(!rhythmic) %>%
           dplyr::group_by(class_id, Date) %>%
           dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
-          dplyr::ungroup()
+          dplyr::ungroup() %>%
+          dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
 
       } else {
         session_scores_agg_class <- NA

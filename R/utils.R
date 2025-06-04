@@ -143,6 +143,7 @@ format_item_ids_in_url <- function() {
 }
 
 filter_pseudo_anonymous_ids <- function(string) {
-  # Check if the string matches the pattern
-  grepl("^\\d{6}[A-Za-z]{2}\\d{2}.*", string)
+  # Check if the string matches any of the allowed patterns
+  grepl("^\\d{6}[A-Za-z]{2}\\d{2}.*|^\\d{8}$|^\\d{8}_\\d+$", string)
 }
+
