@@ -314,6 +314,7 @@ get_trial_and_session_data <- function(user_id = NULL,
 
 
     }
+    }
 
     # Remove nans
     if(is.data.frame(review_melodies_over_time)) {
