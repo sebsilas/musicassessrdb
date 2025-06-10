@@ -49,12 +49,12 @@ append_singpause_survey_completion_api <- function(user_id,
 append_singpause_survey_completion <- function(user_id,
                                                singpause_id, # Same as username in users
                                                psychTestR_id,
-                                               type = c("pretest", "posttest")) {
+                                               type = c("pretest", "posttest", "start_pretest")) {
 
   type <- match.arg(type)
 
   stopifnot(
-    type %in% c("pretest", "posttest")
+    type %in% c("pretest", "posttest", "start_pretest")
   )
 
   logging::loginfo("Inside append_singpause_survey_completion function")
@@ -113,12 +113,12 @@ append_singpause_survey_completion <- function(user_id,
 
 
 check_singpause_survey_completion <- function(user_id,
-                                              type = c("pretest", "posttest")) {
+                                              type = c("pretest", "posttest", "start_pretest")) {
 
   type <- match.arg(type)
 
   stopifnot(
-    type %in% c("pretest", "posttest")
+    type %in% c("pretest", "posttest", "start_pretest")
   )
 
   logging::loginfo("Inside check_singpause_survey_completion function")
