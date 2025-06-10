@@ -294,15 +294,16 @@ get_trial_and_session_data <- function(user_id = NULL,
           )
 
         class_song_stats <- scores_trial %>%
-          dplyr::filter(songbird_type %in% c("SingPause Singalong", "SingPause Solo")) %>%
+          dplyr::filter(songbird_type %in% c("SingPause Singalong", "SingPause Solo"),
+                        !is.na(phrase_name),
+                        grepl("Phrase ", phrase_name)) %>%
           dplyr::filter(!is.na(class_id)) %>%
-          dplyr::group_by(class_id, item_id) %>%
+          dplyr::group_by(class_id, phrase_name) %>%
           dplyr::summarise(
             Score = round(mean(score, na.rm = TRUE) * 10),
             NoTimesPractised = dplyr::n(),
             .groups = "drop"
-          ) %>%
-          dplyr::filter(!is.na(item_id))
+          )
 
       } else {
         class_stats <- NA
@@ -313,7 +314,6 @@ get_trial_and_session_data <- function(user_id = NULL,
       group_stats$class_song_stats <- class_song_stats
 
 
-    }
     }
 
     # Remove nans
