@@ -294,10 +294,11 @@ get_trial_and_session_data <- function(user_id = NULL,
           )
 
         class_song_stats <- scores_trial %>%
+          dplyr::filter(songbird_type %in% c("SingPause Singalong", "SingPause Solo")) %>%
           dplyr::filter(!is.na(class_id)) %>%
           dplyr::group_by(class_id, item_id) %>%
           dplyr::summarise(
-            Score = round(mean(score, na.rm = TRUE) * 100),
+            Score = round(mean(score, na.rm = TRUE) * 10),
             NoTimesPractised = dplyr::n(),
             .groups = "drop"
           ) %>%
@@ -450,7 +451,7 @@ compute_song_scores <- function(scores_data, filter_function = NULL) {
 
   res <- res %>%
     dplyr::group_by(!!item_identifier, !!trial_type_identifier) %>%
-    dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 100)) %>%
+    dplyr::summarise(Score = round(mean(score, na.rm = TRUE) * 10)) %>%
     dplyr::ungroup() %>%
     dplyr::mutate(Score = dplyr::case_when(is.nan(Score) ~ NA, TRUE ~ Score))
 
