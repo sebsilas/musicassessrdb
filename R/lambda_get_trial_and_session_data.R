@@ -467,6 +467,9 @@ compute_song_stats <- function(scores_data,
   item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
   item_identifier <- rlang::sym(item_identifier)
 
+  data <- data %>%
+    dplyr::filter( grepl("Phrase ", phrase_name) )
+
   scores_data <- scores_data %>%
     dplyr::filter( grepl("Phrase ", phrase_name) )
 
