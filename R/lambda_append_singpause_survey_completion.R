@@ -112,6 +112,8 @@ append_singpause_survey_completion <- function(user_id,
 
 
 
+# t <- check_singpause_survey_completion(user_id = 174L, type = "start_pretest")
+
 check_singpause_survey_completion <- function(user_id,
                                               type = c("pretest", "posttest", "start_pretest")) {
 

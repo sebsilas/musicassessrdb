@@ -16,6 +16,7 @@
 #   collect()
 
 # tt <- tbl(db_con, "review_items") %>% collect()
+# t <- select_items(174L)
 
 # db_disconnect(db_con)
 
@@ -208,7 +209,6 @@ get_items <- function(type = c("new", "review"),
   }
 
   primary_key_col <- paste0(tbl_name, "_", "id")
-
 
   num_unique_items <- user_trials %>%
     dplyr::pull(item_id) %>%

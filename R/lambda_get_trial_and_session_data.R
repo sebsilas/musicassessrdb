@@ -459,12 +459,16 @@ compute_song_scores <- function(scores_data, filter_function = NULL) {
   return(res)
 }
 
-compute_song_stats <- function(scores_data, filter_function = NULL) {
+compute_song_stats <- function(scores_data,
+                               filter_function = NULL) {
 
   data <- if (!is.null(filter_function)) scores_data %>% filter_function() else scores_data
 
   item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
   item_identifier <- rlang::sym(item_identifier)
+
+  scores_data <- scores_data %>%
+    dplyr::filter( grepl("Phrase ", phrase_name) )
 
   stats <- data %>%
     dplyr::count(user_id, !! item_identifier, name = "NoTimesPractised") %>%
