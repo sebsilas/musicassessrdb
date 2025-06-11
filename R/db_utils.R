@@ -63,6 +63,7 @@ musicassessr_con <- function(local = FALSE,
 #' @param add_trial_scores
 #' @param score_to_use
 #' @param trial_filter_fun
+#' @param grepl_item_id_filter
 #'
 #' @returns
 #' @export
@@ -76,7 +77,8 @@ compile_item_trials <- function(db_con = NULL,
                                 filter_item_banks = NULL,
                                 add_trial_scores = FALSE,
                                 score_to_use = "opti3",
-                                trial_filter_fun = NULL) {
+                                trial_filter_fun = NULL,
+                                grepl_item_id_filter = NULL) {
 
   if(is.null(db_con)) {
     connected_to_db_locally <- TRUE
@@ -99,6 +101,11 @@ compile_item_trials <- function(db_con = NULL,
   if(is.function(trial_filter_fun)) {
     user_trials <- user_trials %>%
       trial_filter_fun()
+  }
+
+  if(is.character(grepl_item_id_filter)) {
+    user_trials <- user_trials %>%
+      dplyr::filter(grepl(grepl_item_id_filter, item_id))
   }
 
 
@@ -562,7 +569,8 @@ get_item_bank_names <- function(db_con, item_ids) {
 #' @export
 #'
 #' @examples
-left_join_on_items <- function(db_con, df_with_item_ids) {
+left_join_on_items <- function(db_con,
+                               df_with_item_ids) {
 
   logging::loginfo("Join on items...")
 
@@ -584,7 +592,6 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
     dplyr::select(item_bank_name, item_bank_id) %>%
     unique()
 
-
   grand_item_bank <- purrr::pmap_dfr(item_banks, function(item_bank_name, item_bank_id) {
 
     ib <- get_table(db_con, paste0("item_bank_", item_bank_name), collect = FALSE) %>%
@@ -593,7 +600,6 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
       dplyr::mutate(item_bank_id = item_bank_id)
 
   })
-
 
   df_with_item_ids %>%
     dplyr::collect() %>%
