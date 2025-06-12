@@ -112,44 +112,39 @@ append_singpause_survey_completion <- function(user_id,
 
 
 
-# t <- check_singpause_survey_completion(user_id = 174L, type = "start_pretest")
+# t <- check_singpause_survey_completion(user_id = 174L)
+# t <- check_singpause_survey_completion(user_id = 178L)
 
-check_singpause_survey_completion <- function(user_id,
-                                              type = c("pretest", "posttest", "start_pretest")) {
+check_singpause_survey_completion <- function(user_id) {
 
-  type <- match.arg(type)
-
-  stopifnot(
-    type %in% c("pretest", "posttest", "start_pretest")
-  )
 
   logging::loginfo("Inside check_singpause_survey_completion function")
 
   logging::loginfo("user_id: %s", user_id)
-  logging::loginfo("type: %s", type)
 
 
   response <- tryCatch({
 
+
     complete <- dplyr::tbl(db_con, "singpause_survey_completions") %>%
-      dplyr::filter(user_id == !! user_id,
-                    type == !! type) %>%
-      dplyr::pull(complete)
+      dplyr::filter(user_id == !! user_id) %>%
+      dplyr::collect() %>%
+      dplyr::select(type, complete) %>%
+      unique() %>%
+      tidyr::pivot_wider(dplyr::everything(), names_from = "type", values_from = "complete")
 
-    if(length(complete) > 1L) {
-      logging::logerror("More than two completions!")
-    }
-
-    if(length(complete) == 0) {
-      complete <- FALSE
-    }
+    start_pretest <- if(length(complete$start_pretest) == 0L) FALSE else complete$start_pretest
+    pretest <- if(length(complete$pretest) == 0L) FALSE else complete$pretest
+    posttest <- if(length(complete$posttest) == 0L) FALSE else complete$posttest
 
     # Return response
 
     list(
       status = 200,
       message = "You have successfully added checked a survey completion!",
-      complete = complete
+      start_pretest = start_pretest,
+      pretest = pretest,
+      posttest = posttest
     )
 
 
@@ -158,7 +153,9 @@ check_singpause_survey_completion <- function(user_id,
     list(
       status = 400,
       message = "Something went wrong",
-      complete = complete
+      start_pretest = start_pretest,
+      pretest = pretest,
+      posttest = posttest
     )
   })
 
