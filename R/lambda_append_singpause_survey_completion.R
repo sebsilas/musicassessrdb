@@ -128,7 +128,8 @@ check_singpause_survey_completion <- function(user_id) {
 
     user_info <- dplyr::tbl(db_con, "singpause_survey_completions") %>%
       dplyr::filter(user_id == !! user_id) %>%
-      dplyr::collect()
+      dplyr::collect() %>%
+      dplyr::slice_max(complete_time)
 
     complete <- user_info %>%
       dplyr::select(type, complete) %>%
@@ -143,7 +144,6 @@ check_singpause_survey_completion <- function(user_id) {
     pretest <- if(length(complete$pretest) == 0L) FALSE else complete$pretest
     posttest <- if(length(complete$posttest) == 0L) FALSE else complete$posttest
     psychTestR_id  <- if(length(start_pretest_psychTestR_id) == 0L) NA else start_pretest_psychTestR_id
-
 
     # Return response
 
