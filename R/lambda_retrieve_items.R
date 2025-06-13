@@ -11,13 +11,20 @@ retrieve_items_api <- function(item_bank_name, num_items_per_page, page_number) 
 }
 
 #
-# t <- retrieve_items("DTL1000", 10, 1)$items
-# t2 <- retrieve_items("DTL1000", 10, 1, sort_direction = "desc", sort_key = "arrhythmic_difficulty_percentile")$items
-# t3 <- retrieve_items("DTL1000", 10, 1)$items
+# t <- retrieve_items("DTL1000_phrase", 10, 1)$items
+# t2 <- retrieve_items("DTL1000_phrase", 10, 1, sort_direction = "desc", sort_key = "arrhythmic_difficulty_percentile")$items
+# t3 <- retrieve_items("DTL1000_phrase", 10, 1)$items
 
 
 
-# t <- retrieve_items("DTL1000", num_items_per_page = 10, page_number = 1, user_id = 136) # seb_slonim
+# t <- retrieve_items("DTL1000_phrase", num_items_per_page = 10, page_number = 1, user_id = 136L) # seb_slonim
+# t <- retrieve_items("DTL1000_phrase", num_items_per_page = 10, page_number = 1, user_id = 158L)
+
+# t <- retrieve_items(item_bank_name = "DTL1000_phrase",
+#                     num_items_per_page = 10, page_number = 1L,
+#                     sort_direction = NULL,
+#                     sort_key = NULL,
+#                     user_id = 158L)
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -54,7 +61,6 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
 
     nos <- get_item_numbers(page_number, num_items_per_page)
 
-
     items <- dplyr::tbl(db_con, paste0("item_bank_", item_bank_name)) %>%
       dplyr::collect() # We only expect to use small dataframes here
 
@@ -90,7 +96,7 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
         study_history <- study_history %>%
           dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
           dplyr::group_by(Date, item_id) %>%
-          dplyr::summarise(score = mean(score, na.rm = TRUE)) %>%
+          dplyr::summarise(score = mean(opti3, na.rm = TRUE)) %>%
           dplyr::ungroup()
       } else {
         study_history <- NA
@@ -118,7 +124,7 @@ retrieve_items <- memoise::memoise(function(item_bank_name,
       status = 400,
       message = "Something went wrong",
       items = NA,
-      study_history = study_history
+      study_history = NA
     )
   })
 

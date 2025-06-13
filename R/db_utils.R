@@ -63,6 +63,7 @@ musicassessr_con <- function(local = FALSE,
 #' @param add_trial_scores
 #' @param score_to_use
 #' @param trial_filter_fun
+#' @param grepl_item_id_filter
 #'
 #' @returns
 #' @export
@@ -76,7 +77,8 @@ compile_item_trials <- function(db_con = NULL,
                                 filter_item_banks = NULL,
                                 add_trial_scores = FALSE,
                                 score_to_use = "opti3",
-                                trial_filter_fun = NULL) {
+                                trial_filter_fun = NULL,
+                                grepl_item_id_filter = NULL) {
 
   if(is.null(db_con)) {
     connected_to_db_locally <- TRUE
@@ -86,21 +88,26 @@ compile_item_trials <- function(db_con = NULL,
   }
 
   # Grab session info
-  sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
-    dplyr::filter(user_id %in% !! user_id)
+  sessions <- get_table(db_con, "sessions") %>%
+    dplyr::filter(user_id %in% !! user_id) %>%
+    dplyr::collect()
 
   # Grab trial info
-  trials <- get_table(db_con, "trials", collect = TRUE)  %>%
+  user_trials <- get_table(db_con, "trials")  %>%
+    dplyr::filter(session_id %in% !! sessions$session_id) %>%
+    dplyr::collect() %>%
     dplyr::left_join(sessions, by = "session_id")
 
   if(is.function(trial_filter_fun)) {
-    trials <- trials %>%
+    user_trials <- user_trials %>%
       trial_filter_fun()
   }
 
-  # Grab trials only for the given user on the given test
-  user_trials <- trials %>%
-    dplyr::filter(user_id %in% !! user_id)
+  if(is.character(grepl_item_id_filter)) {
+    user_trials <- user_trials %>%
+      dplyr::filter(grepl(grepl_item_id_filter, item_id))
+  }
+
 
   # Return early if nothing there
 
@@ -134,7 +141,6 @@ compile_item_trials <- function(db_con = NULL,
   if(join_item_banks_on) {
 
     # Join items on
-
     user_trials <- left_join_on_items(db_con, df_with_item_ids = user_trials)
 
   }
@@ -148,7 +154,7 @@ compile_item_trials <- function(db_con = NULL,
   if(add_trial_scores) {
 
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
-      dplyr::filter(trial_id %in% !! trials$trial_id)
+      dplyr::filter(trial_id %in% !! user_trials$trial_id)
 
     if(is.character(score_to_use)) {
       trial_scores <- trial_scores %>%
@@ -368,13 +374,16 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 item_bank_name_to_id <- Vectorize(function(item_banks_table, ib_name) {
 
     id <- item_banks_table %>%
-      dplyr::filter(item_bank_name == ib_name) %>%
+      dplyr::filter(item_bank_name == !! ib_name) %>%
       dplyr::collect() %>%
       dplyr::pull(item_bank_id)
 
     if(length(id) == 0) {
       id <- NA
     }
+
+    id <- as.integer(id)
+
     return(id)
   }, vectorize.args = "ib_name")
 
@@ -560,7 +569,8 @@ get_item_bank_names <- function(db_con, item_ids) {
 #' @export
 #'
 #' @examples
-left_join_on_items <- function(db_con, df_with_item_ids) {
+left_join_on_items <- function(db_con,
+                               df_with_item_ids) {
 
   logging::loginfo("Join on items...")
 
@@ -582,7 +592,6 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
     dplyr::select(item_bank_name, item_bank_id) %>%
     unique()
 
-
   grand_item_bank <- purrr::pmap_dfr(item_banks, function(item_bank_name, item_bank_id) {
 
     ib <- get_table(db_con, paste0("item_bank_", item_bank_name), collect = FALSE) %>%
@@ -591,7 +600,6 @@ left_join_on_items <- function(db_con, df_with_item_ids) {
       dplyr::mutate(item_bank_id = item_bank_id)
 
   })
-
 
   df_with_item_ids %>%
     dplyr::collect() %>%

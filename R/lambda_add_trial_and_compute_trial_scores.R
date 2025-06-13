@@ -30,7 +30,9 @@ add_trial_and_compute_trial_scores <- function(Records) {
 
   response <- tryCatch({
 
-    metadata <- get_metadata(processed_file)
+    metadata <- get_metadata(processed_file) %>%
+      dplyr::mutate(new_items_id = dplyr::case_when(new_items_id == "undefined" ~ NA, TRUE ~ new_items_id),
+                    review_items_id = dplyr::case_when(review_items_id == "undefined" ~ NA, TRUE ~ review_items_id))
 
     logging::loginfo("metadata...")
     logging::loginfo(metadata)
@@ -622,7 +624,8 @@ get_metadata <- function(file,
          trial_time_completed, phase, test_id, attempt,
           item_id, stimuli, stimuli_durations, instrument,
           trial_time_started, onset, feedback, feedback_type, trial_paradigm,
-         melody_block_paradigm, additional, page_label, module, user_id, pyin_type)
+         melody_block_paradigm, additional, page_label, module, user_id, pyin_type,
+         review_items_id, new_items_id)
 
 }
 
@@ -736,7 +739,7 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
       logging::loginfo("transposition %s", transposition)
       notes_with_best_transposition <- res$note + transposition
 
-      benovelent_opti3 <- benovelent_score(opti3, attempt)
+      benovelent_opti3 <- benevolent_score2(opti3)
 
       result <- list(benovelent_opti3 = benovelent_opti3,
                      opti3 = opti3_res$opti3,
@@ -782,6 +785,15 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
   }
 }
 
+
+benevolent_score2 <- function(score) {
+  benevolentScore <- (score * 10) + score
+  benevolentScore <- round(benevolentScore)
+  if (benevolentScore > 10) {
+    benevolentScore <- 10
+  }
+  return(benevolentScore)
+}
 
 # Full mel
 
@@ -834,3 +846,9 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
 #   benovelent_score(attempt = 1)
 #
 
+# t <- get_metadata("songbird_138_2025-05-27T12:53:05.529Z.csv")
+
+#
+# metadata <- get_metadata("songbird_138_2025-05-27T12:53:05.529Z.csv") %>%
+#   dplyr::mutate(new_items_id = dplyr::case_when(new_items_id == "undefined" ~ NA, TRUE ~ new_items_id),
+#                 review_items_id = dplyr::case_when(review_items_id == "undefined" ~ NA, TRUE ~ review_items_id))

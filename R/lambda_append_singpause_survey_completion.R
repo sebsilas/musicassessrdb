@@ -14,7 +14,7 @@
 append_singpause_survey_completion_api <- function(user_id,
                                                    singpause_id, # Same as username in users
                                                    psychTestR_id,
-                                                   type = c("pretest", "posttest")) {
+                                                   type = c("pretest", "start_pretest", "posttest")) {
 
   type <- match.arg(type)
 
@@ -49,12 +49,12 @@ append_singpause_survey_completion_api <- function(user_id,
 append_singpause_survey_completion <- function(user_id,
                                                singpause_id, # Same as username in users
                                                psychTestR_id,
-                                               type = c("pretest", "posttest")) {
+                                               type = c("pretest", "posttest", "start_pretest")) {
 
   type <- match.arg(type)
 
   stopifnot(
-    type %in% c("pretest", "posttest")
+    type %in% c("pretest", "posttest", "start_pretest")
   )
 
   logging::loginfo("Inside append_singpause_survey_completion function")
@@ -112,42 +112,48 @@ append_singpause_survey_completion <- function(user_id,
 
 
 
-check_singpause_survey_completion <- function(user_id,
-                                              type = c("pretest", "posttest")) {
+# t <- check_singpause_survey_completion(user_id = 174L)
+# t <- check_singpause_survey_completion(user_id = 178L)
 
-  type <- match.arg(type)
+check_singpause_survey_completion <- function(user_id) {
 
-  stopifnot(
-    type %in% c("pretest", "posttest")
-  )
 
   logging::loginfo("Inside check_singpause_survey_completion function")
 
   logging::loginfo("user_id: %s", user_id)
-  logging::loginfo("type: %s", type)
 
 
   response <- tryCatch({
 
-    complete <- dplyr::tbl(db_con, "singpause_survey_completions") %>%
-      dplyr::filter(user_id == !! user_id,
-                    type == !! type) %>%
-      dplyr::pull(complete)
 
-    if(length(complete) > 1L) {
-      logging::logerror("More than two completions!")
-    }
+    user_info <- dplyr::tbl(db_con, "singpause_survey_completions") %>%
+      dplyr::filter(user_id == !! user_id) %>%
+      dplyr::collect() %>%
+      dplyr::slice_max(complete_time)
 
-    if(length(complete) == 0) {
-      complete <- FALSE
-    }
+    complete <- user_info %>%
+      dplyr::select(type, complete) %>%
+      unique() %>%
+      tidyr::pivot_wider(dplyr::everything(), names_from = "type", values_from = "complete")
+
+    start_pretest_psychTestR_id <- user_info %>%
+      dplyr::filter(type == "start_pretest") %>%
+      dplyr::pull(psychTestR_id)
+
+    start_pretest <- if(length(complete$start_pretest) == 0L) FALSE else complete$start_pretest
+    pretest <- if(length(complete$pretest) == 0L) FALSE else complete$pretest
+    posttest <- if(length(complete$posttest) == 0L) FALSE else complete$posttest
+    psychTestR_id  <- if(length(start_pretest_psychTestR_id) == 0L) NA else start_pretest_psychTestR_id
 
     # Return response
 
     list(
       status = 200,
       message = "You have successfully added checked a survey completion!",
-      complete = complete
+      start_pretest = start_pretest,
+      pretest = pretest,
+      posttest = posttest,
+      psychTestR_id = psychTestR_id
     )
 
 
@@ -156,7 +162,10 @@ check_singpause_survey_completion <- function(user_id,
     list(
       status = 400,
       message = "Something went wrong",
-      complete = complete
+      start_pretest = start_pretest,
+      pretest = pretest,
+      posttest = posttest,
+      psychTestR_id = psychTestR_id
     )
   })
 

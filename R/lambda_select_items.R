@@ -5,17 +5,8 @@
 #
 
 # db_con <- musicassessr_con()
-# t <- select_items(96L)
-#
-# t$new_items
-# t$review_items
 
-
-# tt <- tbl(db_con, "item_bank_Berkowitz_songbird") %>%
-#   filter(item_id == "Berkowitz_ngram_407289") %>%
-#   collect()
-
-# tt <- tbl(db_con, "review_items") %>% collect()
+# t <- select_items(174L, grepl_item_id_filter = "Berkowitz")
 
 # db_disconnect(db_con)
 
@@ -52,7 +43,8 @@ select_items <- function(user_id,
                          num_items_review = 3L,
                          num_items_new = 3L,
                          approach_name = "new_and_review_randomly_chosen_approaches",
-                         only_use_items_from_fallback_item_banks = TRUE) {
+                         only_use_items_from_fallback_item_banks = FALSE,
+                         grepl_item_id_filter = NULL) {
 
   logging::loginfo("Inside select_items function")
 
@@ -64,6 +56,7 @@ select_items <- function(user_id,
     logging::loginfo("num_items_new = %s", num_items_new)
     logging::loginfo("approach_name = %s", approach_name)
     logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
+    logging::loginfo("grepl_item_id_filter = %s", grepl_item_id_filter)
     logging::loginfo("Taking approach: %s", approach_name)
 
     # Compile user trials
@@ -74,7 +67,9 @@ select_items <- function(user_id,
                                        user_id = user_id,
                                        join_item_banks_on = TRUE,
                                        filter_item_banks = if(only_use_items_from_fallback_item_banks) fallback_item_bank else NULL,
-                                       add_trial_scores = TRUE)
+                                       add_trial_scores = TRUE,
+                                       grepl_item_id_filter = grepl_item_id_filter)
+
 
     logging::loginfo("Got user trials")
 
@@ -98,6 +93,20 @@ select_items <- function(user_id,
     # # Append selected items to DynamoDB
     # update_job(dynamodb, job_id = job_id, message = jsonlite::toJSON(list(review_items = review_items_df,
     #                                                                    new_items = new_items_df)), status = "FINISHED")
+
+    if(!"rhythmic" %in% names(new_items_df)) {
+      new_items_df <- new_items_df %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(rhythmic = is_rhythmic(durations)) %>%
+        dplyr::ungroup()
+    }
+
+    if(!"rhythmic" %in% names(review_items_df)) {
+      review_items_df <- review_items_df %>%
+        dplyr::rowwise() %>%
+        dplyr::mutate(rhythmic = is_rhythmic(durations)) %>%
+        dplyr::ungroup()
+    }
 
     list(status = 200,
          message = paste0("You have successfully selected new items for ", user_id, "!"),
@@ -123,6 +132,16 @@ select_items <- function(user_id,
 
 
 
+
+}
+
+is_rhythmic <- function(melody_durations) {
+
+  if(is.scalar.character(melody_durations)) {
+    melody_durations <- itembankr::str_mel_to_vector(melody_durations)
+  }
+
+  return(!var(melody_durations) == 0)
 
 }
 
@@ -184,7 +203,6 @@ get_items <- function(type = c("new", "review"),
   }
 
   primary_key_col <- paste0(tbl_name, "_", "id")
-
 
   num_unique_items <- user_trials %>%
     dplyr::pull(item_id) %>%
@@ -252,7 +270,16 @@ get_items <- function(type = c("new", "review"),
     dplyr::collect()
 
   # Return the full item DF for the test
-  if(type == "review" && num_unique_items < num_items) {
+  if(type == "review" && num_unique_items > num_items) {
+
+    items_df <- selected_rows %>%
+      dplyr::left_join(user_trials %>%
+                         unique() %>%
+                         # Remove duplicate cols so the join works
+                         dplyr::select(-c(review_items_id, new_items_id, item_bank_id, user_id, stimulus_durations, stimulus_abs_melody, onset)), by = "item_id") %>%
+      dplyr::relocate(item_id, abs_melody, durations, item_bank_id, melody, review_items_id, rhythmic)
+
+  } else if(type == "review" && num_unique_items < num_items) {
     items_df <- selected_rows %>%
       dplyr::left_join(grand_fallback_item_bank, by = "item_id")
 
@@ -453,28 +480,34 @@ item_sel_rev_random_item_selection <- function(review_items, num_items, user_id 
 
 item_sel_rev_min_score <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
 
+  score_name_sym <- rlang::sym(score_name)
+
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
-    dplyr::slice_min(score, n = num_items) %>%
-    dplyr::select(item_id, item_bank_id, score) %>%
-    dplyr::arrange(score) %>%
+    dplyr::slice_min(!! score_name_sym, n = num_items) %>%
+    dplyr::select(item_id, item_bank_id, !! score_name_sym) %>%
+    dplyr::arrange(!! score_name_sym) %>%
     dplyr::mutate(ranking = dplyr::row_number() ) %>%
-    dplyr::rename(prediction_statistic = score)
+    dplyr::rename(prediction_statistic = !! score_name_sym)
 
 }
 
 item_sel_rev_max_score <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
+
+  score_name_sym <- rlang::sym(score_name)
+
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
-    dplyr::slice_max(score, n = num_items) %>%
-    dplyr::select(item_id, item_bank_id, score) %>%
-    dplyr::arrange(dplyr::desc(score)) %>%
+    dplyr::slice_max(!!score_name_sym, n = num_items) %>%
+    dplyr::select(item_id, item_bank_id, !! score_name_sym) %>%
+    dplyr::arrange(dplyr::desc(!! score_name_sym)) %>%
     dplyr::mutate(ranking = dplyr::row_number()) %>%
-    dplyr::rename(prediction_statistic = score)
+    dplyr::rename(prediction_statistic = !! score_name_sym)
 
 }
 
 item_sel_rev_lowest_difficulty <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
+
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
     dplyr::slice_min(rhythmic_difficulty, n = num_items) %>%
@@ -497,9 +530,11 @@ item_sel_rev_highest_difficulty <- function(review_items, num_items, user_id = N
 }
 
 sort_review_scores <- function(review_items, score_name) {
+
+  score_name_sym <- rlang::sym(score_name)
+
   review_items %>%
-    dplyr::filter(measure == !! score_name,
-                  "{score_name}" < 1) %>% # Reviews should be (at least now) based on non-mastered items
+    dplyr::filter(!!score_name_sym < 1) %>% # Reviews should be (at least now) based on non-mastered items
     dplyr::group_by(item_id) %>%
     dplyr::slice_max(trial_time_started) %>%
     dplyr::ungroup()

@@ -139,7 +139,7 @@ get-items-from-ids: # Serverless framework logical name of the function
 
 
 select-items: # Serverless framework logical name of the function
-  memorySize: 1500
+  memorySize: 10000
   timeout: 28
   image:
     name: appimage
@@ -316,3 +316,16 @@ update-user-id-after-signup:
     - httpApi:
         method: POST
         path: /update-user-id-after-signup
+
+
+get-singpause-items-v2:
+  memorySize: 5000
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_singpause_items_v2 # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-singpause-items-v2

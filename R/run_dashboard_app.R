@@ -130,6 +130,7 @@ run_dashboard_app <- function() {
         dplyr::mutate(item_selection_type = stringr::str_remove_all(item_selection_type, "prediction_method_")) %>%
         dplyr::mutate(Date = lubridate::as_date(trial_time_started)) %>%
         dplyr::collect()
+
     })
 
     user_stats <- shiny::reactive({
