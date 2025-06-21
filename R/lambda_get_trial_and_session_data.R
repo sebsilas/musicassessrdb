@@ -1,9 +1,10 @@
 
-# db_con <- musicassessr_con()
+# db_con <- musicassessr_con(db_name = "melody_prod")
 
 # user_data <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
 
-#
+# db_disconnect(db_con)
+
 
 get_trial_and_session_data_api <- function(user_id = NULL,
                                            group_id = NULL,
@@ -69,12 +70,15 @@ get_trial_and_session_data <- function(user_id = NULL,
 
     # Main logic
 
+    # browser()
+
     # Get sessions associated with user
-    sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
-        dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
+    sessions <- get_table(db_con, "sessions") %>%
+        dplyr::filter(user_id %in% user_id) %>% # Note this could be multiple user_ids
+        dplyr::collect() %>%
         dplyr::mutate(Date = lubridate::as_date(session_time_started))  %>%
         dplyr::left_join(get_table(db_con, "users"), by = "user_id") %>%
-        { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
+        { if(is.character(app_name_filter)) dplyr::filter(., app_name == app_name_filter) else . } %>%
         { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
         { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
 
@@ -87,11 +91,15 @@ get_trial_and_session_data <- function(user_id = NULL,
               dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
       dplyr::left_join(get_table(db_con, "users"), by = "user_id")
 
-
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
+
+    session_scores_agg_class <- NA
+    session_scores_rhythmic_class <- NA
+    session_scores_arrhythmic_class <- NA
+    review_melodies_class <- NA
 
     if("phrase_name" %in% names(trials)) {
 
@@ -135,12 +143,7 @@ get_trial_and_session_data <- function(user_id = NULL,
           dplyr::ungroup() %>%
           dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
 
-      } else {
-        session_scores_agg_class <- NA
-        session_scores_rhythmic_class <- NA
-        session_scores_arrhythmic_class <- NA
       }
-
 
       # For phrases with names we remove the constraint that a phrase must have been played more than once to be returned
 
@@ -160,8 +163,6 @@ get_trial_and_session_data <- function(user_id = NULL,
           dplyr::summarise(mean_score = mean(score, na.rm = TRUE), .groups = "drop") %>%
           dplyr::filter(!is.na(phrase_name))
 
-      } else {
-        review_melodies_class <- NA
       }
 
     } else {
@@ -179,10 +180,10 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::count(user_id, stimulus_abs_melody) %>%
         dplyr::filter(n > 1 & !is.na(stimulus_abs_melody))
 
-      stimulus_abs_melody <- review_melodies %>% dplyr::pull(stimulus_abs_melody)
+      stimulus_abs_melody_review <- review_melodies %>% dplyr::pull(stimulus_abs_melody)
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::filter(stimulus_abs_melody %in% !! stimulus_abs_melody) %>%
+        dplyr::filter(stimulus_abs_melody %in% stimulus_abs_melody_review) %>%
         dplyr::group_by(user_id, username, trial_time_started, stimulus_abs_melody) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
@@ -373,7 +374,8 @@ compute_ids_from_singpause_username <- function(df) {
     dplyr::mutate(singleiter_id = substr(username, 1, 2),
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
-                  student_id = substr(username, 7, 8) )
+                  student_id = substr(username, 7, 8) ) %>%
+    dplyr::filter(class_id %in% c("00", "01", "03", "04", "05", "06", "07", "08", "09", "10", "19", "22") )
 
   return(res)
 }
@@ -493,7 +495,7 @@ compute_song_stats <- function(scores_data,
 
 get_users_in_group <- function(group_id) {
   dplyr::tbl(db_con, "users_groups") %>%
-    dplyr::filter(group_id == !! group_id) %>%
+    dplyr::filter(group_id == group_id) %>%
     dplyr::pull(user_id)
 }
 

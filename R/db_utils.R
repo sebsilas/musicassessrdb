@@ -89,12 +89,12 @@ compile_item_trials <- function(db_con = NULL,
 
   # Grab session info
   sessions <- get_table(db_con, "sessions") %>%
-    dplyr::filter(user_id %in% !! user_id) %>%
+    dplyr::filter(user_id %in% user_id) %>%
     dplyr::collect()
 
   # Grab trial info
   user_trials <- get_table(db_con, "trials")  %>%
-    dplyr::filter(session_id %in% !! sessions$session_id) %>%
+    dplyr::filter(session_id %in% sessions$session_id) %>%
     dplyr::collect() %>%
     dplyr::left_join(sessions, by = "session_id")
 
@@ -117,7 +117,7 @@ compile_item_trials <- function(db_con = NULL,
 
   if(!is.null(current_test_id)) {
     user_trials <- user_trials %>%
-      dplyr::filter(test_id == !! current_test_id)
+      dplyr::filter(test_id == current_test_id)
   }
 
 
@@ -129,7 +129,7 @@ compile_item_trials <- function(db_con = NULL,
 
   if(!is.null(session_id)) {
     user_trials <- user_trials %>%
-      dplyr::filter(session_id %in% !! session_id)
+      dplyr::filter(session_id %in% session_id)
   }
 
   # Return early if nothing there
@@ -137,6 +137,8 @@ compile_item_trials <- function(db_con = NULL,
   if(get_nrows(user_trials) < 1L) {
     return(user_trials)
   }
+
+
 
   if(join_item_banks_on) {
 
@@ -154,11 +156,11 @@ compile_item_trials <- function(db_con = NULL,
   if(add_trial_scores) {
 
     trial_scores <- dplyr::tbl(db_con, "scores_trial") %>%
-      dplyr::filter(trial_id %in% !! user_trials$trial_id)
+      dplyr::filter(trial_id %in% user_trials$trial_id)
 
     if(is.character(score_to_use)) {
       trial_scores <- trial_scores %>%
-        dplyr::filter(measure %in% !! score_to_use)
+        dplyr::filter(measure %in% score_to_use)
     }
 
     trial_scores <- trial_scores %>%
@@ -374,7 +376,7 @@ get_review_trials <- function(no_reviews, state, rhythmic = FALSE) {
 item_bank_name_to_id <- Vectorize(function(item_banks_table, ib_name) {
 
     id <- item_banks_table %>%
-      dplyr::filter(item_bank_name == !! ib_name) %>%
+      dplyr::filter(item_bank_name == ib_name) %>%
       dplyr::collect() %>%
       dplyr::pull(item_bank_id)
 
@@ -633,7 +635,7 @@ get_study_history_stats <- function(db_con,
     trials <- dplyr::tbl(db_con, "trials")
 
     trials <- dplyr::tbl(db_con, "sessions") %>%
-      dplyr::filter(user_id == !! user_id) %>%
+      dplyr::filter(user_id == user_id) %>%
       dplyr::left_join(trials, by = "session_id") %>%
       dplyr::collect()
 
@@ -828,7 +830,7 @@ get_melodic_production <- function(db_con = NULL, trial_id) {
   }
 
   dplyr::tbl(db_con, "melodic_production") %>%
-    dplyr::filter(trial_id %in% !! trial_id) %>%
+    dplyr::filter(trial_id %in% trial_id) %>%
     dplyr::collect() %>%
     dplyr::group_by(trial_id) %>%
     musicassessr::to_string_df() %>%

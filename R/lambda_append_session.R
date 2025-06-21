@@ -22,8 +22,6 @@ store_db_session_api <- function(experiment_id = NA,
 }
 
 
-# t <- append_session(user_id = 1L)
-
 # This is the function that is called when the endpoint
 # is invoked
 append_session <- function(experiment_condition_id = NA,

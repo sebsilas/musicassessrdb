@@ -6,6 +6,9 @@
 
 # db_con <- musicassessr_con()
 
+# db_con <- musicassessr_con(db_name = "melody_prod")
+# u <- tbl(db_con, "users") %>% filter(app_name == "songbird") %>%  collect()
+
 # t <- select_items(174L, grepl_item_id_filter = "Berkowitz")
 
 # db_disconnect(db_con)
