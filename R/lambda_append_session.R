@@ -128,58 +128,69 @@ db_append_session <- function(db_con,
 
   if(is.scalar.character(user_info)) {
 
-    session_info_names <- dplyr::tbl(db_con, "session_info") %>%
-      colnames()
+    tryCatch({
 
-    logging::loginfo("session_info_names: %s", session_info_names)
+      session_info_names <- dplyr::tbl(db_con, "session_info") %>%
+        colnames()
 
-    # Append to session_info table
-    user_info_parsed <- user_info %>%
-      jsonlite::fromJSON(flatten = TRUE)
+      logging::loginfo("session_info_names: %s", session_info_names)
 
-    location_info <- user_info_parsed$locationInfo %>%
-      unlist() %>%
-      as.list() %>%
-      tibble::as_tibble()
+      # Append to session_info table
+      user_info_parsed <- user_info %>%
+        jsonlite::fromJSON(flatten = TRUE)
 
-    hardware_info <- user_info_parsed$hardwareInfo %>%
-      unlist() %>%
-      as.list() %>%
-      tibble::as_tibble()
+      location_info <- user_info_parsed$locationInfo %>%
+        unlist() %>%
+        as.list() %>%
+        tibble::as_tibble()
 
-    user_info_tbl <- cbind(location_info, hardware_info)
+      hardware_info <- user_info_parsed$hardwareInfo %>%
+        unlist() %>%
+        as.list() %>%
+        tibble::as_tibble()
 
-    # First, to normalise all language names, collect and all name the same thing
-    lng_cols <- which(grepl("language", names(user_info_tbl)))
-    lng_names <- paste0("language", 1:length(lng_cols))
-    colnames(user_info_tbl)[lng_cols] <- lng_names
+      if(nrow(location_info) > 0L && nrow(hardware_info) > 0L) {
+        user_info_tbl <- cbind(location_info, hardware_info)
+      } else if(nrow(location_info) > 0L && nrow(hardware_info) < 1L) {
+        user_info_tbl <- location_info
+      } else if(nrow(hardware_info) > 0L && nrow(location_info) < 1L) {
+        user_info_tbl <- hardware_info
+      }
 
-    user_info_tbl <- user_info_tbl %>%
-      dplyr::select(dplyr::any_of(session_info_names)) %>%
-      dplyr::mutate(session_id = session_id) %>%
-      dplyr::relocate(session_id)
+      # First, to normalise all language names, collect and all name the same thing
+      lng_cols <- which(grepl("language", names(user_info_tbl)))
+      lng_names <- paste0("language", 1:length(lng_cols))
+      colnames(user_info_tbl)[lng_cols] <- lng_names
 
-    logging::loginfo("user_info_tbl: %s", user_info_tbl)
-    logging::loginfo("nrow(user_info_tbl): %s", nrow(user_info_tbl))
+      user_info_tbl <- user_info_tbl %>%
+        dplyr::select(dplyr::any_of(session_info_names)) %>%
+        dplyr::mutate(session_id = session_id) %>%
+        dplyr::relocate(session_id)
+
+      logging::loginfo("user_info_tbl: %s", user_info_tbl)
+      logging::loginfo("nrow(user_info_tbl): %s", nrow(user_info_tbl))
 
 
-    missing_names <- setdiff(session_info_names, names(user_info_tbl))
+      missing_names <- setdiff(session_info_names, names(user_info_tbl))
 
-    logging::loginfo("missing_names: %s", missing_names)
+      logging::loginfo("missing_names: %s", missing_names)
 
-    # Create a tibble with NAs for the missing values
-    na_tibble <- tibble::tibble(!!!setNames(rep(list(NA_character_), length(missing_names)), missing_names))
+      # Create a tibble with NAs for the missing values
+      na_tibble <- tibble::tibble(!!!setNames(rep(list(NA_character_), length(missing_names)), missing_names))
 
-    # Join to table
-    user_info_tbl <- cbind(user_info_tbl, na_tibble)
+      # Join to table
+      user_info_tbl <- cbind(user_info_tbl, na_tibble)
 
-    logging::loginfo("user_info_tbl updated: %s", user_info_tbl)
+      logging::loginfo("user_info_tbl updated: %s", user_info_tbl)
 
-    # Reorder names
-    user_info_tbl <- user_info_tbl %>%
-      dplyr::select(dplyr::all_of(session_info_names))
+      # Reorder names
+      user_info_tbl <- user_info_tbl %>%
+        dplyr::select(dplyr::all_of(session_info_names))
 
-    DBI::dbWriteTable(db_con, "session_info", user_info_tbl, row.names = FALSE, append = TRUE)
+      DBI::dbWriteTable(db_con, "session_info", user_info_tbl, row.names = FALSE, append = TRUE)
+    }, error = function(err) {
+        logging::logerror("Error: %s", err)
+    })
 
   }
 
