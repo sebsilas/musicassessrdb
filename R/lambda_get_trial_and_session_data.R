@@ -108,7 +108,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     session_scores_arrhythmic_class <- NA
     review_melodies_class <- NA
 
-    if("songbird" %in% trials$app_name) {
+    if("songbird" %in% trials$app_name || app_name_filter == "songbird") {
 
       songbird_phrase <- get_table(db_con, "item_bank_singpause_2025_phrase") %>%
         select(item_id, phrase_name, song_name)
@@ -302,6 +302,8 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
             .groups = "drop"
           )
 
+        print('da')
+
         class_song_stats <- scores_trial %>%
           dplyr::filter(songbird_type %in% c("SingPause Singalong", "SingPause Solo"),
                         !is.na(phrase_name),
@@ -477,8 +479,12 @@ compute_song_stats <- function(scores_data,
   item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
   item_identifier <- rlang::sym(item_identifier)
 
+  print('da2')
+
   data <- data %>%
     dplyr::filter( grepl("Phrase ", phrase_name) )
+
+  print('da3')
 
   scores_data <- scores_data %>%
     dplyr::filter( grepl("Phrase ", phrase_name) )
