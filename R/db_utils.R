@@ -56,8 +56,8 @@ musicassessr_con <- function(local = FALSE,
 #'
 #' @param db_con
 #' @param current_test_id
-#' @param session_id
-#' @param user_id
+#' @param session_ids_filter
+#' @param user_ids_filter
 #' @param join_item_banks_on
 #' @param filter_item_banks
 #' @param add_trial_scores
@@ -71,8 +71,8 @@ musicassessr_con <- function(local = FALSE,
 #' @examples
 compile_item_trials <- function(db_con = NULL,
                                 current_test_id = NULL,
-                                session_id = NULL,
-                                user_id,
+                                session_ids_filter = NULL,
+                                user_ids_filter,
                                 join_item_banks_on = FALSE,
                                 filter_item_banks = NULL,
                                 add_trial_scores = FALSE,
@@ -89,7 +89,7 @@ compile_item_trials <- function(db_con = NULL,
 
   # Grab session info
   sessions <- get_table(db_con, "sessions") %>%
-    dplyr::filter(user_id %in% user_id) %>%
+    dplyr::filter(user_id %in% user_ids_filter) %>%
     dplyr::collect()
 
   # Grab trial info
@@ -127,9 +127,9 @@ compile_item_trials <- function(db_con = NULL,
     return(user_trials)
   }
 
-  if(!is.null(session_id)) {
+  if(!is.null(session_ids_filter)) {
     user_trials <- user_trials %>%
-      dplyr::filter(session_id %in% session_id)
+      dplyr::filter(session_id %in% session_ids_filter)
   }
 
   # Return early if nothing there
@@ -137,7 +137,6 @@ compile_item_trials <- function(db_con = NULL,
   if(get_nrows(user_trials) < 1L) {
     return(user_trials)
   }
-
 
 
   if(join_item_banks_on) {
