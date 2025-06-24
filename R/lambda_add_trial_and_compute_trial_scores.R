@@ -619,13 +619,20 @@ get_metadata <- function(file,
   attributes() %>%
   tibble::as_tibble() %>%
   dplyr::rename_with(~ .x %>% stringr::str_remove("x-amz-meta-") %>% stringr::str_remove("x-amz-") %>% stringr::str_replace_all("-", "_")
-                    ) %>%
-  dplyr::select(session_id, rhythmic, display_modality,
-         trial_time_completed, phase, test_id, attempt,
-          item_id, stimuli, stimuli_durations, instrument,
-          trial_time_started, onset, feedback, feedback_type, trial_paradigm,
-         melody_block_paradigm, additional, page_label, module, user_id, pyin_type,
-         review_items_id, new_items_id)
+                    )
+
+  if(!"session_id" %in% names(metadata)) {
+    metadata <- metadata %>%
+      dplyr::mutate(session_id = NA)
+  }
+
+  metadata %>%
+    dplyr::select(session_id, rhythmic, display_modality,
+           trial_time_completed, phase, test_id, attempt,
+            item_id, stimuli, stimuli_durations, instrument,
+            trial_time_started, onset, feedback, feedback_type, trial_paradigm,
+           melody_block_paradigm, additional, page_label, module, user_id, pyin_type,
+           review_items_id, new_items_id)
 
 }
 

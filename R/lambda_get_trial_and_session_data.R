@@ -1,20 +1,27 @@
 
-# db_con <- musicassessr_con()
+# db_con <- musicassessr_con(db_name = "melody_prod")
 
-# user_data <- get_trial_and_session_data(group_id = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+# db_con <- musicassessr_con(db_name = "melody_dev")
 
-#
+# user_data <- get_trial_and_session_data(group_id_filter = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
 
-get_trial_and_session_data_api <- function(user_id = NULL,
-                                           group_id = NULL,
+# db_disconnect(db_con)
+
+# user_data <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
+
+
+# u <- tbl(db_con, "users") %>% filter(username == "000000XX00_02") %>% collect()
+
+get_trial_and_session_data_api <- function(user_id_filter = NULL,
+                                           group_id_filter = NULL,
                                            trial_score_measure = "opti3",
                                            session_score_measure_arrhythmic = "mean_opti3_arrhythmic",
                                            session_score_measure_rhythmic = "mean_opti3_rhythmic",
                                            app_name_filter = NULL) {
 
   # Define the request body as a list
-  request_body <- list(user_id = user_id,
-                       group_id = group_id,
+  request_body <- list(user_id_filter = user_id_filter,
+                       group_id_filter = group_id_filter,
                        trial_score_measure = trial_score_measure,
                        session_score_measure_arrhythmic = session_score_measure_arrhythmic,
                        session_score_measure_rhythmic = session_score_measure_rhythmic,
@@ -29,8 +36,8 @@ get_trial_and_session_data_api <- function(user_id = NULL,
 
 # This is the function that is called when the endpoint
 # is invoked
-get_trial_and_session_data <- function(user_id = NULL,
-                                       group_id = NULL,
+get_trial_and_session_data <- function(user_id_filter = NULL,
+                                       group_id_filter = NULL,
                                        trial_score_measure = "opti3",
                                        session_score_measure_arrhythmic = "mean_opti3_arrhythmic",
                                        session_score_measure_rhythmic = "mean_opti3_rhythmic",
@@ -48,57 +55,66 @@ get_trial_and_session_data <- function(user_id = NULL,
 
 
   # Choose group OR user
-  if(!is.null(user_id) && !is.null(group_id)) {
-    logging::logerror("Only choose one of user_id or group_id")
-    stop("Only choose one of user_id or group_id")
+  if(!is.null(user_id_filter) && !is.null(group_id_filter)) {
+    stop("Only choose one of user_id_filter or group_id_filter")
   }
 
-  logging::loginfo("user_id = %s", user_id)
-  logging::loginfo("group_id = %s", group_id)
+  logging::loginfo("user_id_filter = %s", user_id_filter)
+  logging::loginfo("group_id_filter = %s", group_id_filter)
   logging::loginfo("trial_score_measure = %s", trial_score_measure)
   logging::loginfo("session_score_measure_arrhythmic = %s", session_score_measure_arrhythmic)
   logging::loginfo("session_score_measure_rhythmic = %s", session_score_measure_rhythmic)
   logging::loginfo("app_name_filter = %s", app_name_filter)
 
-  if(!is.null(group_id)) {
-    user_id <- get_users_in_group(group_id)
+  if(!is.null(group_id_filter)) {
+    user_id_filter <- get_users_in_group(group_id_filter)
   }
-
 
   response <- tryCatch({
 
     # Main logic
 
     # Get sessions associated with user
-    sessions <- get_table(db_con, "sessions", collect = TRUE) %>%
-        dplyr::filter(user_id %in% !! user_id) %>% # Note this could be multiple user_ids
+    sessions <- get_table(db_con, "sessions", collect = FALSE) %>%
+        dplyr::filter(user_id %in% user_id_filter) %>% # Note this could be multiple user_ids
         dplyr::mutate(Date = lubridate::as_date(session_time_started))  %>%
-        dplyr::left_join(get_table(db_con, "users"), by = "user_id") %>%
-        { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
+        dplyr::left_join(get_table(db_con, "users", collect = FALSE), by = "user_id") %>%
+      { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
+        dplyr::collect() %>%
         { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
         { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
 
+
     session_ids <- sessions$session_id
 
+    # Get trials
     trials <- compile_item_trials(db_con,
-                                  session_id = session_ids,
-                                  user_id = user_id,
-                                  join_item_banks_on = TRUE) %>% # We need this for phrase_name.. but could timeout Lambdas..
-              dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
-      dplyr::left_join(get_table(db_con, "users"), by = "user_id")
+                                  session_ids_filter = session_ids,
+                                  user_ids_filter = user_id_filter) %>%
+                dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
+                dplyr::left_join(get_table(db_con, "users"), by = "user_id") %>%
+                { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . }
 
+    # Get scores
 
     scores_trial <- get_table(db_con, "scores_trial", collect = TRUE) %>%
       dplyr::select(-scores_trial_id) %>%
       dplyr::filter(measure == !! trial_score_measure) %>%
       dplyr::filter(!is.na(measure) & !is.na(score))
 
-    if("phrase_name" %in% names(trials)) {
+    # Instantiate and potentially rewrite later
+    session_scores_agg_class <- NA
+    session_scores_rhythmic_class <- NA
+    session_scores_arrhythmic_class <- NA
+    review_melodies_class <- NA
 
-      # We assume this is a SongBird app
+    if("songbird" %in% trials$app_name) {
+
+      songbird_phrase <- get_table(db_con, "item_bank_singpause_2025_phrase") %>%
+        select(item_id, phrase_name, song_name)
 
       scores_trial <- trials %>%
-        # { if(is.null(group_id)) . else dplyr::filter(., !email %in% c("sebsilas@gmail.com")) } %>%
+        dplyr::left_join(songbird_phrase, by = "item_id") %>%
         dplyr::mutate(phrase_name = dplyr::case_when(grepl("singpause", item_id) & is.na(phrase_name) ~ as.character(song_name), TRUE ~ as.character(phrase_name)),
                       songbird_type = dplyr::case_when(grepl("Berkowitz", item_id) ~ "Sing-Training",
                                                        grepl("singpause", item_id) & trial_paradigm == "simultaneous_recall" ~ "SingPause Singalong",
@@ -135,12 +151,7 @@ get_trial_and_session_data <- function(user_id = NULL,
           dplyr::ungroup() %>%
           dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ NA, TRUE ~ score))
 
-      } else {
-        session_scores_agg_class <- NA
-        session_scores_rhythmic_class <- NA
-        session_scores_arrhythmic_class <- NA
       }
-
 
       # For phrases with names we remove the constraint that a phrase must have been played more than once to be returned
 
@@ -160,8 +171,6 @@ get_trial_and_session_data <- function(user_id = NULL,
           dplyr::summarise(mean_score = mean(score, na.rm = TRUE), .groups = "drop") %>%
           dplyr::filter(!is.na(phrase_name))
 
-      } else {
-        review_melodies_class <- NA
       }
 
     } else {
@@ -179,10 +188,10 @@ get_trial_and_session_data <- function(user_id = NULL,
         dplyr::count(user_id, stimulus_abs_melody) %>%
         dplyr::filter(n > 1 & !is.na(stimulus_abs_melody))
 
-      stimulus_abs_melody <- review_melodies %>% dplyr::pull(stimulus_abs_melody)
+      stimulus_abs_melody_review <- review_melodies %>% dplyr::pull(stimulus_abs_melody)
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::filter(stimulus_abs_melody %in% !! stimulus_abs_melody) %>%
+        dplyr::filter(stimulus_abs_melody %in% stimulus_abs_melody_review) %>%
         dplyr::group_by(user_id, username, trial_time_started, stimulus_abs_melody) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
@@ -229,7 +238,7 @@ get_trial_and_session_data <- function(user_id = NULL,
     user_stats <- compute_user_stats(sessions)
 
     # If group, then do some extra aggregation
-    if(is.null(group_id)) {
+    if(is.null(group_id_filter)) {
 
       group_stats <- NA
 
@@ -327,8 +336,8 @@ get_trial_and_session_data <- function(user_id = NULL,
 
    list(
       status = 200,
-      message = paste0("You successfully got trials for user(s) ", paste0(user_id, collapse = ", ")),
-      user_id = user_id,
+      message = paste0("You successfully got trials for user(s) ", paste0(user_id_filter, collapse = ", ")),
+      user_id = user_id_filter,
       scores_trial = scores_trial,
       session_scores_rhythmic = session_scores_rhythmic,
       session_scores_arrhythmic = session_scores_arrhythmic,
@@ -373,7 +382,8 @@ compute_ids_from_singpause_username <- function(df) {
     dplyr::mutate(singleiter_id = substr(username, 1, 2),
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
-                  student_id = substr(username, 7, 8) )
+                  student_id = substr(username, 7, 8) ) %>%
+    dplyr::filter(class_id %in% c("00", "01", "03", "04", "05", "06", "07", "08", "09", "10", "19", "22") )
 
   return(res)
 }
