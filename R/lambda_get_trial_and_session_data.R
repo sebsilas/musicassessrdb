@@ -4,6 +4,9 @@
 # db_con <- musicassessr_con(db_name = "melody_dev")
 
 # user_data <- get_trial_and_session_data(group_id_filter = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+# u <- user_data$scores_trial
+# u <- user_data$review_melodies_class
+# u <- user_data$group_stats$class_stats
 
 # db_disconnect(db_con)
 
@@ -82,7 +85,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
       { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
         dplyr::collect() %>%
         { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
-        { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
+      { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
 
 
     session_ids <- sessions$session_id
@@ -93,7 +96,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
                                   user_ids_filter = user_id_filter) %>%
                 dplyr::mutate(Date = lubridate::as_date(session_time_started)) %>%
                 dplyr::left_join(get_table(db_con, "users"), by = "user_id") %>%
-                { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . }
+      { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . }
 
     # Get scores
 
@@ -111,7 +114,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     if("songbird" %in% trials$app_name || app_name_filter == "songbird") {
 
       songbird_phrase <- get_table(db_con, "item_bank_singpause_2025_phrase") %>%
-        select(item_id, phrase_name, song_name)
+        dplyr::select(item_id, phrase_name, song_name)
 
       scores_trial <- trials %>%
         dplyr::left_join(songbird_phrase, by = "item_id") %>%
@@ -302,8 +305,6 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
             .groups = "drop"
           )
 
-        print('da')
-
         class_song_stats <- scores_trial %>%
           dplyr::filter(songbird_type %in% c("SingPause Singalong", "SingPause Solo"),
                         !is.na(phrase_name),
@@ -384,8 +385,12 @@ compute_ids_from_singpause_username <- function(df) {
     dplyr::mutate(singleiter_id = substr(username, 1, 2),
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
-                  student_id = substr(username, 7, 8) ) %>%
-    dplyr::filter(class_id %in% c("00", "01", "03", "04", "05", "06", "07", "08", "09", "10", "19", "22") )
+                  student_id = substr(username, 7, 8) )  %>%
+    dplyr::filter(class_id %in% c("03", "04", "05", "06", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
+                                  "23", "24", "25", "26", "27", "28", "29", "30",
+                                  "37", "38", "39", "40", "41", "42", "43", "44", "45",
+                                  "52", "53", "54", "55", "56", "57",
+                                  "71", "72", "73", "74", "75", "76") )
 
   return(res)
 }
@@ -479,12 +484,8 @@ compute_song_stats <- function(scores_data,
   item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
   item_identifier <- rlang::sym(item_identifier)
 
-  print('da2')
-
   data <- data %>%
     dplyr::filter( grepl("Phrase ", phrase_name) )
-
-  print('da3')
 
   scores_data <- scores_data %>%
     dplyr::filter( grepl("Phrase ", phrase_name) )
