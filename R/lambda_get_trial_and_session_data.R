@@ -7,10 +7,14 @@
 # u <- user_data$scores_trial
 # u <- user_data$review_melodies_class
 # u <- user_data$group_stats$class_stats
+#
 
 # db_disconnect(db_con)
 
 # user_dat2 <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
+
+
+
 
 
 # u <- tbl(db_con, "users") %>% filter(username == "000000XX00_02") %>% collect()
@@ -256,9 +260,9 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
       last_week_avg_minutes_per_day <- compute_avg_minutes_per_day(user_stats, last_week)
 
       # Average number of practice sessions per user
-      overall_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats)
-      last_month_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, last_month)
-      last_week_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, last_week)
+      overall_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, scores_trial)
+      last_month_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, scores_trial, last_month)
+      last_week_avg_no_practice_session_per_user <- compute_avg_no_practice_session_per_user(user_stats, scores_trial, last_week)
 
       # Average number of practice sessions
       overall_avg_no_practice_sessions <- compute_avg_no_practice_sessions(overall_avg_no_practice_session_per_user)
@@ -435,14 +439,22 @@ compute_avg_minutes_per_day <- function(user_stats, filter_function) {
   return(res)
 }
 
-compute_avg_no_practice_session_per_user <- function(user_stats, filter_function = NULL) {
+compute_avg_no_practice_session_per_user <- function(user_stats, scores_trial = NULL, filter_function = NULL) {
   data <- if (!is.null(filter_function)) user_stats %>% filter_function() else user_stats
+
   res <- data %>%
     dplyr::group_by(user_id, username) %>%
-    dplyr::summarise(overall_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE)) %>%
-    dplyr::ungroup()
+    dplyr::summarise(overall_no_practice_sessions = sum(no_practice_sessions, na.rm = TRUE), .groups = "drop")
+
+  # Join in class_id if scores_trial is provided
+  if (!is.null(scores_trial) && "class_id" %in% names(scores_trial)) {
+    res <- res %>%
+      dplyr::left_join(scores_trial %>% dplyr::select(user_id, class_id) %>% dplyr::distinct(), by = "user_id")
+  }
+
   return(res)
 }
+
 
 # t <- get_trial_and_session_data(group_id = 5, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
 
