@@ -794,6 +794,11 @@ handle_quick_feedback <- function(feedback, feedback_type, stimuli, stimuli_dura
 
 
 benevolent_score2 <- function(score) {
+
+  if(is.scalar.na.or.null.or.length.zero(score)) {
+    return(NA)
+  }
+
   benevolentScore <- (score * 10) + score
   benevolentScore <- round(benevolentScore)
   if (benevolentScore > 10) {
