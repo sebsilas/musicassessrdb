@@ -7,7 +7,21 @@
 # u <- user_data$scores_trial
 # u <- user_data$review_melodies_class
 # u <- user_data$group_stats$class_stats
-#
+
+# u <- user_data$user_stats %>%
+#   compute_ids_from_singpause_username()
+
+# u %>%
+#   select(minutes_spent, no_practice_sessions) %>%
+#     pivot_longer(everything()) %>%
+#     filter(value < 50) %>%
+#       ggplot() +
+#       geom_histogram(aes(x = value, fill = name)) +
+#         facet_wrap(~name)
+
+# u %>%
+#   filter(minutes_spent > 0)
+
 
 # db_disconnect(db_con)
 
@@ -75,9 +89,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 
   if(!is.null(group_id_filter)) {
     user_id_filter <- get_users_in_group(group_id_filter)
-    filter_classes <- TRUE
   } else {
-    filter_classes <- FALSE
   }
 
   response <- tryCatch({
@@ -92,7 +104,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
       { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
         dplyr::collect() %>%
         { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
-      { if(app_name_filter == "songbird") compute_ids_from_singpause_username(., filter_classes = filter_classes ) else . }
+      { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
 
 
     session_ids <- sessions$session_id
@@ -384,7 +396,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 }
 
 
-compute_ids_from_singpause_username <- function(df, filter_classes = FALSE) {
+compute_ids_from_singpause_username <- function(df) {
 
   assertthat::assert_that("username" %in% names(df), msg = 'There must be a "username" column.')
 
@@ -392,12 +404,7 @@ compute_ids_from_singpause_username <- function(df, filter_classes = FALSE) {
     dplyr::mutate(singleiter_id = substr(username, 1, 2),
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
-                  student_id = substr(username, 7, 8) )  %>%
-    { if(filter_classes) dplyr::filter(., class_id %in% c("03", "04", "05", "06", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20", "21", "22",
-                                  "23", "24", "25", "26", "27", "28", "29", "30",
-                                  "37", "38", "39", "40", "41", "42", "43", "44", "45",
-                                  "52", "53", "54", "55", "56", "57",
-                                  "71", "72", "73", "74", "75", "76") ) else . }
+                  student_id = substr(username, 7, 8) )
 
   return(res)
 }
