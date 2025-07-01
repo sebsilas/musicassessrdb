@@ -401,6 +401,8 @@ compute_ids_from_singpause_username <- function(df) {
   assertthat::assert_that("username" %in% names(df), msg = 'There must be a "username" column.')
 
   res <- df %>%
+    dplyr::filter(grepl("^\\d{8}$", username)) %>%
+    dplyr::filter(!username %in% c("99999900", "99999900", "99999990", "99999991", "99999992", "99999993", "99999993", "99999998", "99999999")) %>%
     dplyr::mutate(singleiter_id = substr(username, 1, 2),
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
