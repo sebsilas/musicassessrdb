@@ -147,7 +147,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::select(Date, user_id, username, trial_id, trial_time_started,
                       trial_time_completed, instrument, attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id) %>%
-        compute_ids_from_singpause_username(filter_classes = filter_classes)
+        compute_ids_from_singpause_username()
 
 
       # Compute class-level aggregates
