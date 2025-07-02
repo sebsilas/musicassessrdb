@@ -350,7 +350,11 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     # Remove nans
     if(is.data.frame(review_melodies_over_time)) {
       review_melodies_over_time <- review_melodies_over_time %>%
-        dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ 0, TRUE ~ score))
+        dplyr::mutate(score = dplyr::case_when(is.nan(score) ~ 0, TRUE ~ score)) %>%
+        dplyr::mutate(singleiter_id = substr(username, 1, 2),
+                      school_id = substr(username, 3, 4),
+                      class_id = substr(username, 5, 6),
+                      student_id = substr(username, 7, 8) )
     }
 
 
