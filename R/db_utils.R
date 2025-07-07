@@ -602,6 +602,7 @@ left_join_on_items <- function(db_con,
 
   })
 
+
   df_with_item_ids %>%
     dplyr::collect() %>%
     dplyr::left_join(grand_item_bank, by = "item_id")

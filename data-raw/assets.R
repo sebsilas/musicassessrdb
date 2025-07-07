@@ -2,7 +2,7 @@
 
 load_all()
 
-db_con <- musicassessr_con()
+# db_con <- musicassessr_con()
 
 inst_table_db <- musicassessrdb::get_table(db_con, "instruments") %>%
   dplyr::collect()

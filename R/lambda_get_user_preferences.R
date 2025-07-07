@@ -12,6 +12,7 @@ get_user_preferences_api <- function(user_id) {
 }
 
 
+# t <- get_user_preferences_lambda(437)
 
 get_user_preferences_lambda <- function(user_id) {
 

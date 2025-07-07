@@ -1,17 +1,4 @@
 
-#
-# library(tidyverse)
-# load_all()
-#
-
-# db_con <- musicassessr_con()
-
-# db_con <- musicassessr_con(db_name = "melody_prod")
-# u <- tbl(db_con, "users") %>% filter(app_name == "songbird") %>%  collect()
-
-# t <- select_items(174L, grepl_item_id_filter = "Berkowitz")
-
-# db_disconnect(db_con)
 
 
 #' Get job status API for select items lambda
@@ -38,6 +25,10 @@ get_job_status_api <- function(job_id = NULL, filename = NULL) {
 
 
 # t <- select_items(137)
+
+# db_con <- musicassessr_con(db_name = "melody_prod")
+# t <- select_items(user_id = 437, fallback_item_bank = 'WJD_narrowed_pbet_2025')
+#
 
 # This is the function that is called when the endpoint
 # is invoked
@@ -510,7 +501,6 @@ item_sel_rev_max_score <- function(review_items, num_items, user_id = NULL, scor
 }
 
 item_sel_rev_lowest_difficulty <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
-
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
     dplyr::slice_min(rhythmic_difficulty, n = num_items) %>%
@@ -522,6 +512,7 @@ item_sel_rev_lowest_difficulty <- function(review_items, num_items, user_id = NU
 }
 
 item_sel_rev_highest_difficulty <- function(review_items, num_items, user_id = NULL, score_name = "opti3", type = NULL) {
+
   selection <- review_items %>%
     sort_review_scores(score_name) %>%
     dplyr::slice_max(rhythmic_difficulty, n = num_items) %>%
