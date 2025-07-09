@@ -1,3 +1,5 @@
+# musicassessrdb 0.4.4
+
 # musicassessrdb 0.4.3
 
 - Fix bug around computing MIDI onsets
