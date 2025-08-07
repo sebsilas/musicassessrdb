@@ -306,9 +306,11 @@ elt_add_final_session_info_to_db <- function(asynchronous_api_mode) {
 }
 
 
-get_session_trials <- function(session_id) {
-  trials <- get_table("trials") %>%
+get_session_trials <- function(db_con = NULL, session_id) {
+  trials <- get_table(db_con, "trials") %>%
     dplyr::filter(session_id == !! session_id)
+
+  return(trials)
 }
 
 
