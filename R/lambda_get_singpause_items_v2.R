@@ -2,12 +2,18 @@
 
 # db_con <- musicassessr_con()
 
+# db_con <- musicassessr_con(db_name = "melody_prod")
+
 # t <- get_singpause_items_v2(189)
+# t <- get_singpause_items_v2(138L)
+
+# db_disconnect(db_con)
+
 
 get_singpause_items_v2 <- function(user_id = NULL) {
 
 
-  item_bank <- dplyr::tbl(db_con, "item_bank_singpause_2025_phrase") %>%
+  item_bank_2025 <- dplyr::tbl(db_con, "item_bank_singpause_2025_phrase") %>%
     dplyr::select(
       item_id,
       song_name,
@@ -20,8 +26,23 @@ get_singpause_items_v2 <- function(user_id = NULL) {
     ) %>%
     dplyr::collect()
 
+  item_bank_2026 <- dplyr::tbl(db_con, "item_bank_singpause_2026_phrase") %>%
+    dplyr::select(
+      item_id,
+      song_name,
+      image,
+      audio_file,
+      lyrics_file,
+      abs_melody,
+      durations,
+      phrase_name
+    ) %>%
+    dplyr::collect()
+
+  item_bank <- rbind(item_bank_2025, item_bank_2026)
+
   trials <- compile_item_trials(db_con, user_id = user_id, add_trial_scores = TRUE) %>%
-    dplyr::filter(grepl("singpause_2025", item_id)) %>%
+    dplyr::filter(grepl("singpause_2025", item_id) | grepl("singpause_2026", item_id)) %>%
     dplyr::mutate(Date = lubridate::as_datetime(trial_time_completed))
 
   # For cases where no trials yet
@@ -57,5 +78,4 @@ get_singpause_items_v2 <- function(user_id = NULL) {
 }
 
 
-# t <- get_singpause_items_v2(138L)
 
