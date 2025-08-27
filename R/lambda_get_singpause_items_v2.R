@@ -1,11 +1,12 @@
 
 
-# db_con <- musicassessr_con()
+# db_con <- musicassessr_con(db_name = "melody_dev")
+# t <- get_singpause_items_v2(138L) # DEV
+
 
 # db_con <- musicassessr_con(db_name = "melody_prod")
 
 # t <- get_singpause_items_v2(189)
-# t <- get_singpause_items_v2(138L)
 
 # db_disconnect(db_con)
 
@@ -24,7 +25,8 @@ get_singpause_items_v2 <- function(user_id = NULL) {
       durations,
       phrase_name
     ) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    dplyr::mutate(item_bank_year = 2025)
 
   item_bank_2026 <- dplyr::tbl(db_con, "item_bank_singpause_2026_phrase") %>%
     dplyr::select(
@@ -37,7 +39,8 @@ get_singpause_items_v2 <- function(user_id = NULL) {
       durations,
       phrase_name
     ) %>%
-    dplyr::collect()
+    dplyr::collect() %>%
+    dplyr::mutate(item_bank_year = 2026)
 
   item_bank <- rbind(item_bank_2025, item_bank_2026)
 
@@ -58,11 +61,12 @@ get_singpause_items_v2 <- function(user_id = NULL) {
     dplyr::slice_max(Date) %>% # Get latest score
     dplyr::ungroup()
 
-  item_bank <- item_bank %>% dplyr::left_join(trials, by = "item_id")
+  item_bank <- item_bank %>%
+    dplyr::left_join(trials, by = "item_id")
 
   # Now group by song_name
   grouped <- item_bank %>%
-    dplyr::group_by(song_name, image) %>%
+    dplyr::group_by(song_name, image, item_bank_year) %>%
     dplyr::summarise(
       item_id = list(item_id),
       phrases = list(phrase_name),
@@ -72,7 +76,8 @@ get_singpause_items_v2 <- function(user_id = NULL) {
       durations = list(durations),
       scores = list(score),
       .groups = "drop"
-    )
+    ) %>%
+    dplyr::arrange(dplyr::desc(item_bank_year))
 
   return(grouped)
 }
