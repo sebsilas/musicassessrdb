@@ -64,8 +64,6 @@ get_singpause_items_v2 <- function(user_id = NULL) {
   item_bank <- item_bank %>%
     dplyr::left_join(trials, by = "item_id")
 
-  browser()
-
   # Now group by song_name
   grouped <- item_bank %>%
     dplyr::group_by(song_name, image, item_bank_year) %>%

@@ -100,8 +100,6 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 
     # Main logic
 
-    browser()
-
     # Get sessions associated with user
     sessions <- get_table(db_con, "sessions", collect = FALSE) %>%
         dplyr::filter(user_id %in% user_id_filter) %>% # Note this could be multiple user_ids
