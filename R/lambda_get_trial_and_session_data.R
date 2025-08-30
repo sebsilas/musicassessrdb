@@ -1,7 +1,6 @@
 
 # db_con <- musicassessr_con(db_name = "melody_prod")
 
-# db_con <- musicassessr_con(db_name = "melody_dev")
 
 # user_data <- get_trial_and_session_data(group_id_filter = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
 # u <- user_data$scores_trial
@@ -23,11 +22,16 @@
 #   filter(minutes_spent > 0)
 
 
-# db_disconnect(db_con)
+
+# db_con <- musicassessr_con(db_name = "melody_dev")
 
 # user_dat2 <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
 
+# user_dat2 <- get_trial_and_session_data(user_id = 174, app_name_filter = "songbird")
 
+
+
+# db_disconnect(db_con)
 
 
 
@@ -96,6 +100,8 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 
     # Main logic
 
+    browser()
+
     # Get sessions associated with user
     sessions <- get_table(db_con, "sessions", collect = FALSE) %>%
         dplyr::filter(user_id %in% user_id_filter) %>% # Note this could be multiple user_ids
@@ -105,7 +111,6 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::collect() %>%
         { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
       { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
-
 
     session_ids <- sessions$session_id
 
