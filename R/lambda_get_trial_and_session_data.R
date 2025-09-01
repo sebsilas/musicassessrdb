@@ -414,7 +414,7 @@ compute_ids_from_singpause_username <- function(df) {
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
                   student_id = substr(username, 7, 8) ) %>%
-    dplyr::filter(!class_id %in% c("99", 99))
+    dplyr::filter(class_id != "99")
 
   return(res)
 }
