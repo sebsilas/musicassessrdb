@@ -27,6 +27,7 @@
 #
 # user_dat2 <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
 # user_dat3 <- get_trial_and_session_data(user_id = 174, app_name_filter = "songbird")
+# user_dat4 <- get_trial_and_session_data(user_id = 189, app_name_filter = "songbird")
 
 
 
