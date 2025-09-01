@@ -29,6 +29,8 @@
 # user_dat3 <- get_trial_and_session_data(user_id = 174, app_name_filter = "songbird")
 # user_dat4 <- get_trial_and_session_data(user_id = 189, app_name_filter = "songbird")
 
+#  db_con <- musicassessr_con(db_name = "melody_prod")
+# user_dat5 <- get_trial_and_session_data(user_id = 215, app_name_filter = "songbird")
 
 
 # db_disconnect(db_con)
@@ -144,7 +146,10 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     if("songbird" %in% trials$app_name || app_name_filter == "songbird") {
 
       songbird_phrase <- get_table(db_con, "item_bank_singpause_2025_phrase") %>%
-        dplyr::select(item_id, phrase_name, song_name)
+        dplyr::select(item_id, phrase_name, song_name) %>%
+        rbind( get_table(db_con, "item_bank_singpause_2026_phrase") %>%
+                dplyr::select(item_id, phrase_name, song_name)
+        )
 
       scores_trial <- trials %>%
         dplyr::left_join(songbird_phrase, by = "item_id") %>%
