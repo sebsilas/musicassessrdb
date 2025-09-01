@@ -24,10 +24,9 @@
 
 
 # db_con <- musicassessr_con(db_name = "melody_dev")
-
+#
 # user_dat2 <- get_trial_and_session_data(user_id = 138, app_name_filter = "songbird")
-
-# user_dat2 <- get_trial_and_session_data(user_id = 174, app_name_filter = "songbird")
+# user_dat3 <- get_trial_and_session_data(user_id = 174, app_name_filter = "songbird")
 
 
 
@@ -93,8 +92,15 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 
   if(!is.null(group_id_filter)) {
     user_id_filter <- get_users_in_group(group_id_filter)
-  } else {
   }
+
+  if(!is.null(group_id_filter) && app_name == "songbird") {
+    teacher_app <- TRUE
+  } else {
+    teacher_app <- FALSE
+  }
+
+  logging::loginfo("teacher_app: %s", teacher_app)
 
   response <- tryCatch({
 
@@ -107,10 +113,11 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::left_join(get_table(db_con, "users", collect = FALSE), by = "user_id") %>%
       { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
         dplyr::collect() %>%
-        { if(filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
-      { if(app_name_filter == "songbird") compute_ids_from_singpause_username(.) else . }
+        { if(teacher_app && filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
+      { if(app_name_filter == "songbird") compute_ids_from_singpause_username(., teacher_app) else . }
 
     session_ids <- sessions$session_id
+
 
     # Get trials
     trials <- compile_item_trials(db_con,
@@ -150,7 +157,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::select(Date, user_id, username, trial_id, trial_time_started,
                       trial_time_completed, instrument, attempt, item_id, display_modality, phase,
                       rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id) %>%
-        compute_ids_from_singpause_username()
+        compute_ids_from_singpause_username(teacher_app)
 
 
       # Compute class-level aggregates
@@ -403,18 +410,18 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 }
 
 
-compute_ids_from_singpause_username <- function(df) {
+compute_ids_from_singpause_username <- function(df, teacher_app = FALSE) {
 
   assertthat::assert_that("username" %in% names(df), msg = 'There must be a "username" column.')
 
   res <- df %>%
-    dplyr::filter(grepl("^\\d{8}$", username)) %>%
-    dplyr::filter(!username %in% c("99999900", "99999900", "99999990", "99999991", "99999992", "99999993", "99999993", "99999998", "99999999")) %>%
+    { if(teacher_app) dplyr::filter(., grepl("^\\d{8}$|^\\d{2}$", username)) else . } %>%
+    { if(teacher_app) dplyr::filter(., !username %in% c("99999900", "99999900", "99999990", "99999991", "99999992", "99999993", "99999993", "99999998", "99999999")) else . } %>%
     dplyr::mutate(singleiter_id = substr(username, 1, 2),
                   school_id = substr(username, 3, 4),
                   class_id = substr(username, 5, 6),
                   student_id = substr(username, 7, 8) ) %>%
-    dplyr::filter(class_id != "99")
+    { if(teacher_app) dplyr::filter(., class_id != "99") else . }
 
   return(res)
 }
