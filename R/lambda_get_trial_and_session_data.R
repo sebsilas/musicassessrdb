@@ -162,7 +162,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::left_join(scores_trial, by = "trial_id") %>%
         dplyr::select(Date, user_id, username, trial_id, trial_time_started,
                       trial_time_completed, instrument, attempt, item_id, display_modality, phase,
-                      rhythmic, stimulus_abs_melody, stimulus_durations, score, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id) %>%
+                      rhythmic, stimulus_abs_melody, stimulus_durations, score, song_name, phrase_name, trial_paradigm, songbird_type, new_items_id, review_items_id) %>%
         compute_ids_from_singpause_username(teacher_app)
 
 
@@ -194,7 +194,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
       # For phrases with names we remove the constraint that a phrase must have been played more than once to be returned
 
       review_melodies_over_time <- scores_trial %>%
-        dplyr::group_by(Date, user_id, username, phrase_name, item_id, songbird_type) %>%
+        dplyr::group_by(Date, user_id, username, song_name, phrase_name, item_id, songbird_type) %>%
         dplyr::summarise(score = mean(score, na.rm = TRUE) ) %>%
         dplyr::ungroup() %>%
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score)) %>%
