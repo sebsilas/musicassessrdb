@@ -97,7 +97,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     user_id_filter <- get_users_in_group(group_id_filter)
   }
 
-  if(!is.null(group_id_filter) && app_name == "songbird") {
+  if(!is.null(group_id_filter) && app_name_filter == "songbird") {
     teacher_app <- TRUE
   } else {
     teacher_app <- FALSE
