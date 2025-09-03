@@ -329,3 +329,16 @@ get-singpause-items-v2:
     - httpApi:
         method: POST
         path: /get-singpause-items-v2
+
+
+record-user-interaction:
+  memorySize: 1000
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - record_user_interaction # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /record-user-interaction
