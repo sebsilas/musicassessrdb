@@ -50,3 +50,19 @@ record_user_interaction <- function(user_id,
 
   return(response)
 }
+
+# create_user_interactions_table <- function() {
+#   sql <- "
+#   CREATE TABLE IF NOT EXISTS user_interactions (
+#     interaction_id SERIAL PRIMARY KEY,
+#     user_id INT NOT NULL,
+#     page_name VARCHAR(255) NOT NULL,
+#     element_name VARCHAR(255) NOT NULL,
+#     action_type VARCHAR(50) DEFAULT 'click',
+#     metadata JSON,
+#     date_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+#   );
+#   "
+#   DBI::dbExecute(db_con, sql)
+# }
+
