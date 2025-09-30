@@ -342,3 +342,17 @@ record-user-interaction:
     - httpApi:
         method: POST
         path: /record-user-interaction
+
+
+get-item-bank:
+  memorySize: 1000
+  timeout: 28
+  image:
+    name: appimage
+    command:
+      - get_item_bank # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /get-item-bank
+

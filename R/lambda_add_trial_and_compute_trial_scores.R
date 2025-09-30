@@ -628,11 +628,11 @@ get_metadata <- function(file,
 
   metadata %>%
     dplyr::select(session_id, rhythmic, display_modality,
-           trial_time_completed, phase, test_id, attempt,
-            item_id, stimuli, stimuli_durations, instrument,
-            trial_time_started, onset, feedback, feedback_type, trial_paradigm,
-           melody_block_paradigm, additional, page_label, module, user_id, pyin_type,
-           review_items_id, new_items_id)
+                   trial_time_completed, phase, test_id, attempt,
+                    item_id, stimuli, stimuli_durations, instrument,
+                    trial_time_started, onset, feedback, feedback_type, trial_paradigm,
+                   melody_block_paradigm, additional, page_label, module, user_id, pyin_type,
+                   review_items_id, new_items_id)
 
 }
 
