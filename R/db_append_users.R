@@ -70,3 +70,7 @@ db_append_users <- function(db_con = NULL,
 
 # t <- db_append_users(dev_vs_prod = "prod", username = "MacGregor2025")
 
+# db_con <- musicassessr_con()
+# u <- tbl(db_con, "users") %>% collect()
+
+
