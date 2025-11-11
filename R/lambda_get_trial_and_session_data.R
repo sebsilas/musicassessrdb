@@ -1,9 +1,16 @@
 
 # db_con <- musicassessr_con(db_name = "melody_prod")
-
-
 # user_data <- get_trial_and_session_data(group_id_filter = 5L, filter_pseudo_anonymous_ids = TRUE, app_name_filter = "songbird")
+# s <- tbl(db_con, "item_bank_singpause_2026_phrase") %>% collect()
+# db_disconnect(db_con)
 # u <- user_data$scores_trial
+#
+# new_songs <- u %>% filter(grepl("2026", item_id)) %>%
+#   left_join(s, by = "item_id")
+
+# new_songs %>%
+#   count(user_id)
+
 # u <- user_data$review_melodies_class
 # u <- user_data$group_stats$class_stats
 
@@ -236,6 +243,9 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
     }
 
+    scores_trial <- scores_trial %>%
+      mutate(phrase_name = case_when(grepl("singpause_2026", item_id) ~ paste0(phrase_name, ", ", song_name), TRUE ~ phrase_name))
+
     # Compute session scores post-hoc just using trials..
 
     # But session scores we aggregate over the day
@@ -299,6 +309,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 
       # Song statistics (scores and practice counts combined)
       overall_song_stats <- compute_song_stats(scores_trial)
+
       last_month_song_stats <- compute_song_stats(scores_trial, last_month)
       last_week_song_stats <- compute_song_stats(scores_trial, last_week)
 
@@ -525,6 +536,7 @@ compute_song_stats <- function(scores_data,
                                filter_function = NULL) {
 
   data <- if (!is.null(filter_function)) scores_data %>% filter_function() else scores_data
+
 
   item_identifier <- if("phrase_name" %in% names(scores_data)) "phrase_name" else "item_id"
   item_identifier <- rlang::sym(item_identifier)
