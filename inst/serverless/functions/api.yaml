@@ -403,7 +403,7 @@ fetch-syllable-results:
   memorySize: 1500
   timeout: 28
   image:
-    name: syllableclassifierimage
+    name: appimage
     command:
       - fetch_syllable_results_lambda
   events:
