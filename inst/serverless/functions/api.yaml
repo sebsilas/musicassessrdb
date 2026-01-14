@@ -370,7 +370,7 @@ get-item-bank:
 sample-demo-slonimsky:
   memorySize: 1000
   timeout: 28
-  provisionedConcurrency: 1
+  #provisionedConcurrency: 1
   image:
     name: appimage
     command:
@@ -426,12 +426,3 @@ syllable-classifier:
 #         path: /fetch-syllable-results
 
 
-
-
-# sample-melody-in-key
-# sample-from-item-bank
-# select-items
-# sample-in-ntiles-wjd
-# create-session-token
-# append-session
-# compute-session-scores-and-end-session
