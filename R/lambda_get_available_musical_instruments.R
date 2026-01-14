@@ -1,7 +1,5 @@
 
 
-# curl -X POST 'https://api.dev.songbird.training/get-available-musical-instruments' \
-# -H 'Content-Type: application/json'
 
 
 get_available_musical_instruments_api <- function() {
