@@ -8,7 +8,7 @@ append_singpause_survey_completion_api(
   user_id,
   singpause_id,
   psychTestR_id,
-  type = c("pretest", "posttest")
+  type = c("pretest", "start_pretest", "posttest")
 )
 }
 \arguments{

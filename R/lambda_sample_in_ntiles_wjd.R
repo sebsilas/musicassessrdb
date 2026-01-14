@@ -1,6 +1,6 @@
 
 
-# curl -X POST 'https://api.songbird.training/sample-in-ntiles-wjd' \
+# curl -X POST 'https://api.dev.songbird.training/sample-in-ntiles-wjd' \
 # -H 'Content-Type: application/json' \
 # -d '{
 #   "num_items": 12

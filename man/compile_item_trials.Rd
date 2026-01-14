@@ -7,17 +7,18 @@
 compile_item_trials(
   db_con = NULL,
   current_test_id = NULL,
-  session_id = NULL,
-  user_id,
+  session_ids_filter = NULL,
+  user_ids_filter,
   join_item_banks_on = FALSE,
   filter_item_banks = NULL,
   add_trial_scores = FALSE,
   score_to_use = "opti3",
-  trial_filter_fun = NULL
+  trial_filter_fun = NULL,
+  grepl_item_id_filter = NULL
 )
 }
 \arguments{
-\item{trial_filter_fun}{}
+\item{grepl_item_id_filter}{}
 }
 \description{
 Compile item trials
