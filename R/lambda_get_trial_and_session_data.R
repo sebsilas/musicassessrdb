@@ -104,13 +104,14 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     user_id_filter <- get_users_in_group(group_id_filter)
   }
 
-  if(!is.null(group_id_filter) && app_name_filter == "songbird") {
-    teacher_app <- TRUE
-  } else {
-    teacher_app <- FALSE
+  if(!is.null(app_name_filter)) {
+    if(!is.null(group_id_filter) && app_name_filter == "songbird") {
+      teacher_app <- TRUE
+    } else {
+      teacher_app <- FALSE
+    }
+    logging::loginfo("teacher_app: %s", teacher_app)
   }
-
-  logging::loginfo("teacher_app: %s", teacher_app)
 
   response <- tryCatch({
 
@@ -123,7 +124,7 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::left_join(get_table(db_con, "users", collect = FALSE), by = "user_id") %>%
       { if(is.character(app_name_filter)) dplyr::filter(., app_name == !! app_name_filter) else . } %>%
         dplyr::collect() %>%
-        { if(teacher_app && filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
+        { if(app_name_filter == "songbird" && teacher_app && filter_pseudo_anonymous_ids) dplyr::filter(., filter_pseudo_anonymous_ids(username)) else . } %>%
       { if(app_name_filter == "songbird") compute_ids_from_singpause_username(., teacher_app) else . }
 
     session_ids <- sessions$session_id
@@ -218,6 +219,9 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
 
       }
 
+      scores_trial <- scores_trial %>%
+        mutate(phrase_name = case_when(grepl("singpause_2026", item_id) ~ paste0(phrase_name, ", ", song_name), TRUE ~ phrase_name))
+
     } else {
       scores_trial <- trials %>%
         dplyr::left_join(scores_trial, by = "trial_id") %>%
@@ -243,8 +247,6 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
         dplyr::mutate(score = dplyr::case_when(is.na(score) ~ 0, TRUE ~ score))
     }
 
-    scores_trial <- scores_trial %>%
-      mutate(phrase_name = case_when(grepl("singpause_2026", item_id) ~ paste0(phrase_name, ", ", song_name), TRUE ~ phrase_name))
 
     # Compute session scores post-hoc just using trials..
 
@@ -276,7 +278,6 @@ get_trial_and_session_data <- function(user_id_filter = NULL,
     } else {
       session_scores_by_songbird_type <- NA
     }
-
 
 
     # Compute engagement with app measures:
