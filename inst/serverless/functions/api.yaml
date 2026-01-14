@@ -381,35 +381,35 @@ syllable-classifier:
         path: /syllable-classifier
 
 
-syllable-transcriber-s3:
-  memorySize: 10000
-  timeout: 28
-  image:
-    name: appimage
-    command:
-      - s3_trigger_syllable_transcription
-  events:
-    - s3:
-        bucket: syllable-transcription-uploads
-        event: s3:ObjectCreated:*
-        rules:
-          - suffix: .wav
-          - suffix: .mp3
-          - suffix: .m4a
-          - suffix: .ogg
-        existing: true
-
-fetch-syllable-results:
-  memorySize: 1500
-  timeout: 28
-  image:
-    name: appimage
-    command:
-      - fetch_syllable_results_lambda
-  events:
-    - httpApi:
-        method: POST
-        path: /fetch-syllable-results
+# syllable-transcriber-s3:
+#   memorySize: 10000
+#   timeout: 28
+#   image:
+#     name: appimage
+#     command:
+#       - s3_trigger_syllable_transcription
+#   events:
+#     - s3:
+#         bucket: syllable-transcription-uploads
+#         event: s3:ObjectCreated:*
+#         rules:
+#           - suffix: .wav
+#           - suffix: .mp3
+#           - suffix: .m4a
+#           - suffix: .ogg
+#         existing: true
+#
+# fetch-syllable-results:
+#   memorySize: 1500
+#   timeout: 28
+#   image:
+#     name: appimage
+#     command:
+#       - fetch_syllable_results_lambda
+#   events:
+#     - httpApi:
+#         method: POST
+#         path: /fetch-syllable-results
 
 
 
