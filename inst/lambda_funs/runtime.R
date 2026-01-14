@@ -1,7 +1,7 @@
 
 Sys.setenv(RETICULATE_PYTHON = "/opt/pyenv/bin/python")
 
-if (Sys.getenv("LOAD_PYTHON", "TRUE") == "TRUE") {
+if (Sys.getenv("LOAD_PYTHON", "FALSE") == "TRUE") {
   message("Initializing Python environment...")
   library(reticulate)
   reticulate::use_python("/opt/pyenv/bin/python", required = TRUE)
