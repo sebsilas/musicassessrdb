@@ -51,6 +51,7 @@ select_items <- function(user_id,
     logging::loginfo("approach_name = %s", approach_name)
     logging::loginfo("fallback_item_bank = %s", fallback_item_bank)
     logging::loginfo("grepl_item_id_filter = %s", grepl_item_id_filter)
+    logging::loginfo("only_use_items_from_fallback_item_banks = %s", only_use_items_from_fallback_item_banks)
     logging::loginfo("Taking approach: %s", approach_name)
 
     # Compile user trials

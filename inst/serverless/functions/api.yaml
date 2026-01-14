@@ -367,6 +367,20 @@ get-item-bank:
         method: POST
         path: /get-item-bank
 
+sample-demo-slonimsky:
+  memorySize: 1000
+  timeout: 28
+  provisionedConcurrency: 1
+  image:
+    name: appimage
+    command:
+      - lambda_sample_demo_slonimsky # The name of the function in the R package
+  events:
+    - httpApi:
+        method: POST
+        path: /sample-demo-slonimsky
+
+
 
 syllable-classifier:
   memorySize: 10000
