@@ -70,6 +70,7 @@ get_trial_and_session_data_api <- function(user_id_filter = NULL,
 
 # This is the function that is called when the endpoint
 # is invoked
+
 get_trial_and_session_data <- function(user_id_filter = NULL,
                                        group_id_filter = NULL,
                                        trial_score_measure = "opti3",
