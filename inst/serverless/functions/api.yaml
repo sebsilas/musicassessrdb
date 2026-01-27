@@ -1,7 +1,7 @@
 sample-melody-in-key: # Serverless framework logical name of the function
   memorySize: 1500
   timeout: 28
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   image:
     name: appimage
     command:
@@ -13,7 +13,7 @@ sample-melody-in-key: # Serverless framework logical name of the function
 
 sample-from-item-bank:
   timeout: 28
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   image:
     name: appimage
@@ -26,7 +26,7 @@ sample-from-item-bank:
 
 append-session:
   timeout: 28
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   image:
     name: appimage
@@ -39,7 +39,7 @@ append-session:
 
 compute-session-scores-and-end-session:
   timeout: 28
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 5000
   image:
     name: appimage
@@ -117,7 +117,7 @@ add-user-to-group-with-login-code: # Serverless framework logical name of the fu
 
 
 get-trial-and-session-data: # Serverless framework logical name of the function
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   timeout: 28
   image:
@@ -144,7 +144,7 @@ get-items-from-ids: # Serverless framework logical name of the function
 
 
 select-items: # Serverless framework logical name of the function
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 10000
   timeout: 28
   image:
@@ -184,7 +184,7 @@ append-failed-session: # Serverless framework logical name of the function
 
 
 midi-add-trial-and-compute-trial-scores:
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   timeout: 28
   image:
@@ -198,7 +198,7 @@ midi-add-trial-and-compute-trial-scores:
 
 
 sample-in-ntiles-wjd:
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   timeout: 28
   image:
@@ -237,7 +237,7 @@ get-available-musical-instruments:
 
 
 get-user-preferences:
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   timeout: 28
   image:
@@ -251,7 +251,7 @@ get-user-preferences:
 
 
 set-user-preferences:
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   memorySize: 1500
   timeout: 28
   image:
@@ -357,7 +357,7 @@ record-user-interaction:
 get-item-bank:
   memorySize: 1000
   timeout: 28
-  provisionedConcurrency: 1
+  # provisionedConcurrency: 1
   image:
     name: appimage
     command:
@@ -370,7 +370,7 @@ get-item-bank:
 sample-demo-slonimsky:
   memorySize: 1000
   timeout: 28
-  #provisionedConcurrency: 1
+  ## provisionedConcurrency: 1
   image:
     name: appimage
     command:
