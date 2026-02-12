@@ -1,26 +1,17 @@
 
 # send_daily_summary()
 
-send_email <- function(subject, body) {
-  smtp_password <- Sys.getenv("SLONIMSKY_EMAIL_PW")
-  if (smtp_password == "") {
-    stop("SLONIMSKY_EMAIL_PW environment variable is not set or empty.")
-  }
+send_email <- function(subject, body, to = "sebsilas@gmail.com", from = '"musicassessr" <slonimskyapp@gmail.com>') {
+  ses <- paws::ses()
 
-  smtp <- emayili::server(
-    host = "smtp.gmail.com",
-    port = 465,
-    username = "slonimskyapp@gmail.com",
-    password = smtp_password
+  ses$send_email(
+    Source = from,
+    Destination = list(ToAddresses = list(to)),
+    Message = list(
+      Subject = list(Data = subject, Charset = "UTF-8"),
+      Body = list(Html = list(Data = body, Charset = "UTF-8"))
+    )
   )
-
-  email_content <- emayili::envelope() %>%
-    emayili::from('"musicassessr" <slonimskyapp@gmail.com>') %>%
-    emayili::to("sebsilas@gmail.com") %>%
-    emayili::subject(subject) %>%
-    emayili::html(body)
-
-  smtp(email_content, verbose = TRUE)
 }
 
 send_daily_summary <- function(prod = TRUE) {
@@ -256,21 +247,6 @@ send_youve_got_melodies_email <- function(email_address, username, env = c("dev"
   response <- tryCatch({
     logging::loginfo('Sending "You\'ve Got Melodies" email to: %s', email_address)
 
-    # Retrieve SMTP password from environment variable
-    smtp_password <- Sys.getenv("SLONIMSKY_EMAIL_PW")
-
-    if (smtp_password == "") {
-      stop("SLONIMSKY_EMAIL_PW environment variable is not set or empty.")
-    }
-
-    # Set up SMTP server connection using emayili::server
-    smtp <- emayili::server(
-      host = "smtp.gmail.com",
-      port = 465,  # Secure SSL connection
-      username = "slonimskyapp@gmail.com",
-      password = smtp_password
-    )
-
     # Generate Email HTML Content
     email_html <- paste0(
       "<div style='font-family: Arial, sans-serif; color: #333; width: 100%; max-width: 600px; margin: 0 auto;'>",
@@ -289,15 +265,13 @@ send_youve_got_melodies_email <- function(email_address, username, env = c("dev"
       "</div>"
     )
 
-    # Create email message using emayili::envelope
-    email <- emayili::envelope() %>%
-      emayili::from('"Slonimsky App" <slonimskyapp@gmail.com>') %>%
-      emayili::to(email_address) %>%
-      emayili::subject("You've got melodies!") %>%
-      emayili::html(email_html)
-
-    # Send email using SMTP server
-    smtp(email, verbose = TRUE)
+    # Send email via SES
+    send_email(
+      subject = "You've got melodies!",
+      body = email_html,
+      to = email_address,
+      from = '"Slonimsky App" <slonimskyapp@gmail.com>'
+    )
 
     # Return response
     list(
