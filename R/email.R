@@ -1,7 +1,7 @@
 
 # send_daily_summary()
 
-send_email <- function(subject, body, to = "sebsilas@gmail.com", from = '"musicassessr" <slonimskyapp@gmail.com>') {
+send_email <- function(subject, body, to = "sebsilas@gmail.com", from = "musicassessr <slonimskyapp@gmail.com>") {
   ses <- paws::ses()
 
   ses$send_email(
@@ -270,7 +270,7 @@ send_youve_got_melodies_email <- function(email_address, username, env = c("dev"
       subject = "You've got melodies!",
       body = email_html,
       to = email_address,
-      from = '"Slonimsky App" <slonimskyapp@gmail.com>'
+      from = "Slonimsky App <slonimskyapp@gmail.com>"
     )
 
     # Return response
