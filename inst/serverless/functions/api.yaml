@@ -403,15 +403,10 @@ syllable-transcriber-s3:
     command:
       - s3_trigger_syllable_transcription
   events:
-    - s3:
-        bucket: ${self:custom.syllableUploadBuckets.${sls:stage}}
-        event: s3:ObjectCreated:*
-        rules:
-          - suffix: .wav
-          - suffix: .mp3
-          - suffix: .m4a
-          - suffix: .ogg
-
+  - s3:
+      bucket: ${self:custom.syllableUploadBucket}
+      existing: true
+      event: s3:ObjectCreated:*
 
 fetch-syllable-results:
   memorySize: 1500

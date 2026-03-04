@@ -34,9 +34,8 @@ custom:
   deploymentBucket:
     accelerate: true
     blockPublicAccess: true
-  syllableUploadBuckets:
-    dev: syllable-transcription-uploads-dev-us-east-1
-    prod: syllable-transcription-uploads-prod
+  syllableUploadBucket: syllable-transcription-uploads-${sls:stage}
+
 
 
 functions:
