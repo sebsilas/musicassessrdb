@@ -118,7 +118,7 @@ s3_trigger_syllable_transcription <- function(Records) {
   logging::loginfo("ext: %s", ext)
 
   if (!ext %in% c("wav","mp3","m4a","ogg")) {
-    logging:logerr("%s not a validation extension", ext)
+    logging::logerror("%s not a validation extension", ext)
     return(invisible(NULL))
   }
 
