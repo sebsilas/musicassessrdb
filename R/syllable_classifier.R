@@ -103,10 +103,19 @@ s3_trigger_syllable_transcription <- function(Records) {
 
   serverless_stage <- Sys.getenv("STAGE")
 
+  logging::loginfo("serverless_stage: %s", serverless_stage)
+
   bucket <- Records[[9]][[3]][[1]]
+
+  logging::loginfo("bucket: %s", bucket)
+
   key    <- utils::URLdecode(Records[[9]][[4]][[1]])
 
+  logging::loginfo("key: %s", key)
+
   ext <- tools::file_ext(key)
+
+  logging::loginfo("ext: %s", ext)
 
   if (!ext %in% c("wav","mp3","m4a","ogg")) {
     logging:logerr("%s not a validation extension", ext)
@@ -117,14 +126,15 @@ s3_trigger_syllable_transcription <- function(Records) {
   # Fetch upload_id from S3 metadata
   # ------------------------------------------------------------
   attribs <- get_s3_attribs(key, bucket)
+
   upload_id <- attribs %>% dplyr::pull(upload_id)
+
+  logging::loginfo("upload_id: %s", upload_id)
+  logging::loginfo("key: %s", key)
 
   if (is.null(upload_id) || is.na(upload_id)) {
     stop("upload_id missing from S3 metadata.")
   }
-
-  logging::loginfo("upload_id: %s", upload_id)
-  logging::loginfo("key: %s", key)
 
   # ------------------------------------------------------------
   # Ignore non-audio
