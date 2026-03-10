@@ -1,15 +1,22 @@
 
-Sys.setenv(RETICULATE_PYTHON = "/opt/pyenv/bin/python")
+Sys.setenv(
+  RETICULATE_PYTHON = "/opt/pyenv/bin/python",
+  RETICULATE_AUTOCONFIGURE = "FALSE"
+)
+
+library(reticulate)
+reticulate::use_python("/opt/pyenv/bin/python", required = TRUE)
 
 if (Sys.getenv("LOAD_PYTHON", "FALSE") == "TRUE") {
   message("Initializing Python environment...")
-  library(reticulate)
-  reticulate::use_python("/opt/pyenv/bin/python", required = TRUE)
 
   cfg <- reticulate::py_config()
+
   message(sprintf("Python: %s", cfg$python))
-  message(sprintf("Transformers available? %s",
-                  reticulate::py_module_available("transformers")))
+  message(sprintf(
+    "Transformers available? %s",
+    reticulate::py_module_available("transformers")
+  ))
 }
 
 library(dplyr)
