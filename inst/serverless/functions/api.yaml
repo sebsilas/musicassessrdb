@@ -382,17 +382,17 @@ sample-demo-slonimsky:
 
 
 
-syllable-classifier:
+syllable-transcriber:
   memorySize: 10000
   timeout: 28
   image:
     name: appimage
     command:
-      - syllable_classifier_lambda
+      - syllable_transcriber_lambda
   events:
     - httpApi:
         method: POST
-        path: /syllable-classifier
+        path: /syllable-transcriber
 
 
 syllable-transcriber-s3:
