@@ -159,9 +159,11 @@ s3_trigger_syllable_transcription <- function(Records) {
   # Invoke syllable transcription lambda
   # ------------------------------------------------------------
   syllable_lambda <- sprintf(
-    "onbrand-%s-syllable-transcriber",
+    "musicassessr-%s-syllable-transcriber",
     serverless_stage
   )
+
+  logging::loginfo("syllable_lambda: %s", syllable_lambda)
 
   payload <- list(
     upload_id = upload_id,
