@@ -159,7 +159,7 @@ s3_trigger_syllable_transcription <- function(Records) {
   # Invoke syllable transcription lambda
   # ------------------------------------------------------------
   syllable_lambda <- sprintf(
-    "musicassessr-%s-syllable-transcriber",
+    "musicassessr-%s-syllable-classifier",
     serverless_stage
   )
 
