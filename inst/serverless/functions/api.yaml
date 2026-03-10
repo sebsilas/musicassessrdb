@@ -389,6 +389,8 @@ syllable-transcriber:
     name: appimage
     command:
       - syllable_transcriber_lambda
+  environment:
+    LOAD_PYTHON: "TRUE"
   events:
     - httpApi:
         method: POST
@@ -402,11 +404,13 @@ syllable-transcriber-s3:
     name: appimage
     command:
       - s3_trigger_syllable_transcription
+  environment:
+    LOAD_PYTHON: "TRUE"
   events:
-  - s3:
-      bucket: ${self:custom.syllableUploadBucket}
-      existing: true
-      event: s3:ObjectCreated:*
+    - s3:
+        bucket: ${self:custom.syllableUploadBucket}
+        existing: true
+        event: s3:ObjectCreated:*
 
 fetch-syllable-results:
   memorySize: 1500
